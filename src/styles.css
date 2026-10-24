@@ -205,6 +205,7 @@ code { background: #f1f3f6; padding: 0 3px; border-radius: 3px; }
 .choices { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
 .choices label { display: flex; gap: 8px; align-items: center; }
 .choice-letter { font-weight: 600; }
+.q-ref { font-size: 11px; color: var(--muted); margin-left: auto; }
 .question footer { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 6px; }
 .question footer .md { flex-basis: 100%; }
 .ok { color: var(--green); }

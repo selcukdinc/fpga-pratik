@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
-import { Markdown } from "../components/Markdown";
+import { Markdown, inline } from "../components/Markdown";
 import type { AnswerResult, Question } from "../../shared/api";
 import type { Answer } from "../../shared/grade";
 
@@ -44,6 +44,8 @@ function QuestionCard({ q, n }: { q: Question; n: number }) {
         <span className="q-num">Soru {n}</span>
         <span className={`tag tag-${q.source}`}>{q.source === "original" ? "Orijinal" : "Türetilmiş"}</span>
         <span className="tag">H{q.week}</span>
+        <span className="tag" title={`Zorluk ${q.difficulty}/3`}>{"★".repeat(q.difficulty)}{"☆".repeat(3 - q.difficulty)}</span>
+        {q.sourceRef && <span className="q-ref">{q.sourceRef}</span>}
       </header>
       <Markdown text={q.prompt} />
 
@@ -63,7 +65,7 @@ function QuestionCard({ q, n }: { q: Question; n: number }) {
           {q.payload.choices?.map((c, i) => (
             <label key={i}>
               <input type="radio" name={q.id} checked={choice === i} onChange={() => setChoice(i)} disabled={!!result} />
-              <span className="choice-letter">{String.fromCharCode(65 + i)})</span> <code>{c}</code>
+              <span className="choice-letter">{String.fromCharCode(65 + i)})</span> <span>{inline(c)}</span>
             </label>
           ))}
         </div>

@@ -22,6 +22,8 @@ export interface Question {
   source: "original" | "derived";
   prompt: string;
   payload: { choices?: string[]; blanks?: number; template?: string };
+  difficulty: number;
+  sourceRef: string | null;
 }
 
 export interface AnswerResult {
