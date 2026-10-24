@@ -1,0 +1,351 @@
+diff --git a/src/jit/jit-code.c b/src/jit/jit-code.c
+index 53f190e..5ced362 100644
+--- a/src/jit/jit-code.c
++++ b/src/jit/jit-code.c
+@@ -600,7 +600,9 @@ void code_blob_finalise(code_blob_t *blob, jit_entry_fn_t *entry)
+       nvc_printf("$$\n");
+    }
+ 
++#ifndef __EMSCRIPTEN__
+    __builtin___clear_cache((char *)span->base, (char *)blob->wptr);
++#endif
+ 
+    thread_wx_mode(WX_EXECUTE);
+ 
+@@ -859,6 +861,7 @@ static void *code_emit_trampoline(code_blob_t *blob, void *dest)
+    };
+ #else
+    should_not_reach_here();
++   const uint8_t veneer[1] = { 0 };
+ #endif
+ 
+    void *prev = memmem(blob->veneers, blob->wptr - blob->veneers,
+diff --git a/src/jit/jit-intrin.c b/src/jit/jit-intrin.c
+index 1368e1a..b4bce3b 100644
+--- a/src/jit/jit-intrin.c
++++ b/src/jit/jit-intrin.c
+@@ -40,6 +40,13 @@
+ #include <arm_neon.h>
+ #endif
+ 
++static const uint32_t spread_nibble[16] = {
++   0x02020202, 0x03020202, 0x02030202, 0x03030202,
++   0x02020302, 0x03020302, 0x02030302, 0x03030302,
++   0x02020203, 0x03020203, 0x02030203, 0x03030203,
++   0x02020303, 0x03020303, 0x02030303, 0x03030303,
++};
++
+ #if defined __GNUC__ && !defined __clang__
+ #pragma GCC optimize ("O2")
+ #endif
+@@ -194,12 +201,6 @@ static const uint8_t lane_iota[16] = {
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+ };
+ 
+-static const uint32_t spread_nibble[16] = {
+-   0x02020202, 0x03020202, 0x02030202, 0x03030202,
+-   0x02020302, 0x03020302, 0x02030302, 0x03030302,
+-   0x02020203, 0x03020203, 0x02030203, 0x03030203,
+-   0x02020303, 0x03020303, 0x02030303, 0x03030303,
+-};
+ 
+ #ifdef HAVE_SSE41
+ __attribute__((aligned(16)))
+diff --git a/src/object.h b/src/object.h
+index e1e8d27..62c312a 100644
+--- a/src/object.h
++++ b/src/object.h
+@@ -168,7 +168,7 @@ struct _object {
+ STATIC_ASSERT(sizeof(object_t) == 16);
+ 
+ typedef bool (*object_copy_pred_t)(object_t *, void *);
+-typedef bool (*object_copy_fn_t)(object_t *, void *);
++typedef void (*object_copy_fn_t)(object_t *, void *);
+ 
+ typedef struct _object_copy_ctx {
+    generation_t       generation;
+diff --git a/src/rt/cover.c b/src/rt/cover.c
+index e8f4e63..93aeb4f 100644
+--- a/src/rt/cover.c
++++ b/src/rt/cover.c
+@@ -336,7 +336,7 @@ static void sanitise_name(text_buf_t *tb, const char *bytes, size_t len)
+ }
+ 
+ DLLEXPORT
+-void _nvc_create_cover_scope(jit_scalar_t *args)
++void _nvc_create_cover_scope(jit_scalar_t *args, tlab_t *tlab)
+ {
+    user_scope_t **ptr = args[2].pointer;
+    const char *name_bytes = args[3].pointer;
+@@ -394,7 +394,7 @@ void _nvc_create_cover_scope(jit_scalar_t *args)
+ }
+ 
+ DLLEXPORT
+-void _nvc_set_cover_scope_name(jit_scalar_t *args)
++void _nvc_set_cover_scope_name(jit_scalar_t *args, tlab_t *tlab)
+ {
+    user_scope_t *us = *(user_scope_t **)args[2].pointer;
+    const char *name_bytes = args[3].pointer;
+@@ -430,7 +430,7 @@ void _nvc_set_cover_scope_name(jit_scalar_t *args)
+ }
+ 
+ DLLEXPORT
+-void _nvc_add_cover_item(jit_scalar_t *args)
++void _nvc_add_cover_item(jit_scalar_t *args, tlab_t *tlab)
+ {
+    user_scope_t *us = *(user_scope_t **)args[2].pointer;
+    int32_t *index_ptr = args[3].pointer;
+@@ -513,7 +513,7 @@ void _nvc_add_cover_item(jit_scalar_t *args)
+ }
+ 
+ DLLEXPORT
+-void _nvc_increment_cover_item(jit_scalar_t *args)
++void _nvc_increment_cover_item(jit_scalar_t *args, tlab_t *tlab)
+ {
+    user_scope_t *us = *(user_scope_t **)args[2].pointer;
+    int32_t index = args[3].integer;
+diff --git a/src/rt/fileio.c b/src/rt/fileio.c
+index 83c97d9..d35e782 100644
+--- a/src/rt/fileio.c
++++ b/src/rt/fileio.c
+@@ -218,7 +218,7 @@ FILE *file_stream(file_handle_t fh)
+ }
+ 
+ DLLEXPORT
+-void __nvc_file_close(jit_scalar_t *args)
++void __nvc_file_close(jit_scalar_t *args, tlab_t *tlab)
+ {
+    file_handle_t *handle = args[1].pointer;
+    file_close(*handle);
+@@ -226,7 +226,7 @@ void __nvc_file_close(jit_scalar_t *args)
+ }
+ 
+ DLLEXPORT
+-void __nvc_endfile(jit_scalar_t *args)
++void __nvc_endfile(jit_scalar_t *args, tlab_t *tlab)
+ {
+    file_handle_t *handle = args[0].pointer;
+ 
+@@ -244,7 +244,7 @@ void __nvc_endfile(jit_scalar_t *args)
+ }
+ 
+ DLLEXPORT
+-void __nvc_flush(jit_scalar_t *args)
++void __nvc_flush(jit_scalar_t *args, tlab_t *tlab)
+ {
+    file_handle_t *handle = args[1].pointer;
+ 
+@@ -256,7 +256,7 @@ void __nvc_flush(jit_scalar_t *args)
+ }
+ 
+ DLLEXPORT
+-void __nvc_rewind(jit_scalar_t *args)
++void __nvc_rewind(jit_scalar_t *args, tlab_t *tlab)
+ {
+    file_handle_t *handle = args[1].pointer;
+ 
+@@ -268,7 +268,7 @@ void __nvc_rewind(jit_scalar_t *args)
+ }
+ 
+ DLLEXPORT
+-void __nvc_seek(jit_scalar_t *args)
++void __nvc_seek(jit_scalar_t *args, tlab_t *tlab)
+ {
+    file_handle_t *handle = args[1].pointer;
+    off_t offset = args[2].integer;
+@@ -286,7 +286,7 @@ void __nvc_seek(jit_scalar_t *args)
+ }
+ 
+ DLLEXPORT
+-void __nvc_truncate(jit_scalar_t *args)
++void __nvc_truncate(jit_scalar_t *args, tlab_t *tlab)
+ {
+    file_handle_t *handle = args[1].pointer;
+    int64_t size = args[2].integer;
+@@ -342,7 +342,7 @@ void __nvc_truncate(jit_scalar_t *args)
+ }
+ 
+ DLLEXPORT
+-void __nvc_file_state(jit_scalar_t *args)
++void __nvc_file_state(jit_scalar_t *args, tlab_t *tlab)
+ {
+    file_handle_t *handle = args[0].pointer;
+ 
+@@ -351,7 +351,7 @@ void __nvc_file_state(jit_scalar_t *args)
+ }
+ 
+ DLLEXPORT
+-void __nvc_file_mode(jit_scalar_t *args)
++void __nvc_file_mode(jit_scalar_t *args, tlab_t *tlab)
+ {
+    file_handle_t *handle = args[0].pointer;
+ 
+@@ -363,7 +363,7 @@ void __nvc_file_mode(jit_scalar_t *args)
+ }
+ 
+ DLLEXPORT
+-void __nvc_file_position(jit_scalar_t *args)
++void __nvc_file_position(jit_scalar_t *args, tlab_t *tlab)
+ {
+    file_handle_t *handle = args[0].pointer;
+    int8_t origin = args[1].integer;
+@@ -395,7 +395,7 @@ void __nvc_file_position(jit_scalar_t *args)
+ }
+ 
+ DLLEXPORT
+-void __nvc_file_size(jit_scalar_t *args)
++void __nvc_file_size(jit_scalar_t *args, tlab_t *tlab)
+ {
+    file_handle_t *handle = args[0].pointer;
+ 
+@@ -413,7 +413,7 @@ void __nvc_file_size(jit_scalar_t *args)
+ }
+ 
+ DLLEXPORT
+-void __nvc_file_canseek(jit_scalar_t *args)
++void __nvc_file_canseek(jit_scalar_t *args, tlab_t *tlab)
+ {
+    file_handle_t *handle = args[0].pointer;
+ 
+diff --git a/src/rt/random.c b/src/rt/random.c
+index 20105fd..fd4c9f7 100644
+--- a/src/rt/random.c
++++ b/src/rt/random.c
+@@ -88,7 +88,7 @@ uint32_t get_random(void)
+ }
+ 
+ DLLEXPORT
+-void _nvc_random_get_next(jit_scalar_t *args)
++void _nvc_random_get_next(jit_scalar_t *args, tlab_t *tlab)
+ {
+    args[0].integer = get_random();
+ }
+diff --git a/src/rt/stdenv.c b/src/rt/stdenv.c
+index cab4fd5..ff39d5b 100644
+--- a/src/rt/stdenv.c
++++ b/src/rt/stdenv.c
+@@ -205,7 +205,7 @@ static time_t to_time_t(const time_record_t *tr)
+ }
+ 
+ DLLEXPORT
+-void _std_env_stop(jit_scalar_t *args)
++void _std_env_stop(jit_scalar_t *args, tlab_t *tlab)
+ {
+    const int32_t finish      = args[2].integer;
+    const int32_t have_status = args[3].integer;
+@@ -663,7 +663,7 @@ int64_t _std_env_seconds_to_time(double real)
+ }
+ 
+ DLLEXPORT
+-void _std_env_get_vhdl_assert_count(jit_scalar_t *args)
++void _std_env_get_vhdl_assert_count(jit_scalar_t *args, tlab_t *tlab)
+ {
+    vhdl_severity_t severity_level = args[1].integer;
+    args[0].integer = get_vhdl_assert_count(severity_level);
+@@ -676,7 +676,7 @@ void _std_env_clear_vhdl_assert(void)
+ }
+ 
+ DLLEXPORT
+-void _std_env_set_vhdl_assert_enable(jit_scalar_t *args)
++void _std_env_set_vhdl_assert_enable(jit_scalar_t *args, tlab_t *tlab)
+ {
+    vhdl_severity_t severity_level = args[2].integer;
+    bool enable = !!args[3].integer;
+@@ -685,7 +685,7 @@ void _std_env_set_vhdl_assert_enable(jit_scalar_t *args)
+ }
+ 
+ DLLEXPORT
+-void _std_env_get_vhdl_assert_enable(jit_scalar_t *args)
++void _std_env_get_vhdl_assert_enable(jit_scalar_t *args, tlab_t *tlab)
+ {
+    vhdl_severity_t severity_level = args[1].integer;
+    args[0].integer = get_vhdl_assert_enable(severity_level);
+diff --git a/src/thread.c b/src/thread.c
+index 3d85348..91c377c 100644
+--- a/src/thread.c
++++ b/src/thread.c
+@@ -21,6 +21,20 @@
+ #include "rt/mspace.h"
+ #include "thread.h"
+ 
++#if defined __EMSCRIPTEN__ && !defined __EMSCRIPTEN_PTHREADS__
++#include <semaphore.h>
++#include <errno.h>
++// Single threaded wasm build: nothing can post while we wait
++int sem_timedwait(sem_t *sem, const struct timespec *abstime)
++{
++   (void)abstime;
++   if (sem_trywait(sem) == 0)
++      return 0;
++   errno = ETIMEDOUT;
++   return -1;
++}
++#endif
++
+ #include <assert.h>
+ #include <errno.h>
+ #include <math.h>
+@@ -1294,7 +1308,11 @@ static void suspend_handler(int sig, siginfo_t *info, void *context)
+    unmask_fatal_signals(&mask);
+    sigdelset(&mask, SIGRESUME);
+ 
++#ifdef __EMSCRIPTEN__
++   (void)mask;  // no signals between wasm threads
++#else
+    sigsuspend(&mask);
++#endif
+ 
+    sem_post(&stop_sem);
+ 
+diff --git a/src/util.c b/src/util.c
+index 1e4f90d..53a821d 100644
+--- a/src/util.c
++++ b/src/util.c
+@@ -1073,7 +1073,11 @@ static long nvc_page_size(void)
+ 
+ void nvc_munmap(void *ptr, size_t length)
+ {
+-#if ASAN_ENABLED
++#if defined __EMSCRIPTEN__
++   // Memory comes from posix_memalign and may be released in pieces:
++   // leak it, processes are short lived
++   (void)ptr; (void)length;
++#elif ASAN_ENABLED
+    free(ptr);
+ #elif !defined __MINGW32__
+    if (munmap(ptr, length) != 0)
+@@ -1086,7 +1090,7 @@ void nvc_munmap(void *ptr, size_t length)
+ 
+ void *nvc_memalign(size_t align, size_t sz)
+ {
+-#if ASAN_ENABLED
++#if ASAN_ENABLED || defined __EMSCRIPTEN__
+    void *ptr;
+    if (posix_memalign(&ptr, align, sz) != 0)
+       fatal_errno("posix_memalign");
+diff --git a/src/vhpi/vhpi_user.h b/src/vhpi/vhpi_user.h
+index b83dbb4..2a437f5 100644
+--- a/src/vhpi/vhpi_user.h
++++ b/src/vhpi/vhpi_user.h
+@@ -109,6 +109,8 @@ extern "C" {
+ #define EETERN PLI_EXTERN PLI_DLLESPEC
+ #endif
+ 
++#include <stdint.h>
++
+ /* basic typedefs */
+ #ifndef VHPI_TYPES
+ #define VHPI_TYPES
+diff --git a/thirdparty/cpustate.c b/thirdparty/cpustate.c
+index 968bdf9..93e4c1e 100644
+--- a/thirdparty/cpustate.c
++++ b/thirdparty/cpustate.c
+@@ -180,6 +180,8 @@ void fill_cpu_state(struct cpu_state *cpu, ucontext_t *uc)
+    cpu->regs[13] = uc->uc_mcontext->__ss.__r13;
+    cpu->regs[14] = uc->uc_mcontext->__ss.__r14;
+    cpu->regs[15] = uc->uc_mcontext->__ss.__r15;
++#elif defined __EMSCRIPTEN__
++   (void)uc; memset(cpu, 0, sizeof(*cpu));
+ #else
+ #error Please port fill_cpu_state to this OS/CPU combination
+ #endif

@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.wrangler/
+.dev.vars
+sim/nvc-wasm/.build/
+sim/nvc-wasm/out/
+*.tsbuildinfo
