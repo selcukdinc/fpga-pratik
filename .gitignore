@@ -5,3 +5,5 @@ dist/
 sim/nvc-wasm/.build/
 sim/nvc-wasm/out/
 *.tsbuildinfo
+docs/sunumlar/
+*.DS_Store

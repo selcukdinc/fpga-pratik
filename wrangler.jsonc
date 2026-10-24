@@ -1,22 +1,32 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "fpga-pratik",
-  "main": "worker/index.ts",
-  "compatibility_date": "2026-10-01",
-  "assets": {
-    "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*"]
-  },
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "fpga-pratik",
-      // `wrangler d1 create fpga-pratik` çıktısındaki id ile değiştirin
-      "database_id": "00000000-0000-0000-0000-000000000000",
-      "migrations_dir": "migrations"
-    }
-  ],
-  // Yayına alırken açın: fpga.selcukdinc.dev Cloudflare'de DNS ve sertifikayı kendisi kurar
-  // "routes": [{ "pattern": "fpga.selcukdinc.dev", "custom_domain": true }],
-  "observability": { "enabled": false }
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "fpga-pratik",
+	"main": "worker/index.ts",
+	"compatibility_date": "2026-10-01",
+	"assets": {
+		"not_found_handling": "single-page-application",
+		"run_worker_first": [
+			"/api/*"
+		]
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "fpga-pratik",
+			// `wrangler d1 create fpga-pratik` çıktısındaki id ile değiştirin
+			"database_id": "318ebf14-1f2d-45d5-83d6-e8b671db4021",
+			"migrations_dir": "migrations"
+		},
+		{
+			"binding": "fpga_pratik",
+			"database_name": "fpga-pratik",
+			"database_id": "318ebf14-1f2d-45d5-83d6-e8b671db4021",
+			"remote": true
+		}
+	],
+	
+	"routes": [{ "pattern": "fpga.selcukdinc.dev", "custom_domain": true }],
+	"observability": {
+		"enabled": false
+	}
 }

@@ -2,7 +2,7 @@
 
 FPGA dersi için açık kaynaklı, ücretsiz bir VHDL pratik sitesi.
 
-**Site:** [fpga.selcukdinc.dev](https://fpga.selcukdinc.dev) (yakında)
+**Site:** [fpga.selcukdinc.dev](https://fpga.selcukdinc.dev) (yayında)
 
 Kurulum yok, üyelik yok. Siteyi aç, VHDL yaz, simüle et, soruları çöz.
 
@@ -53,8 +53,6 @@ npm test
 | `worker/`       | API: Cloudflare Worker + Hono |
 | `migrations/`   | Cloudflare D1 şeması ve örnek sorular |
 | `shared/`       | Arayüz ve API'nin ortak kodu; puanlama sunucuda yapılır, doğru cevaplar istemciye gönderilmez |
-
-Siteyi Cloudflare'de yayına alma adımları: [docs/YAYINA-ALMA.md](docs/YAYINA-ALMA.md)
 
 ## Lisans
 
