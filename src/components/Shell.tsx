@@ -1,6 +1,9 @@
-import type { ReactNode } from "react";
-import { href, type Route } from "../lib/router";
-import { REPO_URL } from "../lib/api";
+import { useEffect, useRef, type ReactNode } from "react";
+import { href, navigate, type Route } from "../lib/router";
+import { REPO_URL, api } from "../lib/api";
+import { TEMA_ADI, TEMA_SIRASI, useTema } from "../lib/tema";
+import { uye, useOturum } from "../lib/oturum";
+import { Avatar } from "./Avatar";
 import type { Topic } from "../../shared/api";
 
 interface Props {
@@ -22,11 +25,69 @@ function NavLink({ to, current, children }: { to: Route; current: Route; childre
   );
 }
 
+const TEMA_ISARETI = { sistem: "◐", acik: "☀", koyu: "☾" } as const;
+
+function TemaDugmesi() {
+  const [tema, sec] = useTema();
+  const sonraki = TEMA_SIRASI[(TEMA_SIRASI.indexOf(tema) + 1) % TEMA_SIRASI.length]!;
+  return (
+    <button
+      className="tema-dugmesi"
+      onClick={() => sec(sonraki)}
+      title={`Tema: ${TEMA_ADI[tema]}. Tıkla: ${TEMA_ADI[sonraki]}`}
+      aria-label={`Tema: ${TEMA_ADI[tema]}. ${TEMA_ADI[sonraki]} temaya geç`}
+    >
+      <span aria-hidden="true">{TEMA_ISARETI[tema]}</span> {TEMA_ADI[tema]}
+    </button>
+  );
+}
+
+function HesapAlani({ route }: { route: Route }) {
+  const { me, yuklendi, setMe } = useOturum();
+  const menu = useRef<HTMLDetailsElement>(null);
+
+  // Sayfa değişince menü kapanır
+  useEffect(() => {
+    if (menu.current) menu.current.open = false;
+  }, [route]);
+
+  if (!yuklendi) return <span className="hesap-alani" />;
+  if (!uye(me)) {
+    const sonra = route.page === "giris" || route.page === "kayit" ? undefined : location.pathname;
+    return (
+      <span className="hesap-alani">
+        <a href={href({ page: "giris", sonra })}>Giriş</a>
+        <a className="kayit-link" href="/kayit">Kayıt ol</a>
+      </span>
+    );
+  }
+
+  const cikis = async () => {
+    await api.hesap.cikis();
+    setMe(null);
+    navigate("/");
+  };
+
+  return (
+    <details className="hesap-alani hesap-menu" ref={menu}>
+      <summary>
+        <Avatar id={me.avatar} bg={me.avatarBg} size={22} />
+        <span>{me.username}</span>
+      </summary>
+      <div className="hesap-menu-liste" role="menu">
+        <a role="menuitem" href={href({ page: "profil", ad: me.username })}>Profilim</a>
+        <a role="menuitem" href="/ayarlar">Ayarlar</a>
+        <button role="menuitem" onClick={cikis}>Çıkış yap</button>
+      </div>
+    </details>
+  );
+}
+
 export function Shell({ route, topics, currentWeek, title, status, children }: Props) {
   return (
     <div className="shell">
       <header className="topbar">
-        <a className="brand" href="#/pratik">
+        <a className="brand" href="/pratik">
           <img src="/favicon.svg" alt="" width={18} height={18} />
           FPGA Pratik
         </a>
@@ -35,6 +96,8 @@ export function Shell({ route, topics, currentWeek, title, status, children }: P
           <a href={REPO_URL} target="_blank" rel="noreferrer">★ GitHub'da yıldızla</a>
           <a href={`${REPO_URL}/issues/new`} target="_blank" rel="noreferrer">Sorun bildir</a>
         </nav>
+        <TemaDugmesi />
+        <HesapAlani route={route} />
       </header>
 
       <aside className="flow-nav" aria-label="Flow Navigator">
@@ -58,6 +121,7 @@ export function Shell({ route, topics, currentWeek, title, status, children }: P
 
         <div className="nav-section">PROJE</div>
         <NavLink to={{ page: "hakkinda" }} current={route}>Hakkında</NavLink>
+        <NavLink to={{ page: "gizlilik" }} current={route}>Gizlilik</NavLink>
       </aside>
 
       <main className="workspace">

@@ -45,6 +45,18 @@ npm run dev                # http://localhost:5173
 npm test
 ```
 
+Yerelde kayıt ve parola sıfırlamayı denemek için proje kökünde `.dev.vars`
+dosyası oluşturup `EPOSTA_KONSOL=1` yaz. Doğrulama kodları e-posta yerine
+`npm run dev` çıktısına düşer.
+
+Yayındaki Worker için ayarlar:
+
+| Ad              | Nasıl eklenir | Açıklama |
+|-----------------|---------------|----------|
+| `RESEND_API_KEY` | `npx wrangler secret put RESEND_API_KEY` | Doğrulama e-postaları için. Yoksa kayıt ve parola sıfırlama kapalı kalır. |
+| `MAIL_FROM`      | `wrangler.jsonc` içinde `vars` | Gönderen adresi. Varsayılan `FPGA Pratik <noreply@fpga.selcukdinc.dev>`. |
+| `PBKDF2_ITER`    | `wrangler.jsonc` içinde `vars` | Parola özeti yineleme sayısı (10.000 ile 100.000 arası). Varsayılan 50.000, ücretsiz plandaki 10 ms CPU sınırına göre seçildi. Artırılırsa eski özetler kullanıcı giriş yaptığında yenilenir. |
+
 | Klasör          | İçerik |
 |-----------------|--------|
 | `src/`          | Arayüz: Vite + React + CodeMirror 6 |

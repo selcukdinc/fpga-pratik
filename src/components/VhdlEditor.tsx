@@ -2,7 +2,8 @@ import { useEffect, useRef } from "react";
 import { EditorView, keymap, lineNumbers, highlightActiveLine, drawSelection } from "@codemirror/view";
 import { EditorState, StateEffect, StateField, RangeSet } from "@codemirror/state";
 import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
-import { StreamLanguage, indentUnit, syntaxHighlighting, defaultHighlightStyle, bracketMatching } from "@codemirror/language";
+import { StreamLanguage, indentUnit, syntaxHighlighting, bracketMatching } from "@codemirror/language";
+import { classHighlighter } from "@lezer/highlight";
 import { vhdl } from "@codemirror/legacy-modes/mode/vhdl";
 import { Decoration, type DecorationSet } from "@codemirror/view";
 
@@ -59,7 +60,8 @@ export function VhdlEditor({ value, onChange, marks = [], gotoLine, readOnly = f
           bracketMatching(),
           indentUnit.of("  "),
           StreamLanguage.define(vhdl),
-          syntaxHighlighting(defaultHighlightStyle),
+          // Renkler styles.css'teki --cm-* değişkenlerinden gelir, böylece temaya uyar
+          syntaxHighlighting(classHighlighter),
           keymap.of([indentWithTab, ...defaultKeymap, ...historyKeymap]),
           marksField,
           EditorState.readOnly.of(readOnly),
