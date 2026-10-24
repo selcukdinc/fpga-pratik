@@ -12,7 +12,9 @@
     "typecheck": "tsc -b",
     "db:migrate:local": "wrangler d1 migrations apply fpga-pratik --local",
     "db:migrate:remote": "wrangler d1 migrations apply fpga-pratik --remote",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+    "sorular:sql": "node --experimental-strip-types scripts/sorular-sql.ts",
+    "sorular:dogrula": "node --experimental-strip-types scripts/sorulari-dogrula.ts"
   },
   "dependencies": {
     "@codemirror/commands": "^6.11.1",
