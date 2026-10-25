@@ -16,6 +16,7 @@ import { Ayarlar } from "./pages/Ayarlar";
 import { Yonetim } from "./pages/Yonetim";
 import { Oner } from "./pages/Oner";
 import { Mesajlar } from "./pages/Mesajlar";
+import { Topluluk, ToplulukTb } from "./pages/Topluluk";
 import type { Topic } from "../shared/api";
 
 function baslik(route: Route, topicTitle?: string): string {
@@ -32,6 +33,8 @@ function baslik(route: Route, topicTitle?: string): string {
     case "ayarlar": return "HESAP - Ayarlar";
     case "oner": return "SORU ÖNER";
     case "mesajlar": return "MESAJLAR - Yöneticiyle yazışmalar";
+    case "topluluk": return "TOPLULUK - Üyelerin testbench'leri";
+    case "topluluk-tb": return route.id === "yeni" ? "TOPLULUK - Testbench yaz" : "TOPLULUK - Testbench";
     case "yonetim": return "YÖNETİM";
     case "bulunamadi": return "SAYFA BULUNAMADI";
   }
@@ -78,6 +81,8 @@ export function App() {
         {route.page === "ayarlar" && <Ayarlar />}
         {route.page === "oner" && <Oner />}
         {route.page === "mesajlar" && <Mesajlar id={route.id} />}
+        {route.page === "topluluk" && <Topluluk konu={route.konu} />}
+        {route.page === "topluluk-tb" && <ToplulukTb id={route.id} />}
         {route.page === "yonetim" && <Yonetim bolum={route.bolum} soru={route.soru} alt={route.alt} />}
         {route.page === "bulunamadi" && (
           <p className="empty">

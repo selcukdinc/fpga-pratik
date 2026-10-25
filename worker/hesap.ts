@@ -9,6 +9,7 @@ import {
 import { AVATAR_IDLERI, AVATAR_ZEMINLERI, rastgeleAvatar } from "../shared/avatarlar";
 import type { ApiHata } from "../shared/api";
 import { dortHaneliKod, epostaAcik, kodGonder } from "./eposta";
+import { tbSilSorgulari } from "./topluluk";
 import { parolaDogru, parolaOzeti, yinelemeSayisi } from "./parola";
 import { COOKIE, endSession, loadUser, otherSessionsQuery, sha256, startSession, type Env } from "./session";
 import { DAKIKA, SAAT, sinirAsildi, sinirDolu, sinirSifirla } from "./sinir";
@@ -413,6 +414,12 @@ ayarlar.post("/hesabi-sil", async (c) => {
     c.env.DB.prepare("DELETE FROM thread_messages WHERE thread_id IN (SELECT id FROM threads WHERE user_id = ?)").bind(me.id),
     c.env.DB.prepare("DELETE FROM threads WHERE user_id = ?").bind(me.id),
     c.env.DB.prepare("DELETE FROM suggestions WHERE user_id = ?").bind(me.id),
+    c.env.DB.prepare("DELETE FROM bildirimler WHERE user_id = ?").bind(me.id),
+    c.env.DB.prepare("DELETE FROM bildirimler WHERE hedef_tur = 'paylasim' AND hedef_id IN (SELECT id FROM paylasimlar WHERE user_id = ?)").bind(me.id),
+    c.env.DB.prepare("DELETE FROM paylasimlar WHERE user_id = ?").bind(me.id),
+    ...tbSilSorgulari(c.env.DB, "user_id = ?", me.id),
+    c.env.DB.prepare("DELETE FROM tb_begeni WHERE user_id = ?").bind(me.id),
+    c.env.DB.prepare("DELETE FROM tb_cozum WHERE user_id = ?").bind(me.id),
     c.env.DB.prepare("UPDATE questions SET suggested_by = NULL WHERE suggested_by = ?").bind(me.id),
     c.env.DB.prepare("UPDATE thread_messages SET admin_id = NULL WHERE admin_id = ?").bind(me.id),
     c.env.DB.prepare("DELETE FROM sessions WHERE user_id = ?").bind(me.id),

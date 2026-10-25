@@ -6,6 +6,7 @@ import { VhdlEditor, type EditorMark } from "./VhdlEditor";
 import { MessagesPanel } from "./MessagesPanel";
 import { WaveformView } from "./WaveformView";
 import { Markdown } from "./Markdown";
+import { Paylasimlar } from "./Paylasimlar";
 import { api } from "../lib/api";
 import { checkSyntax, simulate } from "../sim/simulator";
 import type { SimMessage } from "../sim/messages";
@@ -190,7 +191,7 @@ export function KodSorusu({ id, bilgi, onSonuc }: { id: string; bilgi: KodBilgis
         </div>
       )}
       {!hata && !sonuc && durum === null && mesajlar.length === 0 && testbench === null && (
-        <p className="hint">Kodun yalnızca bu tarayıcıda saklanır, sunucuya gönderilmez. Sunucuya sadece testbench'in okuduğu çıkış değerleri gider.</p>
+        <p className="hint">Kodun yalnızca bu tarayıcıda saklanır; sen paylaşmayı seçmedikçe sunucuya gönderilmez. Sınamada sunucuya sadece testbench'in okuduğu çıkış değerleri gider.</p>
       )}
 
       {sonuc && (
@@ -219,6 +220,8 @@ export function KodSorusu({ id, bilgi, onSonuc }: { id: string; bilgi: KodBilgis
           {sonuc.explanation && <Markdown text={sonuc.explanation} />}
         </div>
       )}
+
+      <Paylasimlar soruId={id} kod={kod} sinandi={!!sonuc} />
 
       {(vcd || testbench) && (
         <div className="kod-ayrinti">

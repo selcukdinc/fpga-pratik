@@ -2,6 +2,7 @@ import type { AnswerResult, ApiHata, Me, Profil, Question, Topic, TopicProgress 
 import type { Answer } from "../../shared/grade";
 import type { KodSonucu, Sinama } from "../../shared/kod";
 import type { Okunmamis, Oneri, OneriGirdi, PanelOneri, Yazisma, YazismaOzeti } from "../../shared/sosyal";
+import type { BildirimTuru, PanelBildirim, Paylasimlar, Tb, TbGirdi, TbOzeti } from "../../shared/topluluk";
 import type { PanelAyarlar, PanelKayit, PanelKullanici, PanelOzet, PanelSoru, SoruGirdi } from "../../shared/yonetim";
 
 async function get<T>(path: string): Promise<T> {
@@ -45,6 +46,21 @@ export const api = {
   },
   sinama: (id: string) => post<Sinama>(`/questions/${encodeURIComponent(id)}/sinama`),
   sinamaGonder: (id: string, iz: string[]) => post<KodSonucu>(`/sinama/${encodeURIComponent(id)}`, { iz }),
+  topluluk: {
+    paylasimlar: (soru: string) => get<Paylasimlar>(`/topluluk/paylasimlar/${encodeURIComponent(soru)}`),
+    paylas: (soru: string, kod: string | null) => post<{ ok: true }>(`/topluluk/paylasimlar/${encodeURIComponent(soru)}`, { kod }),
+    paylasimiKaldir: (soru: string) => post<{ ok: true }>(`/topluluk/paylasimlar/${encodeURIComponent(soru)}`, {}, "DELETE"),
+    tbler: (f: { konu?: string; kullanici?: string; sira?: string }) => {
+      const q = new URLSearchParams(Object.entries(f).filter(([, v]) => v) as [string, string][]).toString();
+      return get<TbOzeti[]>(`/topluluk/tb${q ? `?${q}` : ""}`);
+    },
+    tb: (id: string) => get<Tb>(`/topluluk/tb/${encodeURIComponent(id)}`),
+    tbYayimla: (g: TbGirdi) => post<{ id: string }>("/topluluk/tb", g),
+    tbSil: (id: string) => post<{ ok: true }>(`/topluluk/tb/${encodeURIComponent(id)}`, {}, "DELETE"),
+    begen: (id: string) => post<{ begeni: number; benBegendim: boolean }>(`/topluluk/tb/${encodeURIComponent(id)}/begen`),
+    cozdum: (id: string) => post<{ cozen: number }>(`/topluluk/tb/${encodeURIComponent(id)}/cozdum`),
+    bildir: (tur: BildirimTuru, id: string, neden: string) => post<{ ok: true }>("/topluluk/bildir", { tur, id, neden }),
+  },
   uye: {
     oneriler: () => get<Oneri[]>("/uye/oneriler"),
     oneriOkundu: () => post<{ ok: true }>("/uye/oneriler/okundu"),
@@ -100,6 +116,9 @@ export const api = {
       post<{ ok: true }>(`/yonetim/yazismalar/${encodeURIComponent(id)}/durum`, { status }),
     rol: (id: string, role: string) => post<{ ok: true }>(`/yonetim/kullanicilar/${encodeURIComponent(id)}/rol`, { role }),
     kayit: () => get<PanelKayit[]>("/yonetim/kayit"),
+    bildirimler: () => get<PanelBildirim[]>("/yonetim/bildirimler"),
+    bildirimIslem: (tur: BildirimTuru, id: string, islem: "kaldir" | "geri-ac") =>
+      post<{ ok: true }>(`/yonetim/bildirimler/${tur}/${encodeURIComponent(id)}`, { islem }),
   },
 };
 

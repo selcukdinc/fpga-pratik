@@ -580,3 +580,27 @@ a.buton.primary { border-color: var(--btn-primary-border); background: linear-gr
 .ornek { display: flex; gap: 8px; align-items: flex-start; padding: 6px 8px; border: 1px solid var(--border-soft); border-radius: 4px; cursor: pointer; }
 .ornek.secili { border-color: var(--link); background: var(--selection); }
 .ornek > span { display: flex; flex-direction: column; gap: 2px; }
+
+/* ---- Topluluk ---- */
+.baglanti-dugme { border: none; background: none; padding: 0; color: var(--link); cursor: pointer; font: inherit; text-decoration: underline; }
+.bildir-kutusu { display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.paylasimlar { display: flex; flex-direction: column; gap: 8px; }
+.paylasimlar > details > summary { cursor: pointer; font-weight: 600; }
+.paylas-kutusu { display: flex; flex-direction: column; gap: 6px; border: 1px solid var(--border); border-radius: 4px; padding: 8px 10px; background: var(--window); }
+.paylasim-listesi { list-style: none; padding: 0; margin: 8px 0 0; }
+.paylasim-listesi > li { border: 1px solid var(--border-soft); border-radius: 4px; padding: 6px 8px; margin-bottom: 6px; background: var(--panel); }
+.paylasim-listesi > li.benim { border-color: var(--btn-primary-border); }
+.paylasim-ust { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin-bottom: 4px; }
+.paylasim-listesi pre.log { max-height: 300px; overflow: auto; }
+.topluluk, .tb-coz { max-width: 960px; padding: 8px 16px 40px; }
+.tb-yeni { max-width: 960px; padding: 8px 16px 40px; }
+.tb-listesi { list-style: none; padding: 0; margin: 0; }
+.tb-listesi > li { background: var(--panel); border: 1px solid var(--border); padding: 8px 12px; margin-bottom: 8px; }
+.tb-baslik { font-weight: 600; font-size: 15px; overflow-wrap: anywhere; }
+h2.tb-baslik { margin: 4px 0; font-size: 18px; }
+.tb-rozetler { display: inline-flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; color: var(--muted); font-size: 12px; }
+.tb-ust { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; margin-bottom: 6px; }
+.tb-yeni .tabs { margin-top: 10px; }
+.tb-denetim ul { list-style: none; padding: 0; }
+.tb-denetim li { margin: 4px 0; }
+.bildirim-nedenleri { margin: 4px 0; padding-left: 20px; color: var(--muted); }

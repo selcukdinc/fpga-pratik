@@ -11,12 +11,14 @@ import { SoruDuzenle } from "./SoruDuzenle";
 import type { Topic } from "../../shared/api";
 import type { PanelKayit, PanelKullanici, PanelOzet, PanelSoru } from "../../shared/yonetim";
 import type { PanelOneri, YazismaOzeti } from "../../shared/sosyal";
+import type { PanelBildirim } from "../../shared/topluluk";
 
 const BOLUMLER: [YonetimBolumu, string][] = [
   ["genel", "Genel"],
   ["sorular", "Sorular"],
   ["oneriler", "Öneriler"],
   ["mesajlar", "Mesajlar"],
+  ["bildirimler", "Bildirimler"],
   ["kullanicilar", "Kullanıcılar"],
   ["kayit", "İşlem kaydı"],
 ];
@@ -72,6 +74,22 @@ function Genel() {
       </section>
 
       <section className="ayar-bolum">
+        <h3>Paylaşılan kodlar</h3>
+        <p>
+          Kod sorularında üyelerin isteyerek paylaştığı kodlar şu an{" "}
+          <strong className={o.kodPaylasimi ? "ok" : "bad"}>{o.kodPaylasimi ? "görünüyor" : "gizli"}</strong>. Sınav döneminde
+          kopyayı önlemek için kapatabilirsin; skorlar görünmeye devam eder, kayıtlı kodlar silinmez.
+        </p>
+        <button
+          onClick={() =>
+            kaydet({ kodPaylasimi: !o.kodPaylasimi }, o.kodPaylasimi ? "Paylaşılan kodlar gizlendi." : "Paylaşılan kodlar açıldı.")
+          }
+        >
+          {o.kodPaylasimi ? "Paylaşılan kodları gizle" : "Paylaşılan kodları göster"}
+        </button>
+      </section>
+
+      <section className="ayar-bolum">
         <h3>Geçerli hafta</h3>
         <form
           className="satir-form"
@@ -116,6 +134,7 @@ function Genel() {
           <li><strong>{o.deneme}</strong> cevap denemesi</li>
           <li><a href={href({ page: "yonetim", bolum: "oneriler" })}><strong>{o.bekleyenOneri}</strong> bekleyen öneri</a></li>
           <li><a href={href({ page: "yonetim", bolum: "mesajlar" })}><strong>{o.okunmamisMesaj}</strong> okunmamış mesaj</a></li>
+          <li><a href={href({ page: "yonetim", bolum: "bildirimler" })}><strong>{o.acikBildirim}</strong> bildirilen içerik</a></li>
         </ul>
       </section>
     </div>
@@ -331,7 +350,68 @@ const EYLEM: Record<string, string> = {
   "oneri.red": "Öneri reddedildi",
   "mesaj.cevap": "Mesaja cevap verildi",
   "mesaj.durum": "Yazışma durumu değişti",
+  "bildirim.kaldir": "Bildirilen içerik kaldırıldı",
+  "bildirim.geri-ac": "Bildirilen içerik geri açıldı",
+  "tb.sil": "Testbench silindi",
 };
+
+function Bildirimler() {
+  const [liste, setListe] = useState<PanelBildirim[] | null>(null);
+  const [hata, setHata] = useState<string | null>(null);
+  const yukle = () => api.yonetim.bildirimler().then(setListe, (e) => setHata(String(e)));
+  useEffect(() => {
+    void yukle();
+  }, []);
+
+  const islem = async (b: PanelBildirim, i: "kaldir" | "geri-ac") => {
+    if (i === "kaldir" && !confirm(`"${b.baslik}" kalıcı olarak silinsin mi?`)) return;
+    const r = await api.yonetim.bildirimIslem(b.tur, b.id, i);
+    if (!r.ok) return setHata(r.hata.error);
+    void yukle();
+  };
+
+  return (
+    <div className="panel-sorular">
+      <p className="hint">
+        3 farklı üyeden bildirim alan içerik sen bakana kadar otomatik gizlenir. "Görünür kalsın" bildirimleri kapatır,
+        "Kaldır" içeriği siler. Sık bildirilen bir üyeyi Kullanıcılar sekmesinden susturabilirsin.
+      </p>
+      <FormHatasi hata={hata} />
+      {!liste ? (
+        <p className="empty">Yükleniyor…</p>
+      ) : !liste.length ? (
+        <p className="empty">Açık bildirim yok.</p>
+      ) : (
+        <ul className="oneri-listesi">
+          {liste.map((b) => (
+            <li key={`${b.tur}:${b.id}`}>
+              <div className="oneri-ust">
+                <span className="tag">{b.tur === "tb" ? "Testbench" : "Paylaşılan sonuç"}</span>
+                {b.gizli && <span className="tag durum-rejected">gizlendi</span>}
+                <span className="tag durum-pending">{b.sayi} bildirim</span>
+                <span className="hint">@{b.sahibi ?? "silinmiş"} · {zaman(b.sonTarih)}</span>
+              </div>
+              <a className="oneri-metni" href={b.bag}>{b.baslik}</a>
+              <ul className="bildirim-nedenleri">
+                {b.nedenler.map((n, i) => <li key={i}>{n}</li>)}
+              </ul>
+              {b.icerik && (
+                <details>
+                  <summary>İçeriğe bak</summary>
+                  <pre className="log">{b.icerik}</pre>
+                </details>
+              )}
+              <div className="form-dugmeler">
+                <button onClick={() => islem(b, "geri-ac")}>Görünür kalsın</button>
+                <button className="tehlike" onClick={() => islem(b, "kaldir")}>Kaldır</button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 const ONERI_TURU = { tf: "Doğru / yanlış", mcq: "Çoktan seçmeli", fill: "Boşluk doldurma", code: "Kod yazma" } as const;
 const ONERI_DURUMU = { pending: "Bekliyor", accepted: "Kabul edildi", rejected: "Reddedildi" } as const;
@@ -558,6 +638,7 @@ export function Yonetim({ bolum, soru, alt }: { bolum: YonetimBolumu; soru?: str
       {bolum === "sorular" && (soru ? <SoruDuzenle id={soru} /> : <SoruListesi />)}
       {bolum === "oneriler" && (alt ? <OneriDetay id={alt} /> : <OneriListesi />)}
       {bolum === "mesajlar" && <PanelMesajlar id={alt} />}
+      {bolum === "bildirimler" && <Bildirimler />}
       {bolum === "kullanicilar" && <Kullanicilar />}
       {bolum === "kayit" && <IslemKaydi />}
     </div>

@@ -18,6 +18,8 @@ Kurulum yok, üyelik yok. Siteyi aç, VHDL yaz, simüle et, soruları çöz.
   Kod sorularında tasarımın, her denemede rastgele girişlerle üretilen gizli bir testbench'e
   karşı tarayıcında çalıştırılır; takıldığın yerde beklenen ve senin çıkışın yan yana gösterilir.
   Geçmiş sınav soruları `Orijinal`, aynı mantıkla hazırlananlar `Türetilmiş` etiketlidir.
+- **Topluluk:** Kod sorularında başkalarının nerede takıldığını gör, kendi sonucunu paylaş.
+  Kendi testbench'ini yaz ve yayımla; başkalarının testbench'lerini kendi mimarinle çöz.
 - **Konu bazlı ilerleme:** Hangi konuda ne kadar doğru yaptığını görürsün, eksik
   konular en üstte çıkar.
 - **Misafir kullanım:** Kayıt olmadan hemen başlayabilirsin.
@@ -27,7 +29,7 @@ Kurulum yok, üyelik yok. Siteyi aç, VHDL yaz, simüle et, soruları çöz.
 - Reklam yok.
 - Analitik ya da takip çerezi yok.
 - Yalnızca ilk cevabını gönderdiğinde ilerlemeni tutmak için tek bir oturum çerezi yazılır.
-- Yazdığın VHDL kodu tarayıcından hiç çıkmaz; simülasyon tamamen senin cihazında çalışır.
+- Yazdığın VHDL kodu, sen paylaşmayı seçmedikçe tarayıcından çıkmaz; simülasyon tamamen senin cihazında çalışır.
   Kod sorularında sunucuya yalnızca testbench'in okuduğu çıkış değerleri gider.
 
 ## Katkıda bulun

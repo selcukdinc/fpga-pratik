@@ -11,6 +11,8 @@ import {
 import type { PanelOneri, Yazisma } from "../shared/sosyal";
 import { accessAcik, accessEposta } from "./access";
 import { bildirimGonder } from "./eposta";
+import type { BildirimTuru, PanelBildirim } from "../shared/topluluk";
+import { tbSilSorgulari } from "./topluluk";
 import { ONERI_SQL, mesajlar, oneriSatiri, yazismaOzeti, type OneriSatiri } from "./sosyal";
 import type { Env } from "./session";
 import { yetkisiVar, type Izin } from "./yetki";
@@ -48,6 +50,7 @@ async function ayarlariOku(db: D1Database): Promise<PanelAyarlar> {
     showOriginal: m.get("show_original") !== "0",
     currentWeek: Number(m.get("current_week") ?? 1),
     announcement: m.get("announcement") ?? "",
+    kodPaylasimi: m.get("kod_paylasimi") !== "0",
   };
 }
 
@@ -68,11 +71,13 @@ yonetim.get("/ozet", async (c) => {
   ).first<{ uye: number; misafir: number; deneme: number }>();
   const k = await db.prepare(
     `SELECT (SELECT COUNT(*) FROM suggestions WHERE status = 'pending') AS oneri,
-            (SELECT COUNT(*) FROM threads WHERE admin_unread = 1) AS mesaj`,
-  ).first<{ oneri: number; mesaj: number }>();
+            (SELECT COUNT(*) FROM threads WHERE admin_unread = 1) AS mesaj,
+            (SELECT COUNT(DISTINCT hedef_tur || hedef_id) FROM bildirimler WHERE cozuldu = 0) AS bildirim`,
+  ).first<{ oneri: number; mesaj: number; bildirim: number }>();
   return c.json<PanelOzet>({
     bekleyenOneri: k?.oneri ?? 0,
     okunmamisMesaj: k?.mesaj ?? 0,
+    acikBildirim: k?.bildirim ?? 0,
     ...(await ayarlariOku(db)),
     soru: { toplam: s?.toplam ?? 0, yayinda: s?.yayinda ?? 0, taslak: s?.taslak ?? 0, gizli: s?.gizli ?? 0, orijinal: s?.orijinal ?? 0 },
     uye: u?.uye ?? 0,
@@ -88,6 +93,7 @@ yonetim.post("/ayarlar", izin("ayar.duzenle"), async (c) => {
     showOriginal: typeof b.showOriginal === "boolean" ? b.showOriginal : once.showOriginal,
     currentWeek: b.currentWeek === undefined ? once.currentWeek : Number(b.currentWeek),
     announcement: typeof b.announcement === "string" ? b.announcement.trim() : once.announcement,
+    kodPaylasimi: typeof b.kodPaylasimi === "boolean" ? b.kodPaylasimi : once.kodPaylasimi,
   };
   if (!Number.isInteger(sonra.currentWeek) || sonra.currentWeek < 1 || sonra.currentWeek > 14) {
     return c.json({ error: "Hafta 1 ile 14 arasında olmalı." }, 400);
@@ -104,6 +110,7 @@ yonetim.post("/ayarlar", izin("ayar.duzenle"), async (c) => {
     yaz("show_original", sonra.showOriginal ? "1" : "0"),
     yaz("current_week", String(sonra.currentWeek)),
     yaz("announcement", sonra.announcement),
+    yaz("kod_paylasimi", sonra.kodPaylasimi ? "1" : "0"),
     kayit(c, "ayar", null, degisen),
   ]);
   return c.json(sonra);
@@ -431,6 +438,68 @@ yonetim.post("/yazismalar/:id/durum", izin("mesaj.cevapla"), async (c) => {
     kayit(c, "mesaj.durum", c.req.param("id") ?? null, { status }),
   ]);
   if (!r[0]!.meta.changes) return c.json({ error: "yazışma bulunamadı" }, 404);
+  return c.json({ ok: true });
+});
+
+// ---- Bildirimler ----
+
+// Açık bildirimi olan içerikler, en çok bildirilen önce
+yonetim.get("/bildirimler", izin("bildirim.yonet"), async (c) => {
+  const db = c.env.DB;
+  const { results } = await db.prepare(
+    `SELECT hedef_tur, hedef_id, COUNT(*) AS sayi, MAX(created_at) AS son, json_group_array(neden) AS nedenler
+     FROM bildirimler WHERE cozuldu = 0 GROUP BY hedef_tur, hedef_id ORDER BY sayi DESC, son DESC LIMIT 100`,
+  ).all<{ hedef_tur: BildirimTuru; hedef_id: string; sayi: number; son: number; nedenler: string }>();
+  const liste: PanelBildirim[] = [];
+  for (const r of results) {
+    if (r.hedef_tur === "tb") {
+      const t = await db.prepare(
+        "SELECT tb.title, tb.hidden, tb.testbench, u.username FROM topluluk_tb tb LEFT JOIN users u ON u.id = tb.user_id WHERE tb.id = ?",
+      ).bind(r.hedef_id).first<{ title: string; hidden: number; testbench: string; username: string | null }>();
+      if (!t) continue;
+      liste.push({
+        tur: "tb", id: r.hedef_id, baslik: t.title, sahibi: t.username, sayi: r.sayi, nedenler: JSON.parse(r.nedenler),
+        gizli: t.hidden === 1, sonTarih: r.son, bag: `/topluluk/${r.hedef_id}`, icerik: t.testbench,
+      });
+    } else {
+      const p = await db.prepare(
+        `SELECT p.question_id, p.gecen, p.toplam, p.kod, p.hidden, u.username FROM paylasimlar p
+         LEFT JOIN users u ON u.id = p.user_id WHERE p.id = ?`,
+      ).bind(r.hedef_id).first<{ question_id: string; gecen: number; toplam: number; kod: string | null; hidden: number; username: string | null }>();
+      if (!p) continue;
+      liste.push({
+        tur: "paylasim", id: r.hedef_id, baslik: `${p.question_id} sorusunda paylaşılan sonuç (${p.gecen}/${p.toplam})`,
+        sahibi: p.username, sayi: r.sayi, nedenler: JSON.parse(r.nedenler), gizli: p.hidden === 1, sonTarih: r.son,
+        bag: `/yonetim/sorular/${p.question_id}`, icerik: p.kod,
+      });
+    }
+  }
+  return c.json(liste);
+});
+
+// kaldir: içerik silinir. geri-ac: içerik görünür olur, bildirimler kapanır.
+yonetim.post("/bildirimler/:tur/:id", izin("bildirim.yonet"), async (c) => {
+  const tur = c.req.param("tur");
+  const id = c.req.param("id") ?? "";
+  if (tur !== "tb" && tur !== "paylasim") return c.json({ error: "Tür geçersiz." }, 400);
+  const { islem } = (await c.req.json<{ islem?: string }>().catch(() => ({}))) as { islem?: string };
+  if (islem !== "kaldir" && islem !== "geri-ac") return c.json({ error: "İşlem geçersiz." }, 400);
+  const db = c.env.DB;
+  const tablo = tur === "tb" ? "topluluk_tb" : "paylasimlar";
+  if (!(await db.prepare(`SELECT 1 FROM ${tablo} WHERE id = ?`).bind(id).first())) return c.json({ error: "İçerik bulunamadı." }, 404);
+  const sorgular =
+    islem === "geri-ac"
+      ? [
+          db.prepare(`UPDATE ${tablo} SET hidden = 0 WHERE id = ?`).bind(id),
+          db.prepare("UPDATE bildirimler SET cozuldu = 1 WHERE hedef_tur = ? AND hedef_id = ?").bind(tur, id),
+        ]
+      : tur === "tb"
+        ? tbSilSorgulari(db, "id = ?", id)
+        : [
+            db.prepare("DELETE FROM bildirimler WHERE hedef_tur = 'paylasim' AND hedef_id = ?").bind(id),
+            db.prepare("DELETE FROM paylasimlar WHERE id = ?").bind(id),
+          ];
+  await db.batch([...sorgular, kayit(c, `bildirim.${islem}`, id, { tur })]);
   return c.json({ ok: true });
 });
 

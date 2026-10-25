@@ -3,17 +3,23 @@ import { api } from "../lib/api";
 import { href } from "../lib/router";
 import { Avatar } from "../components/Avatar";
 import type { Profil as ProfilVerisi } from "../../shared/api";
+import type { TbOzeti } from "../../shared/topluluk";
 
 const tarih = (ms: number) => new Date(ms).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric" });
 
 export function Profil({ ad }: { ad: string }) {
   const [p, setP] = useState<ProfilVerisi | null>(null);
   const [yok, setYok] = useState(false);
+  const [tbler, setTbler] = useState<TbOzeti[]>([]);
 
   useEffect(() => {
     setP(null);
     setYok(false);
-    api.profil(ad).then(setP, () => setYok(true));
+    setTbler([]);
+    api.profil(ad).then((r) => {
+      setP(r);
+      if (!r.gizli) api.topluluk.tbler({ kullanici: r.username }).then(setTbler, () => {});
+    }, () => setYok(true));
   }, [ad]);
 
   if (yok) return <p className="empty">Böyle bir kullanıcı bulunamadı.</p>;
@@ -88,6 +94,21 @@ export function Profil({ ad }: { ad: string }) {
             </li>
           ))}
         </ul>
+      )}
+
+      {tbler.length > 0 && (
+        <>
+          <h3>Yayımladığı testbench'ler</h3>
+          <ul className="son-liste">
+            {tbler.map((t) => (
+              <li key={t.id}>
+                <span className="tag">{t.topicTitle}</span>
+                <a className="son-metin" href={href({ page: "topluluk-tb", id: t.id })}>{t.title}</a>
+                <span className="hint">★ {t.begeni} · ✓ {t.cozen}</span>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
     </div>
   );

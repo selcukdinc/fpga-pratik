@@ -34,6 +34,8 @@ export interface PanelAyarlar {
   showOriginal: boolean;
   currentWeek: number;
   announcement: string;
+  // Paylaşılan sonuçlarda kod görünsün mü (sınav döneminde kapatılır)
+  kodPaylasimi: boolean;
 }
 
 export interface PanelOzet extends PanelAyarlar {
@@ -41,6 +43,7 @@ export interface PanelOzet extends PanelAyarlar {
   // Sekmelerdeki sayaçlar
   bekleyenOneri: number;
   okunmamisMesaj: number;
+  acikBildirim: number;
   uye: number;
   misafir: number;
   deneme: number;

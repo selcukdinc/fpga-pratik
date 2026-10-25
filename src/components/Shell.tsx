@@ -19,7 +19,7 @@ interface Props {
 
 function NavLink({ to, current, children }: { to: Route; current: Route; children: ReactNode }) {
   const active =
-    to.page === current.page && (to.page !== "sorular" || (current.page === "sorular" && to.topic === current.topic));
+    (to.page === current.page || (to.page === "topluluk" && current.page === "topluluk-tb")) && (to.page !== "sorular" || (current.page === "sorular" && to.topic === current.topic));
   return (
     <a className={`nav-link${active ? " active" : ""}`} href={href(to)} aria-current={active ? "page" : undefined}>
       {children}
@@ -127,6 +127,9 @@ export function Shell({ route, topics, currentWeek, title, status, duyuru, child
             <span className="nav-sub">H{t.week} · {t.title}</span>
           </NavLink>
         ))}
+
+        <div className="nav-section">TOPLULUK</div>
+        <NavLink to={{ page: "topluluk" }} current={route}>Testbench'ler</NavLink>
 
         <div className="nav-section">İLERLEME</div>
         <NavLink to={{ page: "ilerleme" }} current={route}>Konu bazlı durum</NavLink>

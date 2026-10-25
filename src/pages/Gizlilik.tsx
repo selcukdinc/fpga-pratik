@@ -18,7 +18,7 @@ export function Gizlilik() {
       <ul>
         <li>
           <strong>Misafir olarak:</strong> İlk cevabını gönderdiğinde rastgele bir kimlik oluşturulur ve tarayıcına tek
-          bir oturum çerezi yazılır. Hangi soruyu ne zaman, hangi cevapla denediğin bu kimlikle saklanır. Kod sorularında yazdığın VHDL kodu sunucuya gönderilmez: benzetim tarayıcında yapılır, sunucuya yalnızca testbench'in okuduğu çıkış değerleri gider ve kaç kontrol noktasını geçtiğin saklanır.
+          bir oturum çerezi yazılır. Hangi soruyu ne zaman, hangi cevapla denediğin bu kimlikle saklanır. Kod sorularında yazdığın VHDL kodu, sen paylaşmayı seçmedikçe sunucuya gönderilmez: benzetim tarayıcında yapılır, sunucuya yalnızca testbench'in okuduğu çıkış değerleri gider ve kaç kontrol noktasını geçtiğin saklanır.
         </li>
         <li>
           <strong>Hesap açarsan:</strong> kullanıcı adın, e-posta adresin, parolanın geri çevrilemez özeti (parolanın
@@ -28,6 +28,12 @@ export function Gizlilik() {
           <strong>Soru önerirsen ya da yöneticiye yazarsan:</strong> önerdiğin sorunun metni, cevabı ve açıklaması;
           yazışmalarındaki mesajlar ve tarihleri. Bunları yalnızca sen ve site yöneticisi görür. Önerin yayımlanırsa ve
           izin verdiysen sorunun altında kullanıcı adın görünür.
+        </li>
+        <li>
+          <strong>Topluluk özelliklerini kullanırsan:</strong> bir kod sorusundaki sonucunu paylaşırsan skorun ve ilk
+          takıldığın kontrol noktası; ayrıca işaretlersen kodun. Yayımladığın testbench'ler (çözümün değil, yalnızca
+          testbench ve entity şablonu), beğenilerin, çözdüğün testbench'ler ve gönderdiğin bildirimler. Paylaştıkların
+          giriş yapmış üyelere, testbench'lerin herkese görünür; bildirimlerini yalnızca yönetici görür.
         </li>
         <li>
           <strong>Güvenlik için:</strong> çok sayıda hatalı giriş ve kod isteğini sınırlamak amacıyla IP adresin, kısa
@@ -59,7 +65,7 @@ export function Gizlilik() {
       <h3>Ne kadar süre saklanıyor?</h3>
       <p>
         Hesabın açık kaldığı sürece. Hesabını Ayarlar sayfasından sildiğinde hesabın, tüm denemelerin, önerilerin,
-        yazışmaların ve oturumların hemen ve kalıcı olarak silinir. Yayımlanmış bir önerinin sorusu havuzda kalır ama
+        yazışmaların, paylaşımların, testbench'lerin ve oturumların hemen ve kalıcı olarak silinir. Yayımlanmış bir önerinin sorusu havuzda kalır ama
         artık adınla ilişkilendirilmez. Misafir oturum çerezi 180 gün sonra geçersiz olur; o misafirin denemeleri
         sadece rastgele bir kimlikle durur ve artık kimseyle ilişkilendirilemez.
       </p>
