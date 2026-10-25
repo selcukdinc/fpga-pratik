@@ -4,12 +4,13 @@ import type { Context } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import type { Me } from "../shared/api";
 import type { EpostaEnv } from "./eposta";
+import type { AccessEnv } from "./access";
 
 export const COOKIE = "fp_oturum";
 const MAX_AGE_S = 60 * 60 * 24 * 180;
 
 export type Env = {
-  Bindings: EpostaEnv & { DB: D1Database; PBKDF2_ITER?: string };
+  Bindings: EpostaEnv & AccessEnv & { DB: D1Database; PBKDF2_ITER?: string };
   Variables: { me: Me | null };
 };
 

@@ -13,6 +13,7 @@ import { Kayit } from "./pages/Kayit";
 import { SifreSifirla } from "./pages/SifreSifirla";
 import { Profil } from "./pages/Profil";
 import { Ayarlar } from "./pages/Ayarlar";
+import { Yonetim } from "./pages/Yonetim";
 import type { Topic } from "../shared/api";
 
 function baslik(route: Route, topicTitle?: string): string {
@@ -27,6 +28,7 @@ function baslik(route: Route, topicTitle?: string): string {
     case "sifre-sifirla": return "HESAP - Parola sıfırlama";
     case "profil": return `PROFİL - ${route.ad}`;
     case "ayarlar": return "HESAP - Ayarlar";
+    case "yonetim": return "YÖNETİM";
     case "bulunamadi": return "SAYFA BULUNAMADI";
   }
 }
@@ -36,12 +38,14 @@ export function App() {
   const [topics, setTopics] = useState<Topic[]>([]);
   const [currentWeek, setCurrentWeek] = useState<number | null>(null);
   const [status, setStatus] = useState("Hazır");
+  const [duyuru, setDuyuru] = useState<string | null>(null);
 
   useEffect(() => {
     api.topics().then(
       (r) => {
         setTopics(r.topics);
         setCurrentWeek(r.currentWeek);
+        setDuyuru(r.announcement);
       },
       // API yoksa (ör. yalnızca statik önizleme) pratik alanı yine çalışır
       () => setTopics([]),
@@ -57,7 +61,7 @@ export function App() {
 
   return (
     <OturumSaglayici>
-      <Shell route={route} topics={topics} currentWeek={currentWeek} title={title} status={status}>
+      <Shell route={route} topics={topics} currentWeek={currentWeek} title={title} status={status} duyuru={duyuru}>
         {route.page === "pratik" && <Sandbox onStatus={setStatus} />}
         {route.page === "sorular" && <Questions topic={route.topic} />}
         {route.page === "ilerleme" && <Progress />}
@@ -68,6 +72,7 @@ export function App() {
         {route.page === "sifre-sifirla" && <SifreSifirla />}
         {route.page === "profil" && <Profil ad={route.ad} />}
         {route.page === "ayarlar" && <Ayarlar />}
+        {route.page === "yonetim" && <Yonetim bolum={route.bolum} soru={route.soru} />}
         {route.page === "bulunamadi" && (
           <p className="empty">
             Bu adreste bir sayfa yok. <a href="/sorular">Sorulara git</a>

@@ -1,6 +1,7 @@
 // content/sorular altındaki soruları D1 için SQL'e çevirir.
 // Kullanım: npm run sorular:sql -- migrations/0003_hafta_1_5_sorular.sql
 // Upsert kullanır: aynı kimlikli soru varsa günceller, eski denemeler korunur.
+// Yönetim panelinde değiştirilmiş sorulara (updated_at dolu) dokunulmaz.
 import { writeFileSync } from "node:fs";
 import { konular, sorular } from "../content/sorular/index.ts";
 import type { Soru } from "../content/sorular/tipler.ts";
@@ -57,7 +58,8 @@ for (const s of sorular) {
       `${q(JSON.stringify(payload(s)))}, ${q(JSON.stringify(cevap(s)))}, ${q(md(s.aciklama))}, ${s.zorluk}, ${q(s.ref)}, 1)\n` +
       "  ON CONFLICT(id) DO UPDATE SET topic_id = excluded.topic_id, week = excluded.week, type = excluded.type,\n" +
       "    source = excluded.source, prompt = excluded.prompt, payload = excluded.payload, answer = excluded.answer,\n" +
-      "    explanation = excluded.explanation, difficulty = excluded.difficulty, source_ref = excluded.source_ref, active = 1;",
+      "    explanation = excluded.explanation, difficulty = excluded.difficulty, source_ref = excluded.source_ref, active = 1\n" +
+      "  WHERE questions.updated_at IS NULL;",
   );
 }
 

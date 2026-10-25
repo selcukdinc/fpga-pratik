@@ -55,6 +55,7 @@ Yayındaki Worker için ayarlar:
 |-----------------|---------------|----------|
 | `RESEND_API_KEY` | `npx wrangler secret put RESEND_API_KEY` | Doğrulama e-postaları için. Yoksa kayıt ve parola sıfırlama kapalı kalır. |
 | `MAIL_FROM`      | `wrangler.jsonc` içinde `vars` | Gönderen adresi. Varsayılan `FPGA Pratik <noreply@fpga.selcukdinc.dev>`. |
+| `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD` | `wrangler.jsonc` içinde `vars` | İsteğe bağlı. Tanımlıysa `/api/yonetim` istekleri Cloudflare Access belirteci de ister (aşağıya bakın). |
 | `PBKDF2_ITER`    | `wrangler.jsonc` içinde `vars` | Parola özeti yineleme sayısı (10.000 ile 100.000 arası). Varsayılan 50.000, ücretsiz plandaki 10 ms CPU sınırına göre seçildi. Artırılırsa eski özetler kullanıcı giriş yaptığında yenilenir. |
 
 | Klasör          | İçerik |
@@ -65,6 +66,24 @@ Yayındaki Worker için ayarlar:
 | `worker/`       | API: Cloudflare Worker + Hono |
 | `migrations/`   | Cloudflare D1 şeması ve örnek sorular |
 | `shared/`       | Arayüz ve API'nin ortak kodu; puanlama sunucuda yapılır, doğru cevaplar istemciye gönderilmez |
+
+### Yönetim paneli
+
+`/yonetim` sadece `role = 'admin'` olan hesaplara açıktır. İlk yöneticiyi bir kez elle ata:
+
+```sh
+npx wrangler d1 execute fpga-pratik --remote --command "UPDATE users SET role = 'admin' WHERE username = '<ad>'"
+```
+
+İkinci bir kapı olarak Cloudflare Access (ücretsiz plan, 50 kullanıcıya kadar) önerilir:
+
+1. Cloudflare panelinde **Zero Trust → Access → Applications → Add an application → Self-hosted**.
+2. Uygulama alan adı olarak `fpga.selcukdinc.dev` gir, yol olarak `yonetim*` ekle; aynı uygulamaya ikinci bir hedef olarak `api/yonetim*` yolunu da ekle.
+3. Politika: **Allow**, **Include → Emails** ve yönetici e-postası. Giriş yöntemi olarak "One-time PIN" yeterli.
+4. Uygulamanın **Application Audience (AUD) Tag** değerini kopyala. `wrangler.jsonc` içindeki `vars` bölümüne
+   `ACCESS_TEAM_DOMAIN` (ör. `takimin.cloudflareaccess.com`) ve `ACCESS_AUD` olarak ekleyip yeniden yayınla.
+
+Bu iki değer tanımlıyken Worker, Access belirtecindeki e-postanın yönetici hesabının e-postasıyla aynı olduğunu da kontrol eder.
 
 ## Lisans
 
