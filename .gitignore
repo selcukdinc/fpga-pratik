@@ -7,3 +7,4 @@ sim/nvc-wasm/out/
 *.tsbuildinfo
 docs/sunumlar/
 *.DS_Store
+docs/YOL-HARITASI.md
