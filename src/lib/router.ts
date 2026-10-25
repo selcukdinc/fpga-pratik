@@ -17,11 +17,13 @@ export type Route =
   | { page: "ayarlar" }
   | { page: "oner" }
   | { page: "mesajlar"; id?: string }
+  | { page: "topluluk"; konu?: string }
+  | { page: "topluluk-tb"; id: string }
   | { page: "yonetim"; bolum: YonetimBolumu; soru?: string; alt?: string }
   | { page: "bulunamadi" };
 
-export type YonetimBolumu = "genel" | "sorular" | "oneriler" | "mesajlar" | "kullanicilar" | "kayit";
-const YONETIM_BOLUMLERI: YonetimBolumu[] = ["genel", "sorular", "oneriler", "mesajlar", "kullanicilar", "kayit"];
+export type YonetimBolumu = "genel" | "sorular" | "oneriler" | "mesajlar" | "bildirimler" | "kullanicilar" | "kayit";
+const YONETIM_BOLUMLERI: YonetimBolumu[] = ["genel", "sorular", "oneriler", "mesajlar", "bildirimler", "kullanicilar", "kayit"];
 
 function parca(s: string | undefined): string | undefined {
   if (!s) return undefined;
@@ -50,6 +52,12 @@ export function parsePath(path: string, search = ""): Route {
       return { page };
     case "mesajlar":
       return arg ? { page: "mesajlar", id: parca(arg) } : { page: "mesajlar" };
+    case "topluluk": {
+      // /topluluk?konu=<konu>, /topluluk/<kimlik ya da "yeni">
+      if (arg) return { page: "topluluk-tb", id: parca(arg)! };
+      const konu = new URLSearchParams(search).get("konu") ?? undefined;
+      return konu ? { page: "topluluk", konu } : { page: "topluluk" };
+    }
     case "giris": {
       // Yalnızca site içi bir yola geri dönülür
       const sonra = new URLSearchParams(search).get("sonra") ?? undefined;
@@ -88,6 +96,10 @@ export function href(route: Route): string {
     }
     case "mesajlar":
       return route.id ? `/mesajlar/${encodeURIComponent(route.id)}` : "/mesajlar";
+    case "topluluk":
+      return route.konu ? `/topluluk?konu=${encodeURIComponent(route.konu)}` : "/topluluk";
+    case "topluluk-tb":
+      return `/topluluk/${encodeURIComponent(route.id)}`;
     case "giris":
       return route.sonra ? `/giris?sonra=${encodeURIComponent(route.sonra)}` : "/giris";
     case "bulunamadi":

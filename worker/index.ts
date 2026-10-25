@@ -6,6 +6,7 @@ import { hesap } from "./hesap";
 import { epostaAcik } from "./eposta";
 import { yonetim } from "./yonetim";
 import { sosyal } from "./sosyal";
+import { topluluk } from "./topluluk";
 import { DAKIKA, SAAT, sinirAsildi } from "./sinir";
 import { MODELLER, degerlendir, vektorUret } from "./modeller";
 import { IZ_SINIRI, TB_ADI, testbenchUret, type KodBilgisi, type KodSonucu, type Sinama, type Vektor } from "../shared/kod";
@@ -30,6 +31,7 @@ app.use("*", async (c, next) => {
 app.route("/hesap", hesap);
 app.route("/yonetim", yonetim);
 app.route("/uye", sosyal);
+app.route("/topluluk", topluluk);
 
 async function setting(db: D1Database, key: string): Promise<string | null> {
   const row = await db.prepare("SELECT value FROM settings WHERE key = ?").bind(key).first<{ value: string }>();

@@ -160,7 +160,8 @@ export function Questions({ topic }: { topic?: string }) {
             <a href="/kayit">Hesap açarsan</a> bu ilerleme hesabına taşınır.
           </>
         )}{" "}
-        Aklına iyi bir soru geldiyse <a href="/oner">öner</a>.
+        Aklına iyi bir soru geldiyse <a href="/oner">öner</a>.{" "}
+        {topic ? <a href={`/topluluk?konu=${encodeURIComponent(topic)}`}>Bu konunun topluluk testbench'leri</a> : <a href="/topluluk">Topluluk testbench'leri</a>}.
       </p>
       {questions.map((q, i) => (
         <QuestionCard key={q.id} q={q} n={i + 1} />
