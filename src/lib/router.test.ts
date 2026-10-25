@@ -10,6 +10,10 @@ describe("yönlendirici", () => {
       { page: "profil", ad: "ali_42" },
       { page: "ayarlar" },
       { page: "giris", sonra: "/sorular/nitelikler" },
+      { page: "yonetim", bolum: "genel" },
+      { page: "yonetim", bolum: "sorular" },
+      { page: "yonetim", bolum: "sorular", soru: "h3-mod-rem" },
+      { page: "yonetim", bolum: "kullanicilar" },
     ] as const) {
       const u = new URL(href(r), "https://x");
       expect(parsePath(u.pathname, u.search)).toEqual(r.page === "sorular" && !("topic" in r) ? { page: "sorular", topic: undefined } : r);

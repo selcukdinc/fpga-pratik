@@ -15,7 +15,11 @@ export type Route =
   | { page: "sifre-sifirla" }
   | { page: "profil"; ad: string }
   | { page: "ayarlar" }
+  | { page: "yonetim"; bolum: YonetimBolumu; soru?: string }
   | { page: "bulunamadi" };
+
+export type YonetimBolumu = "genel" | "sorular" | "kullanicilar" | "kayit";
+const YONETIM_BOLUMLERI: YonetimBolumu[] = ["genel", "sorular", "kullanicilar", "kayit"];
 
 function parca(s: string | undefined): string | undefined {
   if (!s) return undefined;
@@ -48,6 +52,13 @@ export function parsePath(path: string, search = ""): Route {
     }
     case "profil":
       return arg ? { page: "profil", ad: parca(arg)! } : { page: "bulunamadi" };
+    case "yonetim": {
+      // /yonetim, /yonetim/sorular, /yonetim/sorular/<kimlik ya da "yeni">
+      const bolum = (arg ?? "genel") as YonetimBolumu;
+      if (!YONETIM_BOLUMLERI.includes(bolum)) return { page: "bulunamadi" };
+      const soru = bolum === "sorular" ? parca(path.replace(/^\/+/, "").split("/")[2]) : undefined;
+      return soru ? { page: "yonetim", bolum, soru } : { page: "yonetim", bolum };
+    }
     default:
       return { page: "bulunamadi" };
   }
@@ -65,6 +76,8 @@ export function href(route: Route): string {
       return route.topic ? `/sorular/${encodeURIComponent(route.topic)}` : "/sorular";
     case "profil":
       return `/profil/${encodeURIComponent(route.ad)}`;
+    case "yonetim":
+      return `/yonetim${route.bolum === "genel" ? "" : `/${route.bolum}`}${route.soru ? `/${encodeURIComponent(route.soru)}` : ""}`;
     case "giris":
       return route.sonra ? `/giris?sonra=${encodeURIComponent(route.sonra)}` : "/giris";
     case "bulunamadi":
@@ -88,7 +101,8 @@ export function navigate(to: string | Route, { replace = false } = {}) {
 function tiklama(e: MouseEvent) {
   if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
   const a = (e.target as Element | null)?.closest?.("a");
-  if (!a || a.target || a.hasAttribute("download")) return;
+  // data-tam-sayfa: Cloudflare Access gibi sunucu tarafı bir kapıdan geçmesi gereken sayfalar tam yüklenir
+  if (!a || a.target || a.hasAttribute("download") || a.hasAttribute("data-tam-sayfa")) return;
   const url = new URL(a.href, location.href);
   if (url.origin !== location.origin || url.pathname.startsWith("/api/") || /\.\w+$/.test(url.pathname)) return;
   e.preventDefault();

@@ -4,6 +4,7 @@ import { REPO_URL, api } from "../lib/api";
 import { TEMA_ADI, TEMA_SIRASI, useTema } from "../lib/tema";
 import { uye, useOturum } from "../lib/oturum";
 import { Avatar } from "./Avatar";
+import { inline } from "./Markdown";
 import type { Topic } from "../../shared/api";
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
   currentWeek: number | null;
   title: string;
   status?: string;
+  duyuru?: string | null;
   children: ReactNode;
 }
 
@@ -77,13 +79,14 @@ function HesapAlani({ route }: { route: Route }) {
       <div className="hesap-menu-liste" role="menu">
         <a role="menuitem" href={href({ page: "profil", ad: me.username })}>Profilim</a>
         <a role="menuitem" href="/ayarlar">Ayarlar</a>
+        {me.role === "admin" && <a role="menuitem" href="/yonetim" data-tam-sayfa>Yönetim paneli</a>}
         <button role="menuitem" onClick={cikis}>Çıkış yap</button>
       </div>
     </details>
   );
 }
 
-export function Shell({ route, topics, currentWeek, title, status, children }: Props) {
+export function Shell({ route, topics, currentWeek, title, status, duyuru, children }: Props) {
   return (
     <div className="shell">
       <header className="topbar">
@@ -125,6 +128,11 @@ export function Shell({ route, topics, currentWeek, title, status, children }: P
       </aside>
 
       <main className="workspace">
+        {duyuru && (
+          <div className="duyuru" role="status">
+            {inline(duyuru)}
+          </div>
+        )}
         <div className="section-header">{title}</div>
         <div className="workspace-body">{children}</div>
       </main>

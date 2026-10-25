@@ -4,6 +4,7 @@ import type { AnswerResult, Profil, ProfilSon, Question, Topic, TopicProgress } 
 import { ensureGuest, loadMe, type Env } from "./session";
 import { hesap } from "./hesap";
 import { epostaAcik } from "./eposta";
+import { yonetim } from "./yonetim";
 
 const app = new Hono<Env>().basePath("/api");
 
@@ -23,6 +24,7 @@ app.use("*", async (c, next) => {
 });
 
 app.route("/hesap", hesap);
+app.route("/yonetim", yonetim);
 
 async function setting(db: D1Database, key: string): Promise<string | null> {
   const row = await db.prepare("SELECT value FROM settings WHERE key = ?").bind(key).first<{ value: string }>();
@@ -50,7 +52,7 @@ app.get("/topics", async (c) => {
   )
     .bind(week)
     .all<Topic>();
-  return c.json({ currentWeek: week, topics: results });
+  return c.json({ currentWeek: week, topics: results, announcement: (await setting(c.env.DB, "announcement")) || null });
 });
 
 app.get("/questions", async (c) => {
@@ -60,7 +62,7 @@ app.get("/questions", async (c) => {
   // answer sütunu bilinçli olarak seçilmiyor
   const sql = `SELECT q.id, q.topic_id, q.week, q.type, q.source, q.prompt, q.payload, q.difficulty, q.source_ref
                FROM questions q JOIN topics t ON t.id = q.topic_id
-               WHERE q.active = 1 AND q.week <= ?${original ? "" : " AND q.source = 'derived'"}${topic ? " AND q.topic_id = ?" : ""}
+               WHERE q.active = 1 AND q.status = 'published' AND q.week <= ?${original ? "" : " AND q.source = 'derived'"}${topic ? " AND q.topic_id = ?" : ""}
                ORDER BY q.week, t.sort, q.difficulty, q.rowid`;
   const stmt = c.env.DB.prepare(sql);
   const { results } = await (topic ? stmt.bind(week, topic) : stmt.bind(week)).all<{
@@ -87,9 +89,9 @@ app.post("/questions/:id/answer", async (c) => {
   if (!body?.answer || typeof body.answer !== "object") return c.json({ error: "geçersiz cevap" }, 400);
 
   const q = await c.env.DB.prepare(
-    "SELECT type, source, answer, explanation FROM questions WHERE id = ? AND active = 1",
+    "SELECT type, source, answer, explanation FROM questions WHERE id = ? AND active = 1 AND status = 'published' AND week <= ?",
   )
-    .bind(c.req.param("id"))
+    .bind(c.req.param("id"), await currentWeek(c.env.DB))
     .first<{ type: QuestionType; source: string; answer: string; explanation: string | null }>();
   if (!q || (q.source === "original" && !(await showOriginal(c.env.DB)))) return c.json({ error: "soru bulunamadı" }, 404);
   if (q.type === "code" || q.type === "wave") return c.json({ error: "bu soru tipi henüz desteklenmiyor" }, 501);
@@ -116,7 +118,7 @@ async function konuIlerlemesi(db: D1Database, userId: string): Promise<TopicProg
             COUNT(DISTINCT a.question_id) AS attempted,
             COUNT(DISTINCT CASE WHEN a.correct = 1 THEN a.question_id END) AS correct
      FROM topics t
-     LEFT JOIN questions q ON q.topic_id = t.id AND q.active = 1 AND q.week <= ?${original ? "" : " AND q.source = 'derived'"}
+     LEFT JOIN questions q ON q.topic_id = t.id AND q.active = 1 AND q.status = 'published' AND q.week <= ?${original ? "" : " AND q.source = 'derived'"}
      LEFT JOIN attempts a ON a.question_id = q.id AND a.user_id = ?
      WHERE t.week <= ?
      GROUP BY t.id ORDER BY t.week, t.sort`,
@@ -150,7 +152,7 @@ app.get("/profil/:ad", async (c) => {
   const { results } = await c.env.DB.prepare(
     `SELECT q.id AS questionId, t.title AS topicTitle, q.week, q.prompt, MAX(a.created_at) AS at
      FROM attempts a JOIN questions q ON q.id = a.question_id JOIN topics t ON t.id = q.topic_id
-     WHERE a.user_id = ? AND a.correct = 1 AND q.active = 1${original ? "" : " AND q.source = 'derived'"}
+     WHERE a.user_id = ? AND a.correct = 1 AND q.active = 1 AND q.status = 'published'${original ? "" : " AND q.source = 'derived'"}
      GROUP BY q.id ORDER BY at DESC LIMIT 10`,
   )
     .bind(u.id)

@@ -1,5 +1,6 @@
 import type { AnswerResult, ApiHata, Me, Profil, Question, Topic, TopicProgress } from "../../shared/api";
 import type { Answer } from "../../shared/grade";
+import type { PanelAyarlar, PanelKayit, PanelKullanici, PanelOzet, PanelSoru, SoruGirdi } from "../../shared/yonetim";
 
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(`/api${path}`, { credentials: "same-origin" });
@@ -10,10 +11,10 @@ async function get<T>(path: string): Promise<T> {
 // Form istekleri: hata da bir sonuç olarak döner, böylece alanın altında gösterilebilir
 export type Sonuc<T> = { ok: true; data: T } | { ok: false; hata: ApiHata };
 
-async function post<T>(path: string, body: unknown = {}): Promise<Sonuc<T>> {
+async function post<T>(path: string, body: unknown = {}, method = "POST"): Promise<Sonuc<T>> {
   try {
     const res = await fetch(`/api${path}`, {
-      method: "POST",
+      method,
       credentials: "same-origin",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -31,7 +32,7 @@ type Kod = { id: string; tekrarSaniye: number };
 
 export const api = {
   me: () => get<MeYaniti>("/me"),
-  topics: () => get<{ currentWeek: number; topics: Topic[] }>("/topics"),
+  topics: () => get<{ currentWeek: number; topics: Topic[]; announcement: string | null }>("/topics"),
   questions: (topic?: string) => get<Question[]>(topic ? `/questions?topic=${encodeURIComponent(topic)}` : "/questions"),
   progress: () => get<TopicProgress[]>("/progress"),
   profil: (ad: string) => get<Profil>(`/profil/${encodeURIComponent(ad)}`),
@@ -58,6 +59,23 @@ export const api = {
     epostaDogrula: (id: string, kod: string) => post<Me>("/hesap/ayarlar/eposta/dogrula", { id, kod }),
     oturumlariKapat: () => post<{ ok: true }>("/hesap/ayarlar/oturumlari-kapat"),
     hesabiSil: (parola: string) => post<{ ok: true }>("/hesap/ayarlar/hesabi-sil", { parola }),
+  },
+  yonetim: {
+    ozet: () => get<PanelOzet>("/yonetim/ozet"),
+    ayarlar: (b: Partial<PanelAyarlar>) => post<PanelAyarlar>("/yonetim/ayarlar", b),
+    konular: () => get<Topic[]>("/yonetim/konular"),
+    sorular: (f: Record<string, string>) => {
+      const q = new URLSearchParams(Object.entries(f).filter(([, v]) => v)).toString();
+      return get<PanelSoru[]>(`/yonetim/sorular${q ? `?${q}` : ""}`);
+    },
+    soru: (id: string) => get<PanelSoru>(`/yonetim/sorular/${encodeURIComponent(id)}`),
+    soruEkle: (g: SoruGirdi) => post<{ id: string }>("/yonetim/sorular", g),
+    soruKaydet: (id: string, g: SoruGirdi) => post<{ id: string }>(`/yonetim/sorular/${encodeURIComponent(id)}`, g, "PUT"),
+    soruDurum: (id: string, b: { active?: boolean; status?: "draft" | "published" }) =>
+      post<{ ok: true }>(`/yonetim/sorular/${encodeURIComponent(id)}/durum`, b),
+    kullanicilar: (ara: string) => get<PanelKullanici[]>(`/yonetim/kullanicilar${ara ? `?ara=${encodeURIComponent(ara)}` : ""}`),
+    rol: (id: string, role: string) => post<{ ok: true }>(`/yonetim/kullanicilar/${encodeURIComponent(id)}/rol`, { role }),
+    kayit: () => get<PanelKayit[]>("/yonetim/kayit"),
   },
 };
 
