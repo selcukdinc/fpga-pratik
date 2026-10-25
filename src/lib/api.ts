@@ -1,5 +1,6 @@
 import type { AnswerResult, ApiHata, Me, Profil, Question, Topic, TopicProgress } from "../../shared/api";
 import type { Answer } from "../../shared/grade";
+import type { KodSonucu, Sinama } from "../../shared/kod";
 import type { PanelAyarlar, PanelKayit, PanelKullanici, PanelOzet, PanelSoru, SoruGirdi } from "../../shared/yonetim";
 
 async function get<T>(path: string): Promise<T> {
@@ -41,6 +42,8 @@ export const api = {
     if (!r.ok) throw new Error(r.hata.error);
     return r.data;
   },
+  sinama: (id: string) => post<Sinama>(`/questions/${encodeURIComponent(id)}/sinama`),
+  sinamaGonder: (id: string, iz: string[]) => post<KodSonucu>(`/sinama/${encodeURIComponent(id)}`, { iz }),
   hesap: {
     adUygun: (ad: string) => get<{ uygun: boolean; sebep: string | null }>(`/hesap/kullanici-adi/${encodeURIComponent(ad)}`),
     kayit: (b: { username: string; password: string; email: string }) => post<Kod>("/hesap/kayit", b),

@@ -1,6 +1,7 @@
 import { Fragment, type ReactNode } from "react";
 
 // Soru metinleri için çok küçük bir alt küme: ``` kod blokları, `satır içi kod`, **kalın**
+// ve satırları "- " ile başlayan paragraflardan madde listesi
 export function inline(text: string): ReactNode[] {
   return text.split(/(`[^`]+`|\*\*[^*]+\*\*)/g).map((part, i) => {
     if (part.startsWith("`") && part.endsWith("`")) return <code key={i}>{part.slice(1, -1)}</code>;
@@ -20,7 +21,16 @@ export function Markdown({ text }: { text: string }) {
           b
             .split(/\n{2,}/)
             .filter((p) => p.trim())
-            .map((p, j) => <p key={`${i}-${j}`}>{inline(p.trim())}</p>)
+            .map((p, j) => {
+              const satirlar = p.trim().split("\n");
+              return satirlar.every((l) => l.startsWith("- ")) ? (
+                <ul key={`${i}-${j}`}>
+                  {satirlar.map((l, k) => <li key={k}>{inline(l.slice(2))}</li>)}
+                </ul>
+              ) : (
+                <p key={`${i}-${j}`}>{inline(p.trim())}</p>
+              );
+            })
         ),
       )}
     </div>

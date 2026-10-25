@@ -12,7 +12,9 @@ Kurulum yok, üyelik yok. Siteyi aç, VHDL yaz, simüle et, soruları çöz.
   [NVC](https://github.com/nickg/nvc) ile doğrudan tarayıcında çalışır.
 - **Dalga görüntüleyici:** Sinyalleri zaman ekseninde incele; sayısal sinyalleri
   analog gösterimle (örneğin üçgen dalga) de görebilirsin.
-- **Haftalara göre soru havuzu:** Doğru/yanlış, şıklı ve boşluk doldurma soruları.
+- **Haftalara göre soru havuzu:** Doğru/yanlış, şıklı, boşluk doldurma ve kod yazma soruları.
+  Kod sorularında tasarımın, her denemede rastgele girişlerle üretilen gizli bir testbench'e
+  karşı tarayıcında çalıştırılır; takıldığın yerde beklenen ve senin çıkışın yan yana gösterilir.
   Geçmiş sınav soruları `Orijinal`, aynı mantıkla hazırlananlar `Türetilmiş` etiketlidir.
 - **Konu bazlı ilerleme:** Hangi konuda ne kadar doğru yaptığını görürsün, eksik
   konular en üstte çıkar.
@@ -24,6 +26,7 @@ Kurulum yok, üyelik yok. Siteyi aç, VHDL yaz, simüle et, soruları çöz.
 - Analitik ya da takip çerezi yok.
 - Yalnızca ilk cevabını gönderdiğinde ilerlemeni tutmak için tek bir oturum çerezi yazılır.
 - Yazdığın VHDL kodu tarayıcından hiç çıkmaz; simülasyon tamamen senin cihazında çalışır.
+  Kod sorularında sunucuya yalnızca testbench'in okuduğu çıkış değerleri gider.
 
 ## Katkıda bulun
 
