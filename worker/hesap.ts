@@ -215,6 +215,7 @@ hesap.post("/giris", async (c) => {
     me?.kind === "guest" && me.id !== u.id
       ? [
           c.env.DB.prepare("UPDATE attempts SET user_id = ? WHERE user_id = ?").bind(u.id, me.id),
+          c.env.DB.prepare("UPDATE sinamalar SET user_id = ? WHERE user_id = ?").bind(u.id, me.id),
           c.env.DB.prepare("DELETE FROM users WHERE id = ? AND kind = 'guest'").bind(me.id),
         ]
       : [];
@@ -407,6 +408,7 @@ ayarlar.post("/hesabi-sil", async (c) => {
   if (!(await parolaKontrol(c, metin(b.parola)))) return hata(c, 400, "Parola hatalı.", { alan: "parola" });
   await c.env.DB.batch([
     c.env.DB.prepare("DELETE FROM attempts WHERE user_id = ?").bind(me.id),
+    c.env.DB.prepare("DELETE FROM sinamalar WHERE user_id = ?").bind(me.id),
     c.env.DB.prepare("DELETE FROM sessions WHERE user_id = ?").bind(me.id),
     c.env.DB.prepare("DELETE FROM email_codes WHERE user_id = ?").bind(me.id),
     c.env.DB.prepare("UPDATE questions SET created_by = NULL WHERE created_by = ?").bind(me.id),

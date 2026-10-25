@@ -19,7 +19,10 @@ export interface SoruGirdi {
   active: boolean;
 }
 
-export interface PanelSoru extends SoruGirdi {
+// Kod soruları depodaki içerikten gelir (referans modeli worker/modeller.ts'de);
+// panelde yalnızca durumları değiştirilebilir.
+export interface PanelSoru extends Omit<SoruGirdi, "type"> {
+  type: PanelSoruTipi | "code";
   id: string;
   week: number;
   updatedAt: number | null;

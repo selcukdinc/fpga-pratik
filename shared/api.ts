@@ -1,6 +1,7 @@
 // İstemci ile Worker arasındaki veri tipleri
 
 import type { QuestionType } from "./grade";
+import type { KodBilgisi } from "./kod";
 
 export interface Me {
   id: string;
@@ -31,7 +32,7 @@ export interface Question {
   type: QuestionType;
   source: "original" | "derived";
   prompt: string;
-  payload: { choices?: string[]; blanks?: number; template?: string };
+  payload: { choices?: string[]; blanks?: number; kod?: KodBilgisi };
   difficulty: number;
   sourceRef: string | null;
 }

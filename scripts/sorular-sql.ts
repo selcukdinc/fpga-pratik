@@ -5,6 +5,7 @@
 import { writeFileSync } from "node:fs";
 import { konular, sorular } from "../content/sorular/index.ts";
 import type { Soru } from "../content/sorular/tipler.ts";
+import { MODELLER } from "../worker/modeller.ts";
 
 const hedef = process.argv[2];
 if (!hedef) {
@@ -18,13 +19,15 @@ const q = (s: string | null) => (s === null ? "NULL" : `'${s.replace(/'/g, "''")
 function payload(s: Soru): object {
   if (s.tip === "mcq") return { choices: s.secenekler.map(md) };
   if (s.tip === "fill") return { blanks: s.bosluklar.length };
-  return {};
+  return { kod: s.kod };
 }
 
 function cevap(s: Soru): object {
   if (s.tip === "tf") return { value: s.dogru };
   if (s.tip === "mcq") return { index: s.dogru };
-  return { blanks: s.bosluklar };
+  if (s.tip === "fill") return { blanks: s.bosluklar };
+  // Kod sorularında beklenen çıkışlar worker/modeller.ts'deki modelden hesaplanır
+  return { model: s.id };
 }
 
 // Temel denetimler: hatalı bir soru veritabanına girmesin
@@ -38,6 +41,7 @@ for (const s of sorular) {
   if (konu.hafta !== s.hafta) throw new Error(`${s.id}: hafta konuyla uyuşmuyor`);
   if (s.tip === "mcq" && !(s.dogru >= 0 && s.dogru < s.secenekler.length)) throw new Error(`${s.id}: geçersiz doğru şık`);
   if (s.tip === "fill" && s.bosluklar.some((b) => b.length === 0)) throw new Error(`${s.id}: boş cevap listesi`);
+  if (s.tip === "code" && !MODELLER[s.id]) throw new Error(`${s.id}: worker/modeller.ts içinde referans modeli yok`);
 }
 
 const satirlar: string[] = [
@@ -68,5 +72,5 @@ const say = (f: (s: Soru) => boolean) => sorular.filter(f).length;
 console.log(
   `${hedef}: ${konular.length} konu, ${sorular.length} soru ` +
     `(orijinal ${say((s) => s.kaynak === "original")}, türetilmiş ${say((s) => s.kaynak === "derived")}, ` +
-    `NVC ile doğrulanan ${say((s) => !!s.dogrulama)})`,
+    `NVC ile doğrulanan ${say((s) => !!s.dogrulama || s.tip === "code")})`,
 );

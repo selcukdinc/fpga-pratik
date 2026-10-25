@@ -2,10 +2,40 @@ import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { uye, useOturum } from "../lib/oturum";
 import { Markdown, inline } from "../components/Markdown";
+import { KodSorusu } from "../components/KodSorusu";
 import type { AnswerResult, Question } from "../../shared/api";
 import type { Answer } from "../../shared/grade";
 
 function QuestionCard({ q, n }: { q: Question; n: number }) {
+  if (q.type === "code" && q.payload.kod) return <KodKarti q={q} n={n} />;
+  return <KapaliKart q={q} n={n} />;
+}
+
+function Baslik({ q, n }: { q: Question; n: number }) {
+  return (
+    <header>
+      <span className="q-num">Soru {n}</span>
+      <span className={`tag tag-${q.source}`}>{q.source === "original" ? "Orijinal" : "Türetilmiş"}</span>
+      <span className="tag">H{q.week}</span>
+      {q.type === "code" && <span className="tag">Kod</span>}
+      <span className="tag" title={`Zorluk ${q.difficulty}/3`}>{"★".repeat(q.difficulty)}{"☆".repeat(3 - q.difficulty)}</span>
+      {q.sourceRef && <span className="q-ref">{q.sourceRef}</span>}
+    </header>
+  );
+}
+
+function KodKarti({ q, n }: { q: Question; n: number }) {
+  const [dogru, setDogru] = useState<boolean | null>(null);
+  return (
+    <article className={`question kod${dogru === null ? "" : dogru ? " correct" : " wrong"}`} data-soru={q.id}>
+      <Baslik q={q} n={n} />
+      <Markdown text={q.prompt} />
+      <KodSorusu id={q.id} bilgi={q.payload.kod!} onSonuc={setDogru} />
+    </article>
+  );
+}
+
+function KapaliKart({ q, n }: { q: Question; n: number }) {
   const [tf, setTf] = useState<boolean | null>(null);
   const [choice, setChoice] = useState<number | null>(null);
   const [blanks, setBlanks] = useState<string[]>(() => Array(q.payload.blanks ?? 0).fill(""));
@@ -41,13 +71,7 @@ function QuestionCard({ q, n }: { q: Question; n: number }) {
 
   return (
     <article className={`question${result ? (result.correct ? " correct" : " wrong") : ""}`}>
-      <header>
-        <span className="q-num">Soru {n}</span>
-        <span className={`tag tag-${q.source}`}>{q.source === "original" ? "Orijinal" : "Türetilmiş"}</span>
-        <span className="tag">H{q.week}</span>
-        <span className="tag" title={`Zorluk ${q.difficulty}/3`}>{"★".repeat(q.difficulty)}{"☆".repeat(3 - q.difficulty)}</span>
-        {q.sourceRef && <span className="q-ref">{q.sourceRef}</span>}
-      </header>
+      <Baslik q={q} n={n} />
       <Markdown text={q.prompt} />
 
       {q.type === "tf" && (
@@ -126,7 +150,7 @@ export function Questions({ topic }: { topic?: string }) {
   return (
     <div className="questions">
       <p className="hint">
-        Cevaplar sunucuda kontrol edilir.{" "}
+        Cevaplar sunucuda kontrol edilir; kod sorularının benzetimi tarayıcında yapılır.{" "}
         {uye(me) ? (
           "İlerlemen hesabına kaydedilir."
         ) : (

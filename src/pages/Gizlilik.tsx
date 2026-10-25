@@ -18,7 +18,7 @@ export function Gizlilik() {
       <ul>
         <li>
           <strong>Misafir olarak:</strong> İlk cevabını gönderdiğinde rastgele bir kimlik oluşturulur ve tarayıcına tek
-          bir oturum çerezi yazılır. Hangi soruyu ne zaman, hangi cevapla denediğin bu kimlikle saklanır.
+          bir oturum çerezi yazılır. Hangi soruyu ne zaman, hangi cevapla denediğin bu kimlikle saklanır. Kod sorularında yazdığın VHDL kodu sunucuya gönderilmez: benzetim tarayıcında yapılır, sunucuya yalnızca testbench'in okuduğu çıkış değerleri gider ve kaç kontrol noktasını geçtiğin saklanır.
         </li>
         <li>
           <strong>Hesap açarsan:</strong> kullanıcı adın, e-posta adresin, parolanın geri çevrilemez özeti (parolanın

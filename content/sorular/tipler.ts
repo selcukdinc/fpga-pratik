@@ -5,6 +5,8 @@
 // Metinlerde ` yerine ~ yazılır (TypeScript şablon dizgilerinde ters tırnak
 // kaçış gerektirdiği için). Üretici ~ karakterlerini ` ile değiştirir.
 
+import type { KodBilgisi } from "../../shared/kod.ts";
+
 export interface Konu {
   id: string;
   baslik: string;
@@ -32,10 +34,20 @@ interface Ortak {
   dogrulama?: { calismali: string } | { derlenmemeli: string } | { calisirken_hata: string };
 }
 
+// Kod yazma sorusu: öğrenci şablondaki mimariyi doldurur, gizli testbench
+// worker/modeller.ts'deki aynı kimlikli referans modelle karşılaştırır.
+// cozum: doğrulama betiğinin NVC ile tüm kontrol noktalarını geçirdiği örnek çözüm.
+interface KodSorusu {
+  tip: "code";
+  kod: KodBilgisi;
+  cozum: string;
+}
+
 export type Soru =
   | (Ortak & { tip: "tf"; dogru: boolean })
   | (Ortak & { tip: "mcq"; secenekler: string[]; dogru: number })
-  | (Ortak & { tip: "fill"; bosluklar: string[][] });
+  | (Ortak & { tip: "fill"; bosluklar: string[][] })
+  | (Ortak & KodSorusu);
 
 // Vektör ve bit cevaplarında tırnaklı ve tırnaksız yazımı birlikte kabul eder
 export const vektor = (s: string): string[] => [s, `"${s}"`];

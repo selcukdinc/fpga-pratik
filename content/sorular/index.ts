@@ -1,3 +1,4 @@
+import { kodSorulari } from "./kod.ts";
 import type { Konu, Soru } from "./tipler.ts";
 import { hafta12 } from "./hafta-1-2.ts";
 import { hafta3 } from "./hafta-3.ts";
@@ -19,4 +20,4 @@ export const konular: Konu[] = [
   { id: "sirali-kod", baslik: "Sıralı kod: process, if, case, loop", hafta: 5, sira: 2 },
 ];
 
-export const sorular: Soru[] = [...hafta12, ...hafta3, ...hafta4, ...hafta5];
+export const sorular: Soru[] = [...hafta12, ...hafta3, ...hafta4, ...hafta5, ...kodSorulari];

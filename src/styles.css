@@ -487,3 +487,25 @@ a.buton.primary { border-color: var(--btn-primary-border); background: linear-gr
   .soru-duzenle { grid-template-columns: 1fr; }
   .onizleme { position: static; }
 }
+
+/* ---- Kod soruları ---- */
+.question.kod { max-width: 100%; }
+.kod-sorusu { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.kod-editor { border: 1px solid var(--border); height: 340px; display: flex; flex-direction: column; }
+.kod-editor .vhdl-editor { flex: 1; min-height: 0; }
+.kod-dugmeler { display: flex; flex-wrap: wrap; gap: 8px; }
+.kod-mesajlar { border: 1px solid var(--border); max-height: 220px; overflow: auto; }
+.kod-sonuc h4 { margin: 10px 0 4px; }
+.kod-ilerleme { height: 6px; background: var(--border-soft); border-radius: 3px; overflow: hidden; }
+.kod-ilerleme span { display: block; height: 100%; background: var(--green); }
+.kod-rapor-tablo { overflow-x: auto; }
+.kod-rapor-tablo table { border-collapse: collapse; font-size: 13px; }
+.kod-rapor-tablo th, .kod-rapor-tablo td { border: 1px solid var(--border-soft); padding: 3px 8px; text-align: left; white-space: nowrap; }
+.kod-rapor-tablo th { background: var(--cm-gutter); font-weight: 600; }
+.kod-rapor-tablo tr.hatali td { background: var(--mark-error); }
+.kod-rapor-tablo td.yanlis-hucre { color: var(--error); font-weight: 700; }
+.kod-ipucu { border-left: 3px solid var(--warning); padding: 4px 10px; background: var(--mark-warning); }
+.kod-ayrinti details { margin-top: 4px; }
+.kod-ayrinti summary { cursor: pointer; }
+.kod-ayrinti pre.log { max-height: 300px; overflow: auto; }
+.kod-dalga { height: 260px; display: flex; flex-direction: column; border: 1px solid var(--border); }

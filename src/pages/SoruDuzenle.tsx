@@ -60,13 +60,14 @@ export function SoruDuzenle({ id }: { id: string }) {
       api.yonetim.soru(id).then(
         (s) => {
           setKayitli(s);
-          setG({ ...s });
+          if (s.type !== "code") setG({ ...s, type: s.type });
         },
         () => setHata("Soru bulunamadı."),
       );
     }
   }, [id, yeni]);
 
+  if (kayitli?.type === "code") return <KodSoruBilgisi s={kayitli} onDegisti={setKayitli} />;
   if (!g) return hata ? <FormHatasi hata={hata} /> : <p className="empty">Yükleniyor…</p>;
 
   const ayarla = (p: Partial<SoruGirdi>) => {
@@ -148,7 +149,7 @@ export function SoruDuzenle({ id }: { id: string }) {
           )}
         </Etiketli>
 
-        <Etiketli etiket="Soru metni" tam not="Kod bloğu için ``` kullan, satır içi kod için `ters tırnak`, kalın için **iki yıldız**.">
+        <Etiketli etiket="Soru metni" tam not="Kod bloğu için ``` kullan, satır içi kod için `ters tırnak`, kalın için **iki yıldız**, madde listesi için satır başında - kullan.">
           {(id) => <textarea id={id} rows={8} className="mono" value={g.prompt} onChange={(e) => ayarla({ prompt: e.target.value })} />}
         </Etiketli>
 
@@ -290,6 +291,54 @@ export function SoruDuzenle({ id }: { id: string }) {
           )}
           <footer>
             <Markdown text={g.explanation} />
+          </footer>
+        </article>
+      </aside>
+    </div>
+  );
+}
+
+// Kod soruları depodaki içerikten ve referans modelden gelir; panelde yalnızca durumları değişir
+function KodSoruBilgisi({ s, onDegisti }: { s: PanelSoru; onDegisti: (s: PanelSoru) => void }) {
+  const [hata, setHata] = useState<string | null>(null);
+  const degistir = async (b: { active?: boolean; status?: "draft" | "published" }) => {
+    setHata(null);
+    const r = await api.yonetim.soruDurum(s.id, b);
+    if (!r.ok) return setHata(r.hata.error);
+    onDegisti({ ...s, ...b, updatedAt: Date.now() });
+  };
+  return (
+    <div className="soru-duzenle">
+      <p>
+        <a href={href({ page: "yonetim", bolum: "sorular" })}>← Soru listesi</a>
+      </p>
+      <div className="soru-form">
+        <h2><span className="mono">{s.id}</span></h2>
+        <p className="hint">
+          Bu bir kod sorusu. Metni, şablonu ve referans modeli depoda (content/sorular/kod.ts ve worker/modeller.ts)
+          tutulur, panelden düzenlenmez. Burada yalnızca yayın durumunu değiştirebilirsin; değiştirdiğinde sonraki
+          içerik güncellemeleri bu sorunun üzerine yazmaz.
+        </p>
+        <p className="hint">
+          {s.deneme} deneme{s.deneme > 0 && `, %${Math.round((s.dogru / s.deneme) * 100)} tam geçti`}.
+        </p>
+        <div className="form-dugmeler">
+          <button onClick={() => degistir({ status: s.status === "draft" ? "published" : "draft" })}>
+            {s.status === "draft" ? "Yayınla" : "Taslağa al"}
+          </button>
+          <button onClick={() => degistir({ active: !s.active })}>{s.active ? "Gizle" : "Göster"}</button>
+          <span className="hint">
+            Şu an: {s.status === "draft" ? "taslak" : s.active ? "yayında" : "gizli"}
+          </span>
+        </div>
+        <FormHatasi hata={hata} />
+      </div>
+      <aside className="onizleme" aria-label="Önizleme">
+        <div className="panel-title">ÖNİZLEME</div>
+        <article className="question">
+          <Markdown text={s.prompt} />
+          <footer>
+            <Markdown text={s.explanation} />
           </footer>
         </article>
       </aside>
