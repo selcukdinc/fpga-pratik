@@ -1,4 +1,5 @@
 import type { SimMessage } from "../sim/messages";
+import { hataAciklamasi } from "../sim/aciklama";
 
 const LABEL: Record<SimMessage["severity"], string> = {
   error: "Hata",
@@ -29,6 +30,7 @@ export function MessagesPanel({ messages, onSelect }: Props) {
             )}
           </button>
           {m.detail.length > 0 && <pre className="msg-detail">{m.detail.join("\n")}</pre>}
+          {hataAciklamasi(m) && <p className="msg-aciklama">{hataAciklamasi(m)}</p>}
         </li>
       ))}
     </ul>
