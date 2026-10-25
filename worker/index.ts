@@ -5,6 +5,7 @@ import { ensureGuest, loadMe, type Env } from "./session";
 import { hesap } from "./hesap";
 import { epostaAcik } from "./eposta";
 import { yonetim } from "./yonetim";
+import { sosyal } from "./sosyal";
 import { DAKIKA, SAAT, sinirAsildi } from "./sinir";
 import { MODELLER, degerlendir, vektorUret } from "./modeller";
 import { IZ_SINIRI, TB_ADI, testbenchUret, type KodBilgisi, type KodSonucu, type Sinama, type Vektor } from "../shared/kod";
@@ -28,6 +29,7 @@ app.use("*", async (c, next) => {
 
 app.route("/hesap", hesap);
 app.route("/yonetim", yonetim);
+app.route("/uye", sosyal);
 
 async function setting(db: D1Database, key: string): Promise<string | null> {
   const row = await db.prepare("SELECT value FROM settings WHERE key = ?").bind(key).first<{ value: string }>();
@@ -63,15 +65,16 @@ app.get("/questions", async (c) => {
   const original = await showOriginal(c.env.DB);
   const topic = c.req.query("topic");
   // answer sütunu bilinçli olarak seçilmiyor
-  const sql = `SELECT q.id, q.topic_id, q.week, q.type, q.source, q.prompt, q.payload, q.difficulty, q.source_ref
-               FROM questions q JOIN topics t ON t.id = q.topic_id
+  const sql = `SELECT q.id, q.topic_id, q.week, q.type, q.source, q.prompt, q.payload, q.difficulty, q.source_ref,
+                      u.username AS oneren
+               FROM questions q JOIN topics t ON t.id = q.topic_id LEFT JOIN users u ON u.id = q.suggested_by
                WHERE q.active = 1 AND q.status = 'published' AND q.week <= ?${original ? "" : " AND q.source = 'derived'"}${topic ? " AND q.topic_id = ?" : ""}
                ORDER BY q.week, t.sort, q.difficulty, q.rowid`;
   const stmt = c.env.DB.prepare(sql);
   const { results } = await (topic ? stmt.bind(week, topic) : stmt.bind(week)).all<{
     id: string; topic_id: string; week: number; type: QuestionType;
     source: "original" | "derived"; prompt: string; payload: string;
-    difficulty: number; source_ref: string | null;
+    difficulty: number; source_ref: string | null; oneren: string | null;
   }>();
   const questions: Question[] = results.map((r) => ({
     id: r.id,
@@ -83,6 +86,7 @@ app.get("/questions", async (c) => {
     payload: JSON.parse(r.payload),
     difficulty: r.difficulty,
     sourceRef: r.source_ref,
+    ...(r.oneren ? { oneren: r.oneren } : {}),
   }));
   return c.json(questions);
 });

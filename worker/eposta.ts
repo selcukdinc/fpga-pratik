@@ -53,3 +53,17 @@ export function dortHaneliKod(): string {
   // 10.000'e bölümden gelen kayma ihmal edilebilir (2^32 % 10^4 küçük)
   return String(crypto.getRandomValues(new Uint32Array(1))[0]! % 10_000).padStart(4, "0");
 }
+
+// Bilgilendirme e-postası (ör. yöneticinin cevabı). Gönderim kapalıysa sessizce geçilir.
+export async function bildirimGonder(env: EpostaEnv, alici: string, konu: string, metin: string): Promise<void> {
+  if (!env.RESEND_API_KEY) {
+    if (env.EPOSTA_KONSOL === "1") console.log(`[eposta] ${alici} · ${konu}`);
+    return;
+  }
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ from: env.MAIL_FROM || GONDEREN, to: [alici], subject: konu, text: metin }),
+  });
+  if (!res.ok) throw new Error(`Resend ${res.status}: ${(await res.text()).slice(0, 200)}`);
+}

@@ -15,6 +15,10 @@ export interface Me {
   role: string;
   publicProfile: boolean;
   usernameChangedAt: number | null;
+  // Yönetici cevap verince e-posta gitsin mi
+  notifyEmail: boolean;
+  // Susturulduysa bu zamana kadar öneri gönderemez
+  mutedUntil: number | null;
   // Sunucu e-posta gönderebiliyor mu (kayıt ve sıfırlama buna bağlı)
   epostaAcik?: boolean;
 }
@@ -35,6 +39,8 @@ export interface Question {
   payload: { choices?: string[]; blanks?: number; kod?: KodBilgisi };
   difficulty: number;
   sourceRef: string | null;
+  // Üye önerisinden gelen ve adı görünsün denmiş sorularda
+  oneren?: string;
 }
 
 export interface AnswerResult {

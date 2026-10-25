@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { href, navigate, type Route } from "../lib/router";
 import { REPO_URL, api } from "../lib/api";
 import { TEMA_ADI, TEMA_SIRASI, useTema } from "../lib/tema";
@@ -47,11 +47,14 @@ function TemaDugmesi() {
 function HesapAlani({ route }: { route: Route }) {
   const { me, yuklendi, setMe } = useOturum();
   const menu = useRef<HTMLDetailsElement>(null);
+  const [okunmamis, setOkunmamis] = useState({ mesaj: 0, oneri: 0 });
+  const giris = uye(me);
 
-  // Sayfa değişince menü kapanır
+  // Sayfa değişince menü kapanır, okunmamış sayısı tazelenir
   useEffect(() => {
     if (menu.current) menu.current.open = false;
-  }, [route]);
+    if (giris) api.uye.okunmamis().then(setOkunmamis, () => {});
+  }, [route, giris]);
 
   if (!yuklendi) return <span className="hesap-alani" />;
   if (!uye(me)) {
@@ -70,14 +73,20 @@ function HesapAlani({ route }: { route: Route }) {
     navigate("/");
   };
 
+  const toplam = okunmamis.mesaj + okunmamis.oneri;
+  const rozet = (n: number) => (n > 0 ? <span className="sayi-rozeti">{n}</span> : null);
+
   return (
     <details className="hesap-alani hesap-menu" ref={menu}>
-      <summary>
+      <summary aria-label={toplam > 0 ? `${me.username}, ${toplam} okunmamış` : undefined}>
         <Avatar id={me.avatar} bg={me.avatarBg} size={22} />
         <span>{me.username}</span>
+        {rozet(toplam)}
       </summary>
       <div className="hesap-menu-liste" role="menu">
         <a role="menuitem" href={href({ page: "profil", ad: me.username })}>Profilim</a>
+        <a role="menuitem" href="/mesajlar">Mesajlarım {rozet(okunmamis.mesaj)}</a>
+        <a role="menuitem" href="/oner">Soru öner {rozet(okunmamis.oneri)}</a>
         <a role="menuitem" href="/ayarlar">Ayarlar</a>
         {me.role === "admin" && <a role="menuitem" href="/yonetim" data-tam-sayfa>Yönetim paneli</a>}
         <button role="menuitem" onClick={cikis}>Çıkış yap</button>

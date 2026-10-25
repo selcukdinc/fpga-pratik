@@ -1,6 +1,7 @@
 import type { AnswerResult, ApiHata, Me, Profil, Question, Topic, TopicProgress } from "../../shared/api";
 import type { Answer } from "../../shared/grade";
 import type { KodSonucu, Sinama } from "../../shared/kod";
+import type { Okunmamis, Oneri, OneriGirdi, PanelOneri, Yazisma, YazismaOzeti } from "../../shared/sosyal";
 import type { PanelAyarlar, PanelKayit, PanelKullanici, PanelOzet, PanelSoru, SoruGirdi } from "../../shared/yonetim";
 
 async function get<T>(path: string): Promise<T> {
@@ -44,6 +45,16 @@ export const api = {
   },
   sinama: (id: string) => post<Sinama>(`/questions/${encodeURIComponent(id)}/sinama`),
   sinamaGonder: (id: string, iz: string[]) => post<KodSonucu>(`/sinama/${encodeURIComponent(id)}`, { iz }),
+  uye: {
+    oneriler: () => get<Oneri[]>("/uye/oneriler"),
+    oneriOkundu: () => post<{ ok: true }>("/uye/oneriler/okundu"),
+    oner: (g: OneriGirdi) => post<{ id: string }>("/uye/oneriler", g),
+    yazismalar: () => get<YazismaOzeti[]>("/uye/yazismalar"),
+    yazisma: (id: string) => get<Yazisma>(`/uye/yazismalar/${encodeURIComponent(id)}`),
+    yeniYazisma: (subject: string, body: string) => post<{ id: string }>("/uye/yazismalar", { subject, body }),
+    yaz: (id: string, body: string) => post<{ ok: true }>(`/uye/yazismalar/${encodeURIComponent(id)}`, { body }),
+    okunmamis: () => get<Okunmamis>("/uye/okunmamis"),
+  },
   hesap: {
     adUygun: (ad: string) => get<{ uygun: boolean; sebep: string | null }>(`/hesap/kullanici-adi/${encodeURIComponent(ad)}`),
     kayit: (b: { username: string; password: string; email: string }) => post<Kod>("/hesap/kayit", b),
@@ -55,7 +66,7 @@ export const api = {
     sifreDogrula: (id: string, kod: string, parola: string) => post<Me>("/hesap/sifre/dogrula", { id, kod, parola }),
   },
   ayarlar: {
-    profil: (b: { publicProfile?: boolean; avatar?: string; avatarBg?: string | null }) => post<Me>("/hesap/ayarlar/profil", b),
+    profil: (b: { publicProfile?: boolean; avatar?: string; avatarBg?: string | null; notifyEmail?: boolean }) => post<Me>("/hesap/ayarlar/profil", b),
     parola: (mevcut: string, yeni: string) => post<{ ok: true }>("/hesap/ayarlar/parola", { mevcut, yeni }),
     kullaniciAdi: (yeni: string) => post<Me>("/hesap/ayarlar/kullanici-adi", { yeni }),
     eposta: (yeni: string, parola: string) => post<Kod>("/hesap/ayarlar/eposta", { yeni, parola }),
@@ -77,6 +88,16 @@ export const api = {
     soruDurum: (id: string, b: { active?: boolean; status?: "draft" | "published" }) =>
       post<{ ok: true }>(`/yonetim/sorular/${encodeURIComponent(id)}/durum`, b),
     kullanicilar: (ara: string) => get<PanelKullanici[]>(`/yonetim/kullanicilar${ara ? `?ara=${encodeURIComponent(ara)}` : ""}`),
+    sustur: (id: string, gun: number) => post<{ mutedUntil: number | null }>(`/yonetim/kullanicilar/${encodeURIComponent(id)}/sustur`, { gun }),
+    oneriler: (durum: string) => get<PanelOneri[]>(`/yonetim/oneriler${durum ? `?durum=${durum}` : ""}`),
+    oneri: (id: string) => get<PanelOneri>(`/yonetim/oneriler/${encodeURIComponent(id)}`),
+    oneriKabul: (id: string, not: string) => post<{ questionId: string | null }>(`/yonetim/oneriler/${encodeURIComponent(id)}/kabul`, { not }),
+    oneriRed: (id: string, not: string) => post<{ ok: true }>(`/yonetim/oneriler/${encodeURIComponent(id)}/red`, { not }),
+    yazismalar: (durum: string) => get<YazismaOzeti[]>(`/yonetim/yazismalar${durum ? `?durum=${durum}` : ""}`),
+    yazisma: (id: string) => get<Yazisma>(`/yonetim/yazismalar/${encodeURIComponent(id)}`),
+    cevapla: (id: string, body: string) => post<{ ok: true }>(`/yonetim/yazismalar/${encodeURIComponent(id)}`, { body }),
+    yazismaDurum: (id: string, status: "open" | "closed") =>
+      post<{ ok: true }>(`/yonetim/yazismalar/${encodeURIComponent(id)}/durum`, { status }),
     rol: (id: string, role: string) => post<{ ok: true }>(`/yonetim/kullanicilar/${encodeURIComponent(id)}/rol`, { role }),
     kayit: () => get<PanelKayit[]>("/yonetim/kayit"),
   },

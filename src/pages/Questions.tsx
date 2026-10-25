@@ -20,6 +20,7 @@ function Baslik({ q, n }: { q: Question; n: number }) {
       {q.type === "code" && <span className="tag">Kod</span>}
       <span className="tag" title={`Zorluk ${q.difficulty}/3`}>{"★".repeat(q.difficulty)}{"☆".repeat(3 - q.difficulty)}</span>
       {q.sourceRef && <span className="q-ref">{q.sourceRef}</span>}
+      {q.oneren && <span className="q-ref">Öneren: <a href={`/profil/${encodeURIComponent(q.oneren)}`}>@{q.oneren}</a></span>}
     </header>
   );
 }
@@ -158,7 +159,8 @@ export function Questions({ topic }: { topic?: string }) {
             Giriş yapmadan da çözebilirsin; ilerlemen bu tarayıcıda misafir olarak saklanır.{" "}
             <a href="/kayit">Hesap açarsan</a> bu ilerleme hesabına taşınır.
           </>
-        )}
+        )}{" "}
+        Aklına iyi bir soru geldiyse <a href="/oner">öner</a>.
       </p>
       {questions.map((q, i) => (
         <QuestionCard key={q.id} q={q} n={i + 1} />

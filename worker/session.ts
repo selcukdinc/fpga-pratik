@@ -26,13 +26,13 @@ function randomToken(): string {
 }
 
 const ME_SQL = `SELECT u.id, u.kind, u.display_name, u.username, u.email, u.avatar, u.avatar_bg, u.role,
-                       u.public_profile, u.username_changed_at
+                       u.public_profile, u.username_changed_at, u.notify_email, u.muted_until
                 FROM users u`;
 
 type MeRow = {
   id: string; kind: "guest" | "member"; display_name: string | null; username: string | null;
   email: string | null; avatar: string | null; avatar_bg: string | null; role: string;
-  public_profile: number; username_changed_at: number | null;
+  public_profile: number; username_changed_at: number | null; notify_email: number; muted_until: number | null;
 };
 
 const meFromRow = (r: MeRow): Me => ({
@@ -46,6 +46,8 @@ const meFromRow = (r: MeRow): Me => ({
   role: r.role,
   publicProfile: r.public_profile === 1,
   usernameChangedAt: r.username_changed_at,
+  notifyEmail: r.notify_email === 1,
+  mutedUntil: r.muted_until,
 });
 
 export async function loadUser(db: D1Database, id: string): Promise<Me | null> {
@@ -108,7 +110,7 @@ export async function ensureGuest(c: Context<Env>): Promise<Me> {
   ]);
   const me: Me = {
     id, kind: "guest", displayName: null, username: null, email: null, avatar: null, avatarBg: null,
-    role: "user", publicProfile: false, usernameChangedAt: null,
+    role: "user", publicProfile: false, usernameChangedAt: null, notifyEmail: true, mutedUntil: null,
   };
   c.set("me", me);
   return me;
