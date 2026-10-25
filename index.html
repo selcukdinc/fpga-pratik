@@ -6,6 +6,16 @@
     <meta name="description" content="FPGA dersi için VHDL pratik sitesi: soru havuzu, tarayıcıda sözdizimi kontrolü ve simülasyon." />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>FPGA Pratik</title>
+    <script>
+      // Tema sayfa çizilmeden seçilir, böylece karanlık temada beyaz parlama olmaz.
+      // Tercih yalnızca localStorage'da durur, çerez kullanılmaz.
+      (function () {
+        var t = "sistem";
+        try { t = localStorage.getItem("tema") || "sistem"; } catch (e) {}
+        var koyu = t === "koyu" || (t !== "acik" && matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.dataset.theme = koyu ? "dark" : "light";
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

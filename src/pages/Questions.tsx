@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
+import { uye, useOturum } from "../lib/oturum";
 import { Markdown, inline } from "../components/Markdown";
 import type { AnswerResult, Question } from "../../shared/api";
 import type { Answer } from "../../shared/grade";
@@ -109,6 +110,7 @@ function QuestionCard({ q, n }: { q: Question; n: number }) {
 }
 
 export function Questions({ topic }: { topic?: string }) {
+  const { me } = useOturum();
   const [questions, setQuestions] = useState<Question[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -124,7 +126,15 @@ export function Questions({ topic }: { topic?: string }) {
   return (
     <div className="questions">
       <p className="hint">
-        Cevaplar sunucuda kontrol edilir. Giriş yapmadan da çözebilirsin; ilerlemen bu tarayıcıda misafir olarak saklanır.
+        Cevaplar sunucuda kontrol edilir.{" "}
+        {uye(me) ? (
+          "İlerlemen hesabına kaydedilir."
+        ) : (
+          <>
+            Giriş yapmadan da çözebilirsin; ilerlemen bu tarayıcıda misafir olarak saklanır.{" "}
+            <a href="/kayit">Hesap açarsan</a> bu ilerleme hesabına taşınır.
+          </>
+        )}
       </p>
       {questions.map((q, i) => (
         <QuestionCard key={q.id} q={q} n={i + 1} />
