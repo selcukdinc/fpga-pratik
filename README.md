@@ -10,6 +10,8 @@ Kurulum yok, üyelik yok. Siteyi aç, VHDL yaz, simüle et, soruları çöz.
 
 - **Tarayıcıda VHDL:** Sözdizimi kontrolü ve simülasyon, WebAssembly'ye derlenmiş
   [NVC](https://github.com/nickg/nvc) ile doğrudan tarayıcında çalışır.
+- **Proje gibi çalış:** Klasör açıp içindeki VHDL dosyalarını yükle, dosyaya sağ tıklayıp top birimini seç,
+  hazır örnekleri (sayıcı, mux, PWM, durum makinesi...) istediğin adla ekle, projeyi zip olarak indir.
 - **Dalga görüntüleyici:** Sinyalleri zaman ekseninde incele; sayısal sinyalleri
   analog gösterimle (örneğin üçgen dalga) de görebilirsin.
 - **Haftalara göre soru havuzu:** Doğru/yanlış, şıklı, boşluk doldurma ve kod yazma soruları.
