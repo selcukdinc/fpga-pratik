@@ -510,6 +510,46 @@ a.buton.primary { border-color: var(--btn-primary-border); background: linear-gr
 .kod-ayrinti pre.log { max-height: 300px; overflow: auto; }
 .kod-dalga { height: 260px; display: flex; flex-direction: column; border: 1px solid var(--border); }
 
+/* ---- Soru önerileri ve yazışmalar ---- */
+.form-sayfa { padding: 16px; }
+.oner-sayfa, .mesajlar-sayfa { max-width: 760px; padding: 8px 16px 40px; }
+.oner-sayfa .soru-form { margin-bottom: 20px; }
+.onerilerim h3, .mesajlar-sayfa h3 { margin: 16px 0 8px; font-size: 15px; }
+.oneri-listesi, .yazisma-listesi, .mesajlar { list-style: none; padding: 0; margin: 0; }
+.oneri-listesi > li, .yazisma-listesi > li { background: var(--panel); border: 1px solid var(--border); border-left: 4px solid var(--border); padding: 8px 12px; margin: 0 0 8px; }
+.oneri-listesi > li.yeni, .yazisma-listesi > li.yeni { border-left-color: var(--link); }
+.oneri-ust { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.oneri-metni { display: block; margin-top: 4px; }
+.oneri-not { margin-top: 6px; padding: 6px 8px; background: var(--code-bg); border-radius: 3px; }
+.oneri-not > strong { display: block; margin-bottom: 2px; }
+.oneri-not .md p { margin: 0; }
+.tag.durum-pending { background: var(--mark-warning); color: var(--text); }
+.tag.durum-accepted { background: var(--green); color: #fff; }
+.tag.durum-rejected { background: var(--mark-error); color: var(--error); }
+.tag.yeni-rozet { background: var(--link); color: #fff; }
+.sayi-rozeti { display: inline-block; min-width: 18px; padding: 0 5px; border-radius: 9px; background: var(--error); color: #fff; font-size: 11px; line-height: 18px; text-align: center; margin-left: 4px; }
+.yazisma-listesi > li { display: flex; flex-wrap: wrap; gap: 4px 12px; justify-content: space-between; align-items: baseline; }
+.yazisma-listesi a { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-width: 0; }
+.yazisma-konu { font-weight: 600; overflow-wrap: anywhere; }
+.yazisma { max-width: 760px; padding: 8px 16px 40px; }
+.mesajlar-sayfa .yazisma { padding: 0; }
+.yazisma-baslik { margin: 8px 0 12px; font-size: 16px; overflow-wrap: anywhere; }
+.mesajlar > li { background: var(--panel); border: 1px solid var(--border); border-radius: 4px; padding: 8px 12px; margin: 0 0 10px; max-width: 88%; }
+.mesajlar > li.yonetici { margin-left: auto; border-color: var(--btn-primary-border); background: var(--msg-hover); }
+.mesaj-ust { margin-bottom: 4px; }
+.mesaj-govde { white-space: pre-wrap; overflow-wrap: anywhere; }
+.mesaj-form { display: flex; flex-direction: column; gap: 4px; margin: 12px 0; }
+.mesaj-form h3 { margin: 4px 0; }
+.mesaj-form label { font-weight: 600; margin-top: 6px; }
+.mesaj-form input, .mesaj-form textarea, .oneri-karar textarea { width: 100%; font: inherit; border: 1px solid var(--border); border-radius: 3px; padding: 6px 8px; background: var(--input); color: var(--text); }
+.oneri-detay { max-width: 800px; padding: 8px 16px 40px; }
+.oneri-siklar { list-style: none; padding-left: 0; }
+.oneri-siklar li.ok { font-weight: 600; }
+.oneri-karar label { display: flex; flex-direction: column; gap: 4px; font-weight: 600; }
+@media (max-width: 600px) {
+  .mesajlar > li { max-width: 100%; }
+}
+
 /* ---- Simülasyon alanı: proje işlemleri ---- */
 .toolbar-ayrac { width: 1px; align-self: stretch; background: var(--border); margin: 0 4px; }
 .sources li > button.icon { opacity: 0; padding: 0 6px; }

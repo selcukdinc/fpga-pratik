@@ -1,18 +1,22 @@
-// /yonetim: genel ayarlar, soru listesi, kullanıcılar ve işlem kaydı
+// /yonetim: genel ayarlar, soru listesi, öneriler, mesajlar, kullanıcılar ve işlem kaydı
 
 import { useEffect, useState, type FormEvent } from "react";
 import { api } from "../lib/api";
-import { href, type YonetimBolumu } from "../lib/router";
+import { href, navigate, type YonetimBolumu } from "../lib/router";
 import { useOturum } from "../lib/oturum";
 import { FormHatasi } from "../components/Form";
-import { inline } from "../components/Markdown";
+import { Markdown, inline } from "../components/Markdown";
+import { YazismaGorunumu, YazismaListesi } from "../components/Yazisma";
 import { SoruDuzenle } from "./SoruDuzenle";
 import type { Topic } from "../../shared/api";
 import type { PanelKayit, PanelKullanici, PanelOzet, PanelSoru } from "../../shared/yonetim";
+import type { PanelOneri, YazismaOzeti } from "../../shared/sosyal";
 
 const BOLUMLER: [YonetimBolumu, string][] = [
   ["genel", "Genel"],
   ["sorular", "Sorular"],
+  ["oneriler", "Öneriler"],
+  ["mesajlar", "Mesajlar"],
   ["kullanicilar", "Kullanıcılar"],
   ["kayit", "İşlem kaydı"],
 ];
@@ -110,6 +114,8 @@ function Genel() {
           <li><strong>{o.uye}</strong> üye</li>
           <li><strong>{o.misafir}</strong> misafir</li>
           <li><strong>{o.deneme}</strong> cevap denemesi</li>
+          <li><a href={href({ page: "yonetim", bolum: "oneriler" })}><strong>{o.bekleyenOneri}</strong> bekleyen öneri</a></li>
+          <li><a href={href({ page: "yonetim", bolum: "mesajlar" })}><strong>{o.okunmamisMesaj}</strong> okunmamış mesaj</a></li>
         </ul>
       </section>
     </div>
@@ -244,6 +250,14 @@ function Kullanicilar() {
     void yukle();
   };
 
+  const sustur = async (u: PanelKullanici, gun: number) => {
+    const ne = gun === 0 ? "susturması kalksın" : gun < 0 ? "kalıcı olarak susturulsun" : `${gun} gün susturulsun`;
+    if (!confirm(`${u.username} ${ne} mu? Susturulan üye soru öneremez; yöneticiye yazmaya devam edebilir.`)) return;
+    const r = await api.yonetim.sustur(u.id, gun);
+    if (!r.ok) return setHata(r.hata.error);
+    void yukle();
+  };
+
   return (
     <div className="panel-sorular">
       <div className="filtreler">
@@ -262,6 +276,7 @@ function Kullanicilar() {
                 <th>Katıldı</th>
                 <th>Deneme</th>
                 <th>Rol</th>
+                <th>Öneri</th>
               </tr>
             </thead>
             <tbody>
@@ -280,6 +295,21 @@ function Kullanicilar() {
                       <option value="admin">Yönetici</option>
                     </select>
                   </td>
+                  <td className="islemler">
+                    {u.mutedUntil && u.mutedUntil > Date.now() ? (
+                      <>
+                        <span className="tag durum-rejected" title={u.mutedUntil > 253402300000000 ? undefined : zaman(u.mutedUntil)}>
+                          {u.mutedUntil > 253402300000000 ? "kalıcı susturuldu" : `${zaman(u.mutedUntil)} tarihine kadar susturuldu`}
+                        </span>
+                        <button onClick={() => sustur(u, 0)}>Kaldır</button>
+                      </>
+                    ) : u.id === me?.id ? null : (
+                      <>
+                        <button onClick={() => sustur(u, 7)}>7 gün sustur</button>
+                        <button onClick={() => sustur(u, -1)}>Kalıcı</button>
+                      </>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -296,7 +326,177 @@ const EYLEM: Record<string, string> = {
   "soru.duzenle": "Soru düzenlendi",
   "soru.durum": "Soru durumu değişti",
   "kullanici.rol": "Rol değişti",
+  "kullanici.sustur": "Susturma değişti",
+  "oneri.kabul": "Öneri kabul edildi",
+  "oneri.red": "Öneri reddedildi",
+  "mesaj.cevap": "Mesaja cevap verildi",
+  "mesaj.durum": "Yazışma durumu değişti",
 };
+
+const ONERI_TURU = { tf: "Doğru / yanlış", mcq: "Çoktan seçmeli", fill: "Boşluk doldurma", code: "Kod yazma" } as const;
+const ONERI_DURUMU = { pending: "Bekliyor", accepted: "Kabul edildi", rejected: "Reddedildi" } as const;
+
+function OneriListesi() {
+  const [durum, setDurum] = useState("pending");
+  const [liste, setListe] = useState<PanelOneri[] | null>(null);
+  useEffect(() => {
+    setListe(null);
+    api.yonetim.oneriler(durum).then(setListe, () => setListe([]));
+  }, [durum]);
+
+  return (
+    <div className="panel-sorular">
+      <div className="filtreler">
+        <select value={durum} onChange={(e) => setDurum(e.target.value)} aria-label="Durum">
+          <option value="pending">Bekleyenler</option>
+          <option value="accepted">Kabul edilenler</option>
+          <option value="rejected">Reddedilenler</option>
+          <option value="">Hepsi</option>
+        </select>
+      </div>
+      {!liste ? (
+        <p className="empty">Yükleniyor…</p>
+      ) : !liste.length ? (
+        <p className="empty">Bu durumda öneri yok.</p>
+      ) : (
+        <ul className="oneri-listesi">
+          {liste.map((o) => (
+            <li key={o.id}>
+              <div className="oneri-ust">
+                <span className={`tag durum-${o.status}`}>{ONERI_DURUMU[o.status]}</span>
+                <span className="tag">{ONERI_TURU[o.type]}</span>
+                <span className="hint">@{o.username ?? "silinmiş"} · {o.topicTitle} · {zaman(o.createdAt)}</span>
+              </div>
+              <a className="oneri-metni" href={href({ page: "yonetim", bolum: "oneriler", alt: o.id })}>
+                {inline(o.prompt.replace(/```[\s\S]*?```/g, "[kod]").slice(0, 200))}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function OneriDetay({ id }: { id: string }) {
+  const [o, setO] = useState<PanelOneri | null>(null);
+  const [yok, setYok] = useState(false);
+  const [not, setNot] = useState("");
+  const [hata, setHata] = useState<string | null>(null);
+  const [mesgul, setMesgul] = useState(false);
+
+  const yukle = () => api.yonetim.oneri(id).then(setO, () => setYok(true));
+  useEffect(() => {
+    void yukle();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  const geri = href({ page: "yonetim", bolum: "oneriler" });
+  if (yok) return <p className="empty">Öneri bulunamadı. <a href={geri}>Listeye dön</a></p>;
+  if (!o) return <p className="empty">Yükleniyor…</p>;
+
+  const karar = async (kabul: boolean) => {
+    setMesgul(true);
+    setHata(null);
+    const r = kabul ? await api.yonetim.oneriKabul(o.id, not) : await api.yonetim.oneriRed(o.id, not);
+    setMesgul(false);
+    if (!r.ok) return setHata(r.hata.error);
+    const soru = kabul ? (r.data as { questionId: string | null }).questionId : null;
+    // Kabul edilen soru taslak olarak açılır; yönetici düzenleyip yayınlar
+    if (soru) navigate({ page: "yonetim", bolum: "sorular", soru });
+    else void yukle();
+  };
+
+  const a = o.answer as { value?: boolean; index?: number; blanks?: string[][] };
+  return (
+    <div className="oneri-detay">
+      <p><a href={geri}>← Tüm öneriler</a></p>
+      <div className="oneri-ust">
+        <span className={`tag durum-${o.status}`}>{ONERI_DURUMU[o.status]}</span>
+        <span className="tag">{ONERI_TURU[o.type]}</span>
+        <span className="hint">
+          {o.username ? <a href={href({ page: "profil", ad: o.username })}>@{o.username}</a> : "silinmiş hesap"} · {o.topicTitle} · {zaman(o.createdAt)}
+          {o.showName ? " · adı görünsün istiyor" : " · adı görünmesin istiyor"}
+        </span>
+      </div>
+      <section className="question oneri-onizleme">
+        <Markdown text={o.prompt} />
+        {o.type === "tf" && <p>Doğru cevap: <strong>{a.value ? "Doğru" : "Yanlış"}</strong></p>}
+        {o.type === "mcq" && (
+          <ol className="oneri-siklar">
+            {o.choices.map((c, i) => (
+              <li key={i} className={a.index === i ? "ok" : undefined}>
+                {String.fromCharCode(65 + i)}) {inline(c)} {a.index === i && "✓"}
+              </li>
+            ))}
+          </ol>
+        )}
+        {o.type === "fill" && (
+          <ol className="oneri-siklar">
+            {(a.blanks ?? []).map((b, i) => <li key={i}>Boşluk {i + 1}: <code>{b.join(" | ")}</code></li>)}
+          </ol>
+        )}
+        <h4>{o.type === "code" ? "Beklenen davranış ya da çözüm fikri" : "Açıklama"}</h4>
+        <Markdown text={o.explanation} />
+      </section>
+      {o.status === "pending" ? (
+        <div className="oneri-karar">
+          <label>
+            Öneren kişiye not (isteğe bağlı)
+            <textarea rows={3} maxLength={1000} value={not} onChange={(e) => setNot(e.target.value)} />
+          </label>
+          <FormHatasi hata={hata} />
+          <div className="form-dugmeler">
+            <button className="primary" disabled={mesgul} onClick={() => karar(true)}>
+              {o.type === "code" ? "Kabul et" : "Kabul et ve taslak soru oluştur"}
+            </button>
+            <button className="tehlike" disabled={mesgul} onClick={() => karar(false)}>Reddet</button>
+          </div>
+          {o.type === "code" && (
+            <p className="hint">Kod soruları için sunucuda bir model yazmak gerekir; kabul etmek yalnızca öneriyi işaretler.</p>
+          )}
+        </div>
+      ) : (
+        <>
+          {o.adminNote && <div className="oneri-not"><strong>Not</strong><Markdown text={o.adminNote} /></div>}
+          {o.questionId && (
+            <p><a href={href({ page: "yonetim", bolum: "sorular", soru: o.questionId })}>Oluşturulan soruyu aç ({o.questionId})</a></p>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function PanelMesajlar({ id }: { id?: string }) {
+  const [durum, setDurum] = useState("");
+  const [liste, setListe] = useState<YazismaOzeti[] | null>(null);
+  useEffect(() => {
+    if (id) return;
+    setListe(null);
+    api.yonetim.yazismalar(durum).then(setListe, () => setListe([]));
+  }, [durum, id]);
+
+  const geri = href({ page: "yonetim", bolum: "mesajlar" });
+  if (id) {
+    return (
+      <YazismaGorunumu key={id} panel geri={geri} yukle={() => api.yonetim.yazisma(id)}
+        gonder={(b) => api.yonetim.cevapla(id, b)} durumDegistir={(s) => api.yonetim.yazismaDurum(id, s)} />
+    );
+  }
+  return (
+    <div className="panel-sorular">
+      <div className="filtreler">
+        <select value={durum} onChange={(e) => setDurum(e.target.value)} aria-label="Durum">
+          <option value="">Hepsi</option>
+          <option value="open">Açık</option>
+          <option value="closed">Kapalı</option>
+        </select>
+      </div>
+      <YazismaListesi liste={liste} bag={(y) => href({ page: "yonetim", bolum: "mesajlar", alt: y })} bos="Mesaj yok." />
+    </div>
+  );
+}
 
 function IslemKaydi() {
   const [liste, setListe] = useState<PanelKayit[] | null>(null);
@@ -333,7 +533,7 @@ function IslemKaydi() {
   );
 }
 
-export function Yonetim({ bolum, soru }: { bolum: YonetimBolumu; soru?: string }) {
+export function Yonetim({ bolum, soru, alt }: { bolum: YonetimBolumu; soru?: string; alt?: string }) {
   const { me, yuklendi } = useOturum();
   if (!yuklendi) return <p className="empty">Yükleniyor…</p>;
   if (me?.kind !== "member") {
@@ -356,6 +556,8 @@ export function Yonetim({ bolum, soru }: { bolum: YonetimBolumu; soru?: string }
       </nav>
       {bolum === "genel" && <Genel />}
       {bolum === "sorular" && (soru ? <SoruDuzenle id={soru} /> : <SoruListesi />)}
+      {bolum === "oneriler" && (alt ? <OneriDetay id={alt} /> : <OneriListesi />)}
+      {bolum === "mesajlar" && <PanelMesajlar id={alt} />}
       {bolum === "kullanicilar" && <Kullanicilar />}
       {bolum === "kayit" && <IslemKaydi />}
     </div>

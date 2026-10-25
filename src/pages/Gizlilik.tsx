@@ -25,6 +25,11 @@ export function Gizlilik() {
           kendisi saklanmaz), seçtiğin avatar ve gizlilik ayarın.
         </li>
         <li>
+          <strong>Soru önerirsen ya da yöneticiye yazarsan:</strong> önerdiğin sorunun metni, cevabı ve açıklaması;
+          yazışmalarındaki mesajlar ve tarihleri. Bunları yalnızca sen ve site yöneticisi görür. Önerin yayımlanırsa ve
+          izin verdiysen sorunun altında kullanıcı adın görünür.
+        </li>
+        <li>
           <strong>Güvenlik için:</strong> çok sayıda hatalı giriş ve kod isteğini sınırlamak amacıyla IP adresin, kısa
           süreli sayaçlarda tutulur ve süreleri dolunca silinir.
         </li>
@@ -33,7 +38,7 @@ export function Gizlilik() {
       <h3>Ne için kullanıyoruz?</h3>
       <ul>
         <li>Cevaplarını kontrol etmek ve ilerlemeni göstermek için.</li>
-        <li>E-postanı yalnızca hesabını doğrulamak ve parolanı unutursan sıfırlamak için. Bülten, reklam ya da başka bir amaçla e-posta gönderilmez.</li>
+        <li>E-postanı hesabını doğrulamak, parolanı unutursan sıfırlamak ve (Ayarlar'dan kapatabileceğin) yönetici cevap verdi bildirimi için. Bülten, reklam ya da başka bir amaçla e-posta gönderilmez.</li>
         <li>Profilini herkese açık yaparsan, kullanıcı adını, avatarını ve ilerlemeni diğer ziyaretçilere göstermek için.</li>
       </ul>
 
@@ -47,14 +52,15 @@ export function Gizlilik() {
       <h3>Veriler nerede duruyor, kimlerle paylaşılıyor?</h3>
       <ul>
         <li>Veriler Cloudflare'in sunucularında (Workers ve D1 veritabanı) saklanır.</li>
-        <li>Doğrulama e-postaları Resend aracılığıyla gönderilir; Resend'e yalnızca e-posta adresin ve kodun gider.</li>
+        <li>E-postalar Resend aracılığıyla gönderilir; Resend'e yalnızca e-posta adresin ve e-postanın metni (kod ya da "cevap var" bildirimi) gider. Mesajlarının içeriği e-postaya konmaz.</li>
         <li>Bunların dışında hiçbir kişi ya da kurumla paylaşılmaz, satılmaz.</li>
       </ul>
 
       <h3>Ne kadar süre saklanıyor?</h3>
       <p>
-        Hesabın açık kaldığı sürece. Hesabını Ayarlar sayfasından sildiğinde hesabın, tüm denemelerin ve oturumların
-        hemen ve kalıcı olarak silinir. Misafir oturum çerezi 180 gün sonra geçersiz olur; o misafirin denemeleri
+        Hesabın açık kaldığı sürece. Hesabını Ayarlar sayfasından sildiğinde hesabın, tüm denemelerin, önerilerin,
+        yazışmaların ve oturumların hemen ve kalıcı olarak silinir. Yayımlanmış bir önerinin sorusu havuzda kalır ama
+        artık adınla ilişkilendirilmez. Misafir oturum çerezi 180 gün sonra geçersiz olur; o misafirin denemeleri
         sadece rastgele bir kimlikle durur ve artık kimseyle ilişkilendirilemez.
       </p>
 

@@ -34,9 +34,9 @@ Kurulum yok, üyelik yok. Siteyi aç, VHDL yaz, simüle et, soruları çöz.
 
 - **Yanlış soru ya da hata mı gördün?** [Yeni bir issue aç](https://github.com/selcukdinc/fpga-pratik/issues/new).
   Hangi soru olduğunu (hafta ve sorunun metni) ve neyin yanlış olduğunu yazman yeterli.
-- **Soru önermek ister misin?** Yine bir [issue](https://github.com/selcukdinc/fpga-pratik/issues/new)
-  açıp soruyu, doğru cevabı ve hangi haftanın konusu olduğunu yaz. Geçmiş sınavdan
-  geliyorsa bunu da belirt.
+- **Soru önermek ister misin?** Hesabınla giriş yapıp sitedeki [Soru öner](https://fpga.selcukdinc.dev/oner)
+  sayfasını kullan. Yayımlanırsa istersen sorunun altında adın görünür. Hesap açmak
+  istemiyorsan bir [issue](https://github.com/selcukdinc/fpga-pratik/issues/new) da açabilirsin.
 - **Beğendiysen** depoya yıldız vermeyi unutma, başkalarının bulmasına yardımcı olur.
 
 ## Geliştiriciler için

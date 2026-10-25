@@ -38,6 +38,9 @@ export interface PanelAyarlar {
 
 export interface PanelOzet extends PanelAyarlar {
   soru: { toplam: number; yayinda: number; taslak: number; gizli: number; orijinal: number };
+  // Sekmelerdeki sayaçlar
+  bekleyenOneri: number;
+  okunmamisMesaj: number;
   uye: number;
   misafir: number;
   deneme: number;
@@ -51,6 +54,7 @@ export interface PanelKullanici {
   publicProfile: boolean;
   createdAt: number;
   deneme: number;
+  mutedUntil: number | null;
 }
 
 export interface PanelKayit {

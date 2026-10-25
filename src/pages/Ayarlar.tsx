@@ -46,12 +46,13 @@ function ProfilAyari({ me }: { me: Me }) {
   const [avatar, setAvatar] = useState(me.avatar ?? AVATARLAR[0]!.id);
   const [zemin, setZemin] = useState<string | null>(me.avatarBg);
   const [acik, setAcik] = useState(me.publicProfile);
+  const [bildirim, setBildirim] = useState(me.notifyEmail);
   const g = useGonderim();
   const gruplar = [...new Set(AVATARLAR.map((a) => a.grup))];
 
   const kaydet = (e: FormEvent) => {
     e.preventDefault();
-    void g.calistir(() => api.ayarlar.profil({ avatar, avatarBg: zemin, publicProfile: acik }), "Kaydedildi.", setMe);
+    void g.calistir(() => api.ayarlar.profil({ avatar, avatarBg: zemin, publicProfile: acik, notifyEmail: bildirim }), "Kaydedildi.", setMe);
   };
 
   return (
@@ -93,6 +94,10 @@ function ProfilAyari({ me }: { me: Me }) {
           Profilim ve ilerlemem herkese açık olsun
         </label>
         <p className="hint">Kapalıyken profil sayfanı sadece sen görürsün, diğerleri "Bu profil gizli" yazısını görür.</p>
+        <label className="onay">
+          <input type="checkbox" checked={bildirim} onChange={(e) => setBildirim(e.target.checked)} />
+          Yönetici mesajıma cevap verince e-postayla haber ver
+        </label>
         {g.mesaj}
         <button className="primary" type="submit" disabled={g.mesgul}>Kaydet</button>
       </form>

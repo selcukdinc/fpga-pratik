@@ -15,11 +15,13 @@ export type Route =
   | { page: "sifre-sifirla" }
   | { page: "profil"; ad: string }
   | { page: "ayarlar" }
-  | { page: "yonetim"; bolum: YonetimBolumu; soru?: string }
+  | { page: "oner" }
+  | { page: "mesajlar"; id?: string }
+  | { page: "yonetim"; bolum: YonetimBolumu; soru?: string; alt?: string }
   | { page: "bulunamadi" };
 
-export type YonetimBolumu = "genel" | "sorular" | "kullanicilar" | "kayit";
-const YONETIM_BOLUMLERI: YonetimBolumu[] = ["genel", "sorular", "kullanicilar", "kayit"];
+export type YonetimBolumu = "genel" | "sorular" | "oneriler" | "mesajlar" | "kullanicilar" | "kayit";
+const YONETIM_BOLUMLERI: YonetimBolumu[] = ["genel", "sorular", "oneriler", "mesajlar", "kullanicilar", "kayit"];
 
 function parca(s: string | undefined): string | undefined {
   if (!s) return undefined;
@@ -44,7 +46,10 @@ export function parsePath(path: string, search = ""): Route {
     case "kayit":
     case "sifre-sifirla":
     case "ayarlar":
+    case "oner":
       return { page };
+    case "mesajlar":
+      return arg ? { page: "mesajlar", id: parca(arg) } : { page: "mesajlar" };
     case "giris": {
       // Yalnızca site içi bir yola geri dönülür
       const sonra = new URLSearchParams(search).get("sonra") ?? undefined;
@@ -56,8 +61,9 @@ export function parsePath(path: string, search = ""): Route {
       // /yonetim, /yonetim/sorular, /yonetim/sorular/<kimlik ya da "yeni">
       const bolum = (arg ?? "genel") as YonetimBolumu;
       if (!YONETIM_BOLUMLERI.includes(bolum)) return { page: "bulunamadi" };
-      const soru = bolum === "sorular" ? parca(path.replace(/^\/+/, "").split("/")[2]) : undefined;
-      return soru ? { page: "yonetim", bolum, soru } : { page: "yonetim", bolum };
+      const ucuncu = parca(path.replace(/^\/+/, "").split("/")[2]);
+      if (!ucuncu) return { page: "yonetim", bolum };
+      return bolum === "sorular" ? { page: "yonetim", bolum, soru: ucuncu } : { page: "yonetim", bolum, alt: ucuncu };
     }
     default:
       return { page: "bulunamadi" };
@@ -76,8 +82,12 @@ export function href(route: Route): string {
       return route.topic ? `/sorular/${encodeURIComponent(route.topic)}` : "/sorular";
     case "profil":
       return `/profil/${encodeURIComponent(route.ad)}`;
-    case "yonetim":
-      return `/yonetim${route.bolum === "genel" ? "" : `/${route.bolum}`}${route.soru ? `/${encodeURIComponent(route.soru)}` : ""}`;
+    case "yonetim": {
+      const ek = route.soru ?? route.alt;
+      return `/yonetim${route.bolum === "genel" ? "" : `/${route.bolum}`}${ek ? `/${encodeURIComponent(ek)}` : ""}`;
+    }
+    case "mesajlar":
+      return route.id ? `/mesajlar/${encodeURIComponent(route.id)}` : "/mesajlar";
     case "giris":
       return route.sonra ? `/giris?sonra=${encodeURIComponent(route.sonra)}` : "/giris";
     case "bulunamadi":

@@ -8,7 +8,10 @@ import {
   soruGirdisiHatasi, soruSutunlari,
   type PanelAyarlar, type PanelKayit, type PanelKullanici, type PanelOzet, type PanelSoru, type SoruGirdi,
 } from "../shared/yonetim";
+import type { PanelOneri, Yazisma } from "../shared/sosyal";
 import { accessAcik, accessEposta } from "./access";
+import { bildirimGonder } from "./eposta";
+import { ONERI_SQL, mesajlar, oneriSatiri, yazismaOzeti, type OneriSatiri } from "./sosyal";
 import type { Env } from "./session";
 import { yetkisiVar, type Izin } from "./yetki";
 
@@ -63,7 +66,13 @@ yonetim.get("/ozet", async (c) => {
   const u = await db.prepare(
     `SELECT SUM(kind = 'member') AS uye, SUM(kind = 'guest') AS misafir, (SELECT COUNT(*) FROM attempts) AS deneme FROM users`,
   ).first<{ uye: number; misafir: number; deneme: number }>();
+  const k = await db.prepare(
+    `SELECT (SELECT COUNT(*) FROM suggestions WHERE status = 'pending') AS oneri,
+            (SELECT COUNT(*) FROM threads WHERE admin_unread = 1) AS mesaj`,
+  ).first<{ oneri: number; mesaj: number }>();
   return c.json<PanelOzet>({
+    bekleyenOneri: k?.oneri ?? 0,
+    okunmamisMesaj: k?.mesaj ?? 0,
     ...(await ayarlariOku(db)),
     soru: { toplam: s?.toplam ?? 0, yayinda: s?.yayinda ?? 0, taslak: s?.taslak ?? 0, gizli: s?.gizli ?? 0, orijinal: s?.orijinal ?? 0 },
     uye: u?.uye ?? 0,
@@ -240,17 +249,20 @@ yonetim.post("/sorular/:id/durum", async (c) => {
 yonetim.get("/kullanicilar", izin("kullanici.yonet"), async (c) => {
   const ara = c.req.query("ara")?.toLowerCase();
   const { results } = await c.env.DB.prepare(
-    `SELECT u.id, u.username, u.email, u.role, u.public_profile, u.created_at, COUNT(a.id) AS deneme
+    `SELECT u.id, u.username, u.email, u.role, u.public_profile, u.created_at, u.muted_until, COUNT(a.id) AS deneme
      FROM users u LEFT JOIN attempts a ON a.user_id = u.id
      WHERE u.kind = 'member'${ara ? " AND (u.username LIKE ?1 OR u.email LIKE ?1)" : ""}
      GROUP BY u.id ORDER BY u.created_at DESC LIMIT 200`,
   )
     .bind(...(ara ? [`%${ara}%`] : []))
-    .all<{ id: string; username: string; email: string | null; role: string; public_profile: number; created_at: number; deneme: number }>();
+    .all<{
+      id: string; username: string; email: string | null; role: string; public_profile: number; created_at: number;
+      muted_until: number | null; deneme: number;
+    }>();
   return c.json<PanelKullanici[]>(
     results.map((r) => ({
       id: r.id, username: r.username, email: r.email, role: r.role, publicProfile: r.public_profile === 1,
-      createdAt: r.created_at, deneme: r.deneme,
+      createdAt: r.created_at, deneme: r.deneme, mutedUntil: r.muted_until,
     })),
   );
 });
@@ -267,6 +279,158 @@ yonetim.post("/kullanicilar/:id/rol", izin("kullanici.yonet"), async (c) => {
     c.env.DB.prepare("UPDATE users SET role = ? WHERE id = ?").bind(role, id),
     kayit(c, "kullanici.rol", u.username, { role }),
   ]);
+  return c.json({ ok: true });
+});
+
+// Susturma: gün sayısı kadar, -1 kalıcı, 0 kaldırır. Susturulan kullanıcı öneri gönderemez.
+yonetim.post("/kullanicilar/:id/sustur", izin("kullanici.yonet"), async (c) => {
+  const id = c.req.param("id");
+  const { gun } = (await c.req.json<{ gun?: number }>().catch(() => ({}))) as { gun?: number };
+  if (typeof gun !== "number" || !Number.isInteger(gun) || gun < -1 || gun > 365) return c.json({ error: "Süre geçersiz." }, 400);
+  if (id === c.get("me")!.id) return c.json({ error: "Kendini susturamazsın." }, 400);
+  const u = await c.env.DB.prepare("SELECT username FROM users WHERE id = ? AND kind = 'member'").bind(id).first<{ username: string }>();
+  if (!u) return c.json({ error: "kullanıcı bulunamadı" }, 404);
+  const bitis = gun === 0 ? null : gun === -1 ? 253402300799000 : Date.now() + gun * 24 * 60 * 60 * 1000;
+  await c.env.DB.batch([
+    c.env.DB.prepare("UPDATE users SET muted_until = ? WHERE id = ?").bind(bitis, id),
+    kayit(c, "kullanici.sustur", u.username, { gun }),
+  ]);
+  return c.json({ mutedUntil: bitis });
+});
+
+// ---- Öneriler ----
+
+const panelOnerisi = (r: OneriSatiri & { username: string | null }): PanelOneri => ({ ...oneriSatiri(r), username: r.username });
+const PANEL_ONERI_SQL = ONERI_SQL.replace("FROM suggestions s", "FROM suggestions s LEFT JOIN users u ON u.id = s.user_id")
+  .replace("SELECT s.*", "SELECT s.*, u.username");
+
+yonetim.get("/oneriler", izin("oneri.yonet"), async (c) => {
+  const durum = c.req.query("durum");
+  const gecerli = durum === "pending" || durum === "accepted" || durum === "rejected";
+  const { results } = await c.env.DB.prepare(
+    `${PANEL_ONERI_SQL}${gecerli ? " WHERE s.status = ?" : ""} ORDER BY s.status = 'pending' DESC, s.created_at DESC LIMIT 200`,
+  )
+    .bind(...(gecerli ? [durum] : []))
+    .all<OneriSatiri & { username: string | null }>();
+  return c.json(results.map(panelOnerisi));
+});
+
+yonetim.get("/oneriler/:id", izin("oneri.yonet"), async (c) => {
+  const r = await c.env.DB.prepare(`${PANEL_ONERI_SQL} WHERE s.id = ?`).bind(c.req.param("id")).first<OneriSatiri & { username: string | null }>();
+  return r ? c.json(panelOnerisi(r)) : c.json({ error: "öneri bulunamadı" }, 404);
+});
+
+const notOku = async (c: C) => {
+  const { not } = (await c.req.json<{ not?: string }>().catch(() => ({}))) as { not?: string };
+  return typeof not === "string" && not.trim() ? not.trim().slice(0, 1000) : null;
+};
+
+// Kapalı uçlu öneri taslak soruya dönüşür; kod önerisi yalnızca kabul edildi olarak işaretlenir
+yonetim.post("/oneriler/:id/kabul", izin("oneri.yonet"), async (c) => {
+  const db = c.env.DB;
+  const s = await db.prepare("SELECT * FROM suggestions WHERE id = ? AND status = 'pending'").bind(c.req.param("id")).first<{
+    id: string; user_id: string; topic_id: string; type: string; prompt: string; payload: string; answer: string;
+    explanation: string; show_name: number;
+  }>();
+  if (!s) return c.json({ error: "Bekleyen böyle bir öneri yok." }, 404);
+  const konu = await db.prepare("SELECT week FROM topics WHERE id = ?").bind(s.topic_id).first<{ week: number }>();
+  const not = await notOku(c);
+  const me = c.get("me")!;
+  const simdi = Date.now();
+  const questionId = s.type === "code" ? null : `p-${crypto.randomUUID().slice(0, 8)}`;
+  await db.batch([
+    ...(questionId
+      ? [db.prepare(
+          `INSERT INTO questions (id, topic_id, week, type, source, prompt, payload, answer, explanation, difficulty,
+                                  status, active, created_by, suggested_by, updated_at, updated_by)
+           VALUES (?, ?, ?, ?, 'derived', ?, ?, ?, ?, 1, 'draft', 1, ?, ?, ?, ?)`,
+        ).bind(questionId, s.topic_id, konu?.week ?? 1, s.type, s.prompt, s.payload, s.answer, s.explanation, me.id,
+          s.show_name ? s.user_id : null, simdi, me.id)]
+      : []),
+    db.prepare("UPDATE suggestions SET status = 'accepted', admin_note = ?, question_id = ?, decided_at = ?, user_unread = 1 WHERE id = ?")
+      .bind(not, questionId, simdi, s.id),
+    kayit(c, "oneri.kabul", s.id, questionId ? { soru: questionId } : undefined),
+  ]);
+  return c.json({ questionId });
+});
+
+yonetim.post("/oneriler/:id/red", izin("oneri.yonet"), async (c) => {
+  const id = c.req.param("id");
+  const not = await notOku(c);
+  const r = await c.env.DB.batch([
+    c.env.DB.prepare("UPDATE suggestions SET status = 'rejected', admin_note = ?, decided_at = ?, user_unread = 1 WHERE id = ? AND status = 'pending'")
+      .bind(not, Date.now(), id),
+    kayit(c, "oneri.red", id ?? null),
+  ]);
+  if (!r[0]!.meta.changes) return c.json({ error: "Bekleyen böyle bir öneri yok." }, 404);
+  return c.json({ ok: true });
+});
+
+// ---- Mesajlar ----
+
+yonetim.get("/yazismalar", izin("mesaj.cevapla"), async (c) => {
+  const durum = c.req.query("durum");
+  const gecerli = durum === "open" || durum === "closed";
+  const { results } = await c.env.DB.prepare(
+    `SELECT t.*, u.username FROM threads t LEFT JOIN users u ON u.id = t.user_id
+     ${gecerli ? "WHERE t.status = ?" : ""} ORDER BY t.admin_unread DESC, t.updated_at DESC LIMIT 200`,
+  )
+    .bind(...(gecerli ? [durum] : []))
+    .all<Parameters<typeof yazismaOzeti>[0]>();
+  return c.json(results.map((r) => yazismaOzeti(r, true)));
+});
+
+yonetim.get("/yazismalar/:id", izin("mesaj.cevapla"), async (c) => {
+  const db = c.env.DB;
+  const r = await db.prepare("SELECT t.*, u.username FROM threads t LEFT JOIN users u ON u.id = t.user_id WHERE t.id = ?")
+    .bind(c.req.param("id"))
+    .first<Parameters<typeof yazismaOzeti>[0]>();
+  if (!r) return c.json({ error: "yazışma bulunamadı" }, 404);
+  if (r.admin_unread) await db.prepare("UPDATE threads SET admin_unread = 0 WHERE id = ?").bind(r.id).run();
+  return c.json<Yazisma>({ ...yazismaOzeti(r, true), unread: false, mesajlar: await mesajlar(db, r.id) });
+});
+
+// Cevap kullanıcıya sitede okunmamış olarak görünür; isterse e-postayla da haber verilir
+yonetim.post("/yazismalar/:id", izin("mesaj.cevapla"), async (c) => {
+  const db = c.env.DB;
+  const { body } = (await c.req.json<{ body?: string }>().catch(() => ({}))) as { body?: string };
+  if (typeof body !== "string" || !body.trim() || body.length > 4000) return c.json({ error: "Cevap boş olamaz (en fazla 4000 karakter)." }, 400);
+  const t = await db.prepare(
+    "SELECT t.id, t.subject, u.email, u.notify_email FROM threads t JOIN users u ON u.id = t.user_id WHERE t.id = ?",
+  )
+    .bind(c.req.param("id"))
+    .first<{ id: string; subject: string; email: string | null; notify_email: number }>();
+  if (!t) return c.json({ error: "yazışma bulunamadı" }, 404);
+  const simdi = Date.now();
+  await db.batch([
+    db.prepare("INSERT INTO thread_messages (thread_id, from_admin, admin_id, body, created_at) VALUES (?, 1, ?, ?, ?)")
+      .bind(t.id, c.get("me")!.id, body.trim(), simdi),
+    db.prepare("UPDATE threads SET updated_at = ?, user_unread = 1, admin_unread = 0, status = 'open' WHERE id = ?").bind(simdi, t.id),
+    kayit(c, "mesaj.cevap", t.id),
+  ]);
+  if (t.email && t.notify_email) {
+    const gonder = bildirimGonder(
+      c.env, t.email, `Mesajına cevap var: ${t.subject}`,
+      `FPGA Pratik yöneticisi "${t.subject}" konulu mesajına cevap yazdı.\n\nCevabı okumak için: ${new URL(c.req.url).origin}/mesajlar/${t.id}\n\n` +
+        "Bu e-postaları Ayarlar sayfasından kapatabilirsin.",
+    ).catch((e) => console.log(`[eposta] cevap bildirimi gönderilemedi: ${String(e)}`));
+    try {
+      c.executionCtx.waitUntil(gonder);
+    } catch {
+      await gonder;
+    }
+  }
+  return c.json({ ok: true });
+});
+
+yonetim.post("/yazismalar/:id/durum", izin("mesaj.cevapla"), async (c) => {
+  const { status } = (await c.req.json<{ status?: string }>().catch(() => ({}))) as { status?: string };
+  if (status !== "open" && status !== "closed") return c.json({ error: "Durum geçersiz." }, 400);
+  const r = await c.env.DB.batch([
+    c.env.DB.prepare("UPDATE threads SET status = ? WHERE id = ?").bind(status, c.req.param("id")),
+    kayit(c, "mesaj.durum", c.req.param("id") ?? null, { status }),
+  ]);
+  if (!r[0]!.meta.changes) return c.json({ error: "yazışma bulunamadı" }, 404);
   return c.json({ ok: true });
 });
 
