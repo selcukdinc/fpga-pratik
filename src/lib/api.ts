@@ -3,7 +3,7 @@ import type { Answer } from "../../shared/grade";
 import type { KodSonucu, Sinama } from "../../shared/kod";
 import type { Okunmamis, Oneri, OneriGirdi, PanelOneri, Yazisma, YazismaOzeti } from "../../shared/sosyal";
 import type { BildirimTuru, PanelBildirim, Paylasimlar, Tb, TbGirdi, TbOzeti } from "../../shared/topluluk";
-import type { PanelAyarlar, PanelKayit, PanelKullanici, PanelOzet, PanelSoru, SoruGirdi } from "../../shared/yonetim";
+import type { PanelAyarlar, PanelKayit, PanelKullanici, PanelOzet, PanelPano, PanelSoru, SoruGirdi } from "../../shared/yonetim";
 
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(`/api${path}`, { credentials: "same-origin" });
@@ -92,6 +92,7 @@ export const api = {
   },
   yonetim: {
     ozet: () => get<PanelOzet>("/yonetim/ozet"),
+    pano: () => get<PanelPano>("/yonetim/pano"),
     ayarlar: (b: Partial<PanelAyarlar>) => post<PanelAyarlar>("/yonetim/ayarlar", b),
     konular: () => get<Topic[]>("/yonetim/konular"),
     sorular: (f: Record<string, string>) => {

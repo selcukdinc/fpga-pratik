@@ -3,7 +3,8 @@ import { api } from "../lib/api";
 import { uye, useOturum } from "../lib/oturum";
 import { Markdown, inline } from "../components/Markdown";
 import { KodSorusu } from "../components/KodSorusu";
-import type { AnswerResult, Question } from "../../shared/api";
+import { href } from "../lib/router";
+import type { AnswerResult, Question, Topic } from "../../shared/api";
 import type { Answer } from "../../shared/grade";
 
 function QuestionCard({ q, n }: { q: Question; n: number }) {
@@ -134,38 +135,77 @@ function KapaliKart({ q, n }: { q: Question; n: number }) {
   );
 }
 
-export function Questions({ topic }: { topic?: string }) {
+// Haftalar ve konular menü yerine sayfanın üstünde: 14 hafta olunca menü şişmesin
+function KonuSecici({ topics, topic, hafta }: { topics: Topic[]; topic?: string; hafta?: number }) {
+  const haftalar = [...new Set(topics.map((t) => t.week))].sort((a, b) => a - b);
+  const seciliHafta = hafta ?? topics.find((t) => t.id === topic)?.week;
+  const konular = seciliHafta ? topics.filter((t) => t.week === seciliHafta) : [];
+  if (!haftalar.length) return null;
+  return (
+    <nav className="konu-secici" aria-label="Hafta ve konu">
+      <div className="secici-satir">
+        <span className="secici-etiket">Hafta</span>
+        <a className="cip" href={href({ page: "sorular" })} aria-current={!seciliHafta ? "page" : undefined}>Tümü</a>
+        {haftalar.map((h) => (
+          <a key={h} className="cip" href={href({ page: "sorular", hafta: h })} aria-current={seciliHafta === h && !topic ? "page" : seciliHafta === h ? "true" : undefined}>
+            {h}
+          </a>
+        ))}
+      </div>
+      {konular.length > 1 && (
+        <div className="secici-satir">
+          <span className="secici-etiket">Konu</span>
+          <a className="cip" href={href({ page: "sorular", hafta: seciliHafta })} aria-current={!topic ? "page" : undefined}>Haftanın tümü</a>
+          {konular.map((k) => (
+            <a key={k.id} className="cip" href={href({ page: "sorular", topic: k.id })} aria-current={topic === k.id ? "page" : undefined}>
+              {k.title}
+            </a>
+          ))}
+        </div>
+      )}
+    </nav>
+  );
+}
+
+export function Questions({ topic, hafta, topics }: { topic?: string; hafta?: number; topics: Topic[] }) {
   const { me } = useOturum();
   const [questions, setQuestions] = useState<Question[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setQuestions(null);
-    api.questions(topic).then(setQuestions, (e) => setError(String(e)));
-  }, [topic]);
-
-  if (error) return <p className="empty">Sorular yüklenemedi: {error}</p>;
-  if (!questions) return <p className="empty">Yükleniyor…</p>;
-  if (questions.length === 0) return <p className="empty">Bu konuda henüz soru yok.</p>;
+    api.questions(topic).then((q) => setQuestions(hafta ? q.filter((x) => x.week === hafta) : q), (e) => setError(String(e)));
+  }, [topic, hafta]);
 
   return (
     <div className="questions">
-      <p className="hint">
-        Cevaplar sunucuda kontrol edilir; kod sorularının benzetimi tarayıcında yapılır.{" "}
-        {uye(me) ? (
-          "İlerlemen hesabına kaydedilir."
-        ) : (
-          <>
-            Giriş yapmadan da çözebilirsin; ilerlemen bu tarayıcıda misafir olarak saklanır.{" "}
-            <a href="/kayit">Hesap açarsan</a> bu ilerleme hesabına taşınır.
-          </>
-        )}{" "}
-        Aklına iyi bir soru geldiyse <a href="/oner">öner</a>.{" "}
-        {topic ? <a href={`/topluluk?konu=${encodeURIComponent(topic)}`}>Bu konunun topluluk testbench'leri</a> : <a href="/topluluk">Topluluk testbench'leri</a>}.
-      </p>
-      {questions.map((q, i) => (
-        <QuestionCard key={q.id} q={q} n={i + 1} />
-      ))}
+      <KonuSecici topics={topics} topic={topic} hafta={hafta} />
+      {error ? (
+        <p className="empty">Sorular yüklenemedi: {error}</p>
+      ) : !questions ? (
+        <p className="empty">Yükleniyor…</p>
+      ) : questions.length === 0 ? (
+        <p className="empty">Burada henüz soru yok.</p>
+      ) : (
+        <>
+          <p className="hint">
+            {questions.length} soru. Cevaplar sunucuda kontrol edilir; kod sorularının benzetimi tarayıcında yapılır.{" "}
+            {uye(me) ? (
+              "İlerlemen hesabına kaydedilir."
+            ) : (
+              <>
+                Giriş yapmadan da çözebilirsin; ilerlemen bu tarayıcıda misafir olarak saklanır.{" "}
+                <a href="/kayit">Hesap açarsan</a> bu ilerleme hesabına taşınır.
+              </>
+            )}{" "}
+            Aklına iyi bir soru geldiyse <a href="/oner">öner</a>.{" "}
+            {topic ? <a href={href({ page: "topluluk", konu: topic })}>Bu konunun topluluk testbench'leri</a> : <a href="/topluluk">Topluluk testbench'leri</a>}.
+          </p>
+          {questions.map((q, i) => (
+            <QuestionCard key={q.id} q={q} n={i + 1} />
+          ))}
+        </>
+      )}
     </div>
   );
 }

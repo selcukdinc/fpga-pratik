@@ -8,6 +8,7 @@ import { FormHatasi } from "../components/Form";
 import { Markdown, inline } from "../components/Markdown";
 import { YazismaGorunumu, YazismaListesi } from "../components/Yazisma";
 import { SoruDuzenle } from "./SoruDuzenle";
+import { SoruPanosu } from "../components/SoruPanosu";
 import type { Topic } from "../../shared/api";
 import type { PanelKayit, PanelKullanici, PanelOzet, PanelSoru } from "../../shared/yonetim";
 import type { PanelOneri, YazismaOzeti } from "../../shared/sosyal";
@@ -173,6 +174,7 @@ function SoruListesi() {
 
   return (
     <div className="panel-sorular">
+      <SoruPanosu durum={filtre.durum} durumSec={(durum) => setFiltre({ ...filtre, durum })} />
       <div className="filtreler">
         <select value={filtre.konu} onChange={(e) => setFiltre({ ...filtre, konu: e.target.value })} aria-label="Konu">
           <option value="">Tüm konular</option>

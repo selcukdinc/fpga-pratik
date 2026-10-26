@@ -1,10 +1,11 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { api, type Sonuc } from "../lib/api";
-import { href, navigate } from "../lib/router";
+import { href, navigate, type AyarSekmesi } from "../lib/router";
 import { uye, useOturum } from "../lib/oturum";
 import { KULLANICI_ADI_DEGISIM_GUN, kullaniciAdiHatasi, parolaGucu } from "../../shared/hesap";
-import { AVATARLAR, AVATAR_ZEMINLERI } from "../../shared/avatarlar";
+import { AVATARLAR } from "../../shared/avatarlar";
 import { Avatar } from "../components/Avatar";
+import { AvatarSecici } from "../components/AvatarSecici";
 import { Alan, FormHatasi, KodAlani, ParolaGucuCubugu } from "../components/Form";
 import type { Me } from "../../shared/api";
 
@@ -41,65 +42,63 @@ function useGonderim() {
   return { calistir, mesgul, mesaj };
 }
 
-function ProfilAyari({ me }: { me: Me }) {
+function ProfilAyari({ me }: { me: Me & { username: string } }) {
   const { setMe } = useOturum();
-  const [avatar, setAvatar] = useState(me.avatar ?? AVATARLAR[0]!.id);
-  const [zemin, setZemin] = useState<string | null>(me.avatarBg);
+  const [secici, setSecici] = useState(false);
   const [acik, setAcik] = useState(me.publicProfile);
-  const [bildirim, setBildirim] = useState(me.notifyEmail);
   const g = useGonderim();
-  const gruplar = [...new Set(AVATARLAR.map((a) => a.grup))];
+  const avatarAdi = AVATARLAR.find((a) => a.id === me.avatar)?.ad ?? "Avatar seçilmedi";
 
   const kaydet = (e: FormEvent) => {
     e.preventDefault();
-    void g.calistir(() => api.ayarlar.profil({ avatar, avatarBg: zemin, publicProfile: acik, notifyEmail: bildirim }), "Kaydedildi.", setMe);
+    void g.calistir(() => api.ayarlar.profil({ publicProfile: acik }), "Kaydedildi.", setMe);
   };
 
   return (
-    <Bolum baslik="Profil ve avatar">
-      <form onSubmit={kaydet}>
-        <div className="avatar-onizleme">
-          <Avatar id={avatar} bg={zemin} size={64} />
-          <fieldset className="zeminler">
-            <legend>Zemin rengi</legend>
-            <label className={`zemin${zemin === null ? " secili" : ""}`} title="Zeminsiz">
-              <input type="radio" name="zemin" checked={zemin === null} onChange={() => setZemin(null)} />
-              <span className="zemin-yok" aria-hidden="true" />
-              <span className="sr-only">Zeminsiz</span>
-            </label>
-            {AVATAR_ZEMINLERI.map((z) => (
-              <label key={z} className={`zemin${zemin === z ? " secili" : ""}`} title={z}>
-                <input type="radio" name="zemin" checked={zemin === z} onChange={() => setZemin(z)} />
-                <span style={{ background: z }} aria-hidden="true" />
-                <span className="sr-only">Renk {z}</span>
-              </label>
-            ))}
-          </fieldset>
+    <Bolum baslik="Profil">
+      <div className="avatar-onizleme">
+        <button type="button" className="avatar-dugme" onClick={() => setSecici(true)} title="Avatarı değiştir">
+          <Avatar id={me.avatar} bg={me.avatarBg} size={64} />
+        </button>
+        <div>
+          <strong>{avatarAdi}</strong>
+          <div>
+            <button type="button" onClick={() => setSecici(true)}>Avatarı değiştir</button>
+          </div>
         </div>
-
-        {gruplar.map((grup) => (
-          <fieldset key={grup} className="avatar-grup">
-            <legend>{grup}</legend>
-            {AVATARLAR.filter((a) => a.grup === grup).map((a) => (
-              <label key={a.id} className={`avatar-sec${avatar === a.id ? " secili" : ""}`} title={a.ad}>
-                <input type="radio" name="avatar" checked={avatar === a.id} onChange={() => setAvatar(a.id)} />
-                <Avatar id={a.id} bg={zemin} size={40} />
-              </label>
-            ))}
-          </fieldset>
-        ))}
-
+      </div>
+      {secici && <AvatarSecici me={me} kapat={() => setSecici(false)} />}
+      <form onSubmit={kaydet}>
         <label className="onay">
           <input type="checkbox" checked={acik} onChange={(e) => setAcik(e.target.checked)} />
           Profilim ve ilerlemem herkese açık olsun
         </label>
         <p className="hint">Kapalıyken profil sayfanı sadece sen görürsün, diğerleri "Bu profil gizli" yazısını görür.</p>
+        {g.mesaj}
+        <button className="primary" type="submit" disabled={acik === me.publicProfile || g.mesgul}>Kaydet</button>
+      </form>
+    </Bolum>
+  );
+}
+
+function BildirimAyari({ me }: { me: Me }) {
+  const { setMe } = useOturum();
+  const [bildirim, setBildirim] = useState(me.notifyEmail);
+  const g = useGonderim();
+  const kaydet = (e: FormEvent) => {
+    e.preventDefault();
+    void g.calistir(() => api.ayarlar.profil({ notifyEmail: bildirim }), "Kaydedildi.", setMe);
+  };
+  return (
+    <Bolum baslik="E-posta bildirimleri">
+      <form onSubmit={kaydet}>
         <label className="onay">
           <input type="checkbox" checked={bildirim} onChange={(e) => setBildirim(e.target.checked)} />
           Yönetici mesajıma cevap verince e-postayla haber ver
         </label>
+        <p className="hint">Okunmamış cevaplar her durumda menüdeki Mesajlarım bölümünde görünür.</p>
         {g.mesaj}
-        <button className="primary" type="submit" disabled={g.mesgul}>Kaydet</button>
+        <button className="primary" type="submit" disabled={bildirim === me.notifyEmail || g.mesgul}>Kaydet</button>
       </form>
     </Bolum>
   );
@@ -279,7 +278,14 @@ function HesapSilme({ me }: { me: Me & { username: string } }) {
   );
 }
 
-export function Ayarlar() {
+const SEKMELER: { id: AyarSekmesi; ad: string }[] = [
+  { id: "profil", ad: "Profil" },
+  { id: "hesap", ad: "Hesap" },
+  { id: "bildirimler", ad: "Bildirimler" },
+  { id: "sil", ad: "Hesabı sil" },
+];
+
+export function Ayarlar({ sekme = "profil" }: { sekme?: AyarSekmesi }) {
   const { me, yuklendi } = useOturum();
   if (!yuklendi) return <p className="empty">Yükleniyor…</p>;
   if (!uye(me)) {
@@ -293,15 +299,32 @@ export function Ayarlar() {
   }
   return (
     <div className="ayarlar">
-      <p className="hint">
-        Profil sayfan: <a href={href({ page: "profil", ad: me.username })}>/profil/{me.username}</a>
-      </p>
-      <ProfilAyari me={me} />
-      <KullaniciAdiAyari key={me.username} me={me} />
-      <EpostaAyari me={me} />
-      <ParolaAyari me={me} />
-      <OturumAyari />
-      <HesapSilme me={me} />
+      <nav className="sekmeler ayar-sekmeleri" aria-label="Ayarlar">
+        {SEKMELER.map((s) => (
+          <a key={s.id} href={href({ page: "ayarlar", sekme: s.id })} aria-current={s.id === sekme ? "page" : undefined}
+            className={s.id === "sil" ? "tehlikeli" : undefined}>
+            {s.ad}
+          </a>
+        ))}
+      </nav>
+      {sekme === "profil" && (
+        <>
+          <p className="hint">
+            Profil sayfan: <a href={href({ page: "profil", ad: me.username })}>/profil/{me.username}</a>
+          </p>
+          <ProfilAyari me={me} />
+          <KullaniciAdiAyari key={me.username} me={me} />
+        </>
+      )}
+      {sekme === "hesap" && (
+        <>
+          <EpostaAyari me={me} />
+          <ParolaAyari me={me} />
+          <OturumAyari />
+        </>
+      )}
+      {sekme === "bildirimler" && <BildirimAyari me={me} />}
+      {sekme === "sil" && <HesapSilme me={me} />}
     </div>
   );
 }

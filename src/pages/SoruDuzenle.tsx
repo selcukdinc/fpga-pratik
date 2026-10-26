@@ -4,7 +4,9 @@ import { useEffect, useId, useState, type FormEvent, type ReactNode } from "reac
 import { api } from "../lib/api";
 import { href, navigate } from "../lib/router";
 import { FormHatasi } from "../components/Form";
-import { Markdown, inline } from "../components/Markdown";
+import { Markdown } from "../components/Markdown";
+import { MetinAlani } from "../components/MetinAlani";
+import { SoruOnizleme } from "../components/SoruOnizleme";
 import { soruGirdisiHatasi, type PanelSoru, type PanelSoruTipi, type SoruGirdi } from "../../shared/yonetim";
 import type { Topic } from "../../shared/api";
 
@@ -149,8 +151,8 @@ export function SoruDuzenle({ id }: { id: string }) {
           )}
         </Etiketli>
 
-        <Etiketli etiket="Soru metni" tam not="Kod bloğu için ``` kullan, satır içi kod için `ters tırnak`, kalın için **iki yıldız**, madde listesi için satır başında - kullan.">
-          {(id) => <textarea id={id} rows={8} className="mono" value={g.prompt} onChange={(e) => ayarla({ prompt: e.target.value })} />}
+        <Etiketli etiket="Soru metni" tam>
+          {(id) => <MetinAlani id={id} rows={8} mono value={g.prompt} onChange={(v) => ayarla({ prompt: v })} />}
         </Etiketli>
 
         {g.type === "tf" && "value" in g.answer && (
@@ -235,7 +237,7 @@ export function SoruDuzenle({ id }: { id: string }) {
         )}
 
         <Etiketli etiket="Açıklama (cevaptan sonra görünür)" tam>
-          {(id) => <textarea id={id} rows={4} value={g.explanation} onChange={(e) => ayarla({ explanation: e.target.value })} />}
+          {(id) => <MetinAlani id={id} rows={4} value={g.explanation} onChange={(v) => ayarla({ explanation: v })} />}
         </Etiketli>
 
         <div className="form-izgara">
@@ -264,35 +266,21 @@ export function SoruDuzenle({ id }: { id: string }) {
 
       <aside className="onizleme" aria-label="Önizleme">
         <div className="panel-title">ÖNİZLEME</div>
-        <article className="question">
-          <header>
-            <span className="q-num">Soru</span>
-            <span className={`tag tag-${g.source}`}>{g.source === "original" ? "Orijinal" : "Türetilmiş"}</span>
-            <span className="tag">{"★".repeat(g.difficulty)}{"☆".repeat(3 - g.difficulty)}</span>
-            {g.sourceRef && <span className="q-ref">{g.sourceRef}</span>}
-          </header>
-          <Markdown text={g.prompt || "Soru metni burada görünür."} />
-          {g.type === "tf" && <div className="choices"><label>○ Doğru</label><label>○ Yanlış</label></div>}
-          {g.type === "mcq" && (
-            <div className="choices">
-              {g.choices.map((c, i) => (
-                <label key={i} className={"index" in g.answer && g.answer.index === i ? "dogru-sik" : undefined}>
-                  <span className="choice-letter">{String.fromCharCode(65 + i)})</span> <span>{inline(c)}</span>
-                </label>
-              ))}
-            </div>
-          )}
-          {g.type === "fill" && (
-            <div className="choices">
-              {blanks.map((_, i) => (
-                <label key={i}>Boşluk {i + 1} <input className="mono" disabled /></label>
-              ))}
-            </div>
-          )}
-          <footer>
-            <Markdown text={g.explanation} />
-          </footer>
-        </article>
+        <SoruOnizleme
+          type={g.type}
+          prompt={g.prompt}
+          choices={g.choices}
+          dogruSik={"index" in g.answer ? g.answer.index : undefined}
+          bosluk={blanks.length}
+          explanation={g.explanation}
+          ust={
+            <>
+              <span className={`tag tag-${g.source}`}>{g.source === "original" ? "Orijinal" : "Türetilmiş"}</span>
+              <span className="tag">{"★".repeat(g.difficulty)}{"☆".repeat(3 - g.difficulty)}</span>
+              {g.sourceRef && <span className="q-ref">{g.sourceRef}</span>}
+            </>
+          }
+        />
       </aside>
     </div>
   );
