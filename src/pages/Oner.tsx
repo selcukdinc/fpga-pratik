@@ -6,6 +6,8 @@ import { href } from "../lib/router";
 import { uye, useOturum } from "../lib/oturum";
 import { FormHatasi } from "../components/Form";
 import { Markdown, inline } from "../components/Markdown";
+import { MetinAlani } from "../components/MetinAlani";
+import { SoruOnizleme } from "../components/SoruOnizleme";
 import { oneriHatasi, type Oneri, type OneriGirdi, type OneriTipi } from "../../shared/sosyal";
 import type { Topic } from "../../shared/api";
 
@@ -42,6 +44,8 @@ export function Oner() {
   const [tamam, setTamam] = useState(false);
   const [mesgul, setMesgul] = useState(false);
   const [oneriler, setOneriler] = useState<Oneri[] | null>(null);
+  // Dar ekranda yazma ve önizleme arasında geçiş
+  const [gorunum, setGorunum] = useState<"yaz" | "onizle">("yaz");
 
   const listele = () =>
     api.uye.oneriler().then((o) => {
@@ -90,11 +94,16 @@ export function Oner() {
 
   return (
     <div className="oner-sayfa">
+      <p className="oner-giris">
+        Aklına gelen bir soruyu öner. Yönetici inceler; uygun bulursa düzenleyip soru havuzuna ekler. Yazdıkça sorunun
+        nasıl görüneceğini önizlemede görebilirsin.
+      </p>
+      <div className="gorunum-secici" role="tablist" aria-label="Görünüm">
+        <button role="tab" aria-selected={gorunum === "yaz"} onClick={() => setGorunum("yaz")}>Yaz</button>
+        <button role="tab" aria-selected={gorunum === "onizle"} onClick={() => setGorunum("onizle")}>Önizle</button>
+      </div>
+      <div className={`oner-duzen gorunum-${gorunum}`}>
       <form className="soru-form" onSubmit={gonder}>
-        <p>
-          Aklına gelen bir soruyu öner. Yönetici inceler; uygun bulursa düzenleyip soru havuzuna ekler. Site hatalarını
-          GitHub'daki sorun bildirme sayfasına yazabilirsin.
-        </p>
         {susturuldu && <p className="bad">Hesabın şu an öneri gönderemiyor. Bir yanlışlık olduğunu düşünüyorsan <a href="/mesajlar">yöneticiye yaz</a>.</p>}
         <div className="form-izgara">
           <Alan etiket="Konu">
@@ -112,8 +121,8 @@ export function Oner() {
             )}
           </Alan>
         </div>
-        <Alan etiket="Soru metni" not="Kod için ``` kullan, satır içi kod için `ters tırnak`, kalın için **iki yıldız**.">
-          {(id) => <textarea id={id} rows={7} className="mono" value={g.prompt} onChange={(e) => ayarla({ prompt: e.target.value })} />}
+        <Alan etiket="Soru metni">
+          {(id) => <MetinAlani id={id} rows={7} maxLength={4000} value={g.prompt} onChange={(v) => ayarla({ prompt: v })} />}
         </Alan>
 
         {g.type === "tf" && "value" in g.answer && (
@@ -158,7 +167,7 @@ export function Oner() {
         )}
 
         <Alan etiket={g.type === "code" ? "Beklenen davranış ya da çözüm fikri" : "Açıklama (cevaptan sonra görünür)"}>
-          {(id) => <textarea id={id} rows={4} value={g.explanation} onChange={(e) => ayarla({ explanation: e.target.value })} />}
+          {(id) => <MetinAlani id={id} rows={4} maxLength={4000} value={g.explanation} onChange={(v) => ayarla({ explanation: v })} />}
         </Alan>
         <label className="onay">
           <input type="checkbox" checked={g.showName} onChange={(e) => ayarla({ showName: e.target.checked })} />
@@ -171,6 +180,21 @@ export function Oner() {
           <button className="primary" type="submit" disabled={!!yerelHata || mesgul || susturuldu}>Öneriyi gönder</button>
         </div>
       </form>
+
+      <aside className="onizleme" aria-label="Önizleme">
+        <div className="panel-title">ÖNİZLEME</div>
+        <SoruOnizleme
+          type={g.type}
+          prompt={g.prompt}
+          choices={g.choices}
+          dogruSik={"index" in g.answer ? g.answer.index : undefined}
+          bosluk={blanks.length}
+          explanation={g.explanation}
+          aciklamaBasligi={g.type === "code" ? "Beklenen davranış" : "Cevaptan sonra görünen açıklama"}
+          ust={<span className="tag">{TUR_ADI[g.type]}</span>}
+        />
+      </aside>
+      </div>
 
       <section className="onerilerim">
         <h3>Önerilerim</h3>

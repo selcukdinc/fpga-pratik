@@ -49,6 +49,16 @@ export interface PanelOzet extends PanelAyarlar {
   deneme: number;
 }
 
+// Soru listesinin üstündeki pano
+export interface PanelPano {
+  // Son 7 gün, Türkiye saatine göre, eskiden yeniye
+  gunluk: { gun: string; deneme: number; dogru: number }[];
+  // En az 3 denemesi olan, doğru oranı en düşük sorular
+  enCokYanlis: { id: string; prompt: string; type: string; deneme: number; yanlis: number }[];
+  // Kod sorularında başarısız denemelerin en sık takıldığı kontrol noktaları
+  kodHatalari: { id: string; prompt: string; kontrol: number; sayi: number; basarisiz: number }[];
+}
+
 export interface PanelKullanici {
   id: string;
   username: string;

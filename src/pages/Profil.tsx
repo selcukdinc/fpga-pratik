@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { href } from "../lib/router";
 import { Avatar } from "../components/Avatar";
+import { AvatarSecici } from "../components/AvatarSecici";
+import { uye, useOturum } from "../lib/oturum";
 import type { Profil as ProfilVerisi } from "../../shared/api";
 import type { TbOzeti } from "../../shared/topluluk";
 
@@ -11,6 +13,8 @@ export function Profil({ ad }: { ad: string }) {
   const [p, setP] = useState<ProfilVerisi | null>(null);
   const [yok, setYok] = useState(false);
   const [tbler, setTbler] = useState<TbOzeti[]>([]);
+  const [secici, setSecici] = useState(false);
+  const { me } = useOturum();
 
   useEffect(() => {
     setP(null);
@@ -44,7 +48,14 @@ export function Profil({ ad }: { ad: string }) {
   return (
     <div className="profil">
       <header className="profil-ust">
-        <Avatar id={p.avatar} bg={p.avatarBg} size={72} />
+        {p.kendisi && uye(me) ? (
+          <button type="button" className="avatar-dugme" onClick={() => setSecici(true)} title="Avatarını değiştir">
+            <Avatar id={me.avatar} bg={me.avatarBg} size={72} />
+          </button>
+        ) : (
+          <Avatar id={p.avatar} bg={p.avatarBg} size={72} />
+        )}
+        {secici && uye(me) && <AvatarSecici me={me} kapat={() => setSecici(false)} />}
         <div>
           <h2>{p.username}</h2>
           <p className="hint">{tarih(p.joinedAt)} tarihinde katıldı</p>

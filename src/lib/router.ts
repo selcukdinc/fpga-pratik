@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 
 export type Route =
   | { page: "pratik" }
-  | { page: "sorular"; topic?: string }
+  | { page: "sorular"; topic?: string; hafta?: number }
   | { page: "ilerleme" }
   | { page: "hakkinda" }
   | { page: "gizlilik" }
@@ -14,13 +14,16 @@ export type Route =
   | { page: "kayit" }
   | { page: "sifre-sifirla" }
   | { page: "profil"; ad: string }
-  | { page: "ayarlar" }
+  | { page: "ayarlar"; sekme?: AyarSekmesi }
   | { page: "oner" }
   | { page: "mesajlar"; id?: string }
   | { page: "topluluk"; konu?: string }
   | { page: "topluluk-tb"; id: string }
   | { page: "yonetim"; bolum: YonetimBolumu; soru?: string; alt?: string }
   | { page: "bulunamadi" };
+
+export type AyarSekmesi = "profil" | "hesap" | "bildirimler" | "sil";
+const AYAR_SEKMELERI: AyarSekmesi[] = ["profil", "hesap", "bildirimler", "sil"];
 
 export type YonetimBolumu = "genel" | "sorular" | "oneriler" | "mesajlar" | "bildirimler" | "kullanicilar" | "kayit";
 const YONETIM_BOLUMLERI: YonetimBolumu[] = ["genel", "sorular", "oneriler", "mesajlar", "bildirimler", "kullanicilar", "kayit"];
@@ -40,16 +43,20 @@ export function parsePath(path: string, search = ""): Route {
     case "":
     case "pratik":
       return { page: "pratik" };
-    case "sorular":
-      return { page: "sorular", topic: parca(arg) };
+    case "sorular": {
+      if (arg) return { page: "sorular", topic: parca(arg) };
+      const hafta = Number(new URLSearchParams(search).get("hafta"));
+      return Number.isInteger(hafta) && hafta > 0 ? { page: "sorular", hafta } : { page: "sorular", topic: undefined };
+    }
     case "ilerleme":
     case "hakkinda":
     case "gizlilik":
     case "kayit":
     case "sifre-sifirla":
-    case "ayarlar":
     case "oner":
       return { page };
+    case "ayarlar":
+      return AYAR_SEKMELERI.includes(arg as AyarSekmesi) && arg !== "profil" ? { page, sekme: arg as AyarSekmesi } : { page };
     case "mesajlar":
       return arg ? { page: "mesajlar", id: parca(arg) } : { page: "mesajlar" };
     case "topluluk": {
@@ -87,7 +94,9 @@ export function parseHash(hash: string): Route | null {
 export function href(route: Route): string {
   switch (route.page) {
     case "sorular":
-      return route.topic ? `/sorular/${encodeURIComponent(route.topic)}` : "/sorular";
+      return route.topic ? `/sorular/${encodeURIComponent(route.topic)}` : route.hafta ? `/sorular?hafta=${route.hafta}` : "/sorular";
+    case "ayarlar":
+      return route.sekme && route.sekme !== "profil" ? `/ayarlar/${route.sekme}` : "/ayarlar";
     case "profil":
       return `/profil/${encodeURIComponent(route.ad)}`;
     case "yonetim": {

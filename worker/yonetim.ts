@@ -6,7 +6,7 @@ import { Hono, type Context } from "hono";
 import type { Me } from "../shared/api";
 import {
   soruGirdisiHatasi, soruSutunlari,
-  type PanelAyarlar, type PanelKayit, type PanelKullanici, type PanelOzet, type PanelSoru, type SoruGirdi,
+  type PanelAyarlar, type PanelKayit, type PanelPano, type PanelKullanici, type PanelOzet, type PanelSoru, type SoruGirdi,
 } from "../shared/yonetim";
 import type { PanelOneri, Yazisma } from "../shared/sosyal";
 import { accessAcik, accessEposta } from "./access";
@@ -83,6 +83,51 @@ yonetim.get("/ozet", async (c) => {
     uye: u?.uye ?? 0,
     misafir: u?.misafir ?? 0,
     deneme: u?.deneme ?? 0,
+  });
+});
+
+const GUN_MS = 86_400_000;
+const TR_FARK = 3 * 3_600_000;
+const gunAdi = (ms: number) => new Date(ms + TR_FARK).toISOString().slice(0, 10);
+
+yonetim.get("/pano", async (c) => {
+  const db = c.env.DB;
+  const bugun = Math.floor((Date.now() + TR_FARK) / GUN_MS) * GUN_MS - TR_FARK;
+  const bas = bugun - 6 * GUN_MS;
+  const [g, y, k] = await db.batch([
+    db.prepare(
+      `SELECT date((created_at + ?) / 1000, 'unixepoch') AS gun, COUNT(*) AS deneme, SUM(correct) AS dogru
+       FROM attempts WHERE created_at >= ? GROUP BY gun`,
+    ).bind(TR_FARK, bas),
+    db.prepare(
+      `SELECT q.id, q.prompt, q.type, COUNT(a.id) AS deneme, SUM(a.correct = 0) AS yanlis
+       FROM questions q JOIN attempts a ON a.question_id = q.id
+       GROUP BY q.id HAVING deneme >= 3 AND yanlis > 0
+       ORDER BY CAST(yanlis AS REAL) / deneme DESC, deneme DESC LIMIT 5`,
+    ),
+    db.prepare(
+      `WITH h AS (
+         SELECT a.question_id AS id, json_extract(a.answer, '$.ilkHata') AS kontrol, COUNT(*) AS sayi
+         FROM attempts a JOIN questions q ON q.id = a.question_id
+         WHERE q.type = 'code' AND a.correct = 0 AND json_extract(a.answer, '$.ilkHata') IS NOT NULL
+         GROUP BY a.question_id, kontrol
+       )
+       SELECT h.id, q.prompt, h.kontrol, h.sayi, (SELECT SUM(x.sayi) FROM h x WHERE x.id = h.id) AS basarisiz
+       FROM h JOIN questions q ON q.id = h.id
+       WHERE h.sayi = (SELECT MAX(x.sayi) FROM h x WHERE x.id = h.id)
+       GROUP BY h.id ORDER BY h.sayi DESC LIMIT 5`,
+    ),
+  ]);
+  const gunler = new Map((g!.results as { gun: string; deneme: number; dogru: number }[]).map((r) => [r.gun, r]));
+  const gunluk = Array.from({ length: 7 }, (_, i) => {
+    const gun = gunAdi(bas + i * GUN_MS);
+    const r = gunler.get(gun);
+    return { gun, deneme: r?.deneme ?? 0, dogru: r?.dogru ?? 0 };
+  });
+  return c.json<PanelPano>({
+    gunluk,
+    enCokYanlis: y!.results as PanelPano["enCokYanlis"],
+    kodHatalari: k!.results as PanelPano["kodHatalari"],
   });
 });
 

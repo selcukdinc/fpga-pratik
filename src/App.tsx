@@ -22,7 +22,7 @@ import type { Topic } from "../shared/api";
 function baslik(route: Route, topicTitle?: string): string {
   switch (route.page) {
     case "pratik": return "PRATİK - Simülasyon alanı";
-    case "sorular": return `SORU HAVUZU - ${topicTitle ?? "Tüm sorular"}`;
+    case "sorular": return `SORU HAVUZU - ${topicTitle ?? (route.hafta ? `${route.hafta}. hafta` : "Tüm sorular")}`;
     case "ilerleme": return "İLERLEME - Konu bazlı durum";
     case "hakkinda": return "HAKKINDA";
     case "gizlilik": return "GİZLİLİK";
@@ -68,9 +68,9 @@ export function App() {
 
   return (
     <OturumSaglayici>
-      <Shell route={route} topics={topics} currentWeek={currentWeek} title={title} status={status} duyuru={duyuru}>
+      <Shell route={route} currentWeek={currentWeek} title={title} status={status} duyuru={duyuru}>
         {route.page === "pratik" && <Sandbox onStatus={setStatus} />}
-        {route.page === "sorular" && <Questions topic={route.topic} />}
+        {route.page === "sorular" && <Questions topic={route.topic} hafta={route.hafta} topics={topics} />}
         {route.page === "ilerleme" && <Progress />}
         {route.page === "hakkinda" && <About />}
         {route.page === "gizlilik" && <Gizlilik />}
@@ -78,7 +78,7 @@ export function App() {
         {route.page === "kayit" && <Kayit />}
         {route.page === "sifre-sifirla" && <SifreSifirla />}
         {route.page === "profil" && <Profil ad={route.ad} />}
-        {route.page === "ayarlar" && <Ayarlar />}
+        {route.page === "ayarlar" && <Ayarlar sekme={route.sekme} />}
         {route.page === "oner" && <Oner />}
         {route.page === "mesajlar" && <Mesajlar id={route.id} />}
         {route.page === "topluluk" && <Topluluk konu={route.konu} />}

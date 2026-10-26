@@ -7,8 +7,11 @@ describe("yönlendirici", () => {
       { page: "pratik" },
       { page: "sorular" },
       { page: "sorular", topic: "esz-atamalar" },
+      { page: "sorular", hafta: 3 },
       { page: "profil", ad: "ali_42" },
       { page: "ayarlar" },
+      { page: "ayarlar", sekme: "hesap" },
+      { page: "ayarlar", sekme: "sil" },
       { page: "giris", sonra: "/sorular/nitelikler" },
       { page: "yonetim", bolum: "genel" },
       { page: "yonetim", bolum: "sorular" },
@@ -25,7 +28,7 @@ describe("yönlendirici", () => {
       { page: "yonetim", bolum: "bildirimler" },
     ] as const) {
       const u = new URL(href(r), "https://x");
-      expect(parsePath(u.pathname, u.search)).toEqual(r.page === "sorular" && !("topic" in r) ? { page: "sorular", topic: undefined } : r);
+      expect(parsePath(u.pathname, u.search)).toEqual(r.page === "sorular" && !("topic" in r) && !("hafta" in r) ? { page: "sorular", topic: undefined } : r);
     }
   });
   it("kök adres pratik alanını açar, bilinmeyen adres bulunamadı döner", () => {
