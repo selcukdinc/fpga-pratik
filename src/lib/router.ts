@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 export type Route =
   | { page: "pratik" }
   | { page: "sorular"; topic?: string; hafta?: number }
+  | { page: "ders"; hafta?: number }
   | { page: "ilerleme" }
   | { page: "hakkinda" }
   | { page: "gizlilik" }
@@ -47,6 +48,10 @@ export function parsePath(path: string, search = ""): Route {
       if (arg) return { page: "sorular", topic: parca(arg) };
       const hafta = Number(new URLSearchParams(search).get("hafta"));
       return Number.isInteger(hafta) && hafta > 0 ? { page: "sorular", hafta } : { page: "sorular", topic: undefined };
+    }
+    case "ders": {
+      const hafta = Number(arg);
+      return Number.isInteger(hafta) && hafta > 0 ? { page: "ders", hafta } : { page: "ders" };
     }
     case "ilerleme":
     case "hakkinda":
@@ -95,6 +100,8 @@ export function href(route: Route): string {
   switch (route.page) {
     case "sorular":
       return route.topic ? `/sorular/${encodeURIComponent(route.topic)}` : route.hafta ? `/sorular?hafta=${route.hafta}` : "/sorular";
+    case "ders":
+      return route.hafta ? `/ders/${route.hafta}` : "/ders";
     case "ayarlar":
       return route.sekme && route.sekme !== "profil" ? `/ayarlar/${route.sekme}` : "/ayarlar";
     case "profil":

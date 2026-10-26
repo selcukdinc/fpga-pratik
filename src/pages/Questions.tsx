@@ -7,7 +7,7 @@ import { href } from "../lib/router";
 import type { AnswerResult, Question, Topic } from "../../shared/api";
 import type { Answer } from "../../shared/grade";
 
-function QuestionCard({ q, n }: { q: Question; n: number }) {
+export function QuestionCard({ q, n }: { q: Question; n: number }) {
   if (q.type === "code" && q.payload.kod) return <KodKarti q={q} n={n} />;
   return <KapaliKart q={q} n={n} />;
 }
