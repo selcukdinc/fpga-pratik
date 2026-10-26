@@ -1,4 +1,5 @@
 import type { AnswerResult, ApiHata, Me, Profil, Question, Topic, TopicProgress } from "../../shared/api";
+import type { KayitliDuzen } from "../../shared/duzen";
 import type { Answer } from "../../shared/grade";
 import type { KodSonucu, Sinama } from "../../shared/kod";
 import type { Okunmamis, Oneri, OneriGirdi, PanelOneri, Yazisma, YazismaOzeti } from "../../shared/sosyal";
@@ -89,6 +90,8 @@ export const api = {
     epostaDogrula: (id: string, kod: string) => post<Me>("/hesap/ayarlar/eposta/dogrula", { id, kod }),
     oturumlariKapat: () => post<{ ok: true }>("/hesap/ayarlar/oturumlari-kapat"),
     hesabiSil: (parola: string) => post<{ ok: true }>("/hesap/ayarlar/hesabi-sil", { parola }),
+    duzenler: () => get<KayitliDuzen[]>("/hesap/ayarlar/duzenler"),
+    duzenleriKaydet: (duzenler: KayitliDuzen[]) => post<KayitliDuzen[]>("/hesap/ayarlar/duzenler", { duzenler }, "PUT"),
   },
   yonetim: {
     ozet: () => get<PanelOzet>("/yonetim/ozet"),

@@ -5,6 +5,7 @@ import { api } from "./lib/api";
 import { OturumSaglayici } from "./lib/oturum";
 import { Sandbox } from "./pages/Sandbox";
 import { Ders } from "./pages/Ders";
+import { Sss, Tanitim } from "./pages/Tanitim";
 import { Questions } from "./pages/Questions";
 import { Progress } from "./pages/Progress";
 import { About } from "./pages/About";
@@ -27,6 +28,8 @@ function baslik(route: Route, topicTitle?: string): string {
     case "ders": return route.hafta ? `DERS - ${route.hafta}. hafta` : "DERSLER";
     case "ilerleme": return "İLERLEME - Konu bazlı durum";
     case "hakkinda": return "HAKKINDA";
+    case "tanitim": return "NASIL KULLANILIR";
+    case "sss": return "SIK SORULAN SORULAR";
     case "gizlilik": return "GİZLİLİK";
     case "giris": return "HESAP - Giriş";
     case "kayit": return "HESAP - Kayıt";
@@ -76,6 +79,8 @@ export function App() {
         {route.page === "ders" && <Ders hafta={route.hafta} />}
         {route.page === "ilerleme" && <Progress />}
         {route.page === "hakkinda" && <About />}
+        {route.page === "tanitim" && <Tanitim />}
+        {route.page === "sss" && <Sss />}
         {route.page === "gizlilik" && <Gizlilik />}
         {route.page === "giris" && <Giris sonra={route.sonra} />}
         {route.page === "kayit" && <Kayit />}

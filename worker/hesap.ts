@@ -7,6 +7,7 @@ import {
   epostaHatasi, kullaniciAdiHatasi, parolaHatasi,
 } from "../shared/hesap";
 import { AVATAR_IDLERI, AVATAR_ZEMINLERI, rastgeleAvatar } from "../shared/avatarlar";
+import { duzenleriDenetle } from "../shared/duzen";
 import type { ApiHata } from "../shared/api";
 import { dortHaneliKod, epostaAcik, kodGonder } from "./eposta";
 import { tbSilSorgulari } from "./topluluk";
@@ -319,6 +320,27 @@ ayarlar.post("/profil", async (c) => {
     .bind(publicProfile ? 1 : 0, avatar, avatarBg, notifyEmail ? 1 : 0, me.id)
     .run();
   return c.json(await loadUser(c.env.DB, me.id));
+});
+
+ayarlar.get("/duzenler", async (c) => {
+  const r = await c.env.DB.prepare("SELECT sim_duzenleri FROM users WHERE id = ?").bind(c.get("me")!.id)
+    .first<{ sim_duzenleri: string | null }>();
+  let kayitli: unknown = [];
+  try {
+    kayitli = JSON.parse(r?.sim_duzenleri ?? "[]");
+  } catch {
+    // bozuk kayıt boş liste sayılır
+  }
+  const d = duzenleriDenetle(kayitli);
+  return c.json("duzenler" in d ? d.duzenler : []);
+});
+
+ayarlar.put("/duzenler", async (c) => {
+  const b = await govde<{ duzenler: unknown }>(c);
+  const d = duzenleriDenetle(b.duzenler);
+  if ("hata" in d) return hata(c, 400, d.hata);
+  await c.env.DB.prepare("UPDATE users SET sim_duzenleri = ? WHERE id = ?").bind(JSON.stringify(d.duzenler), c.get("me")!.id).run();
+  return c.json(d.duzenler);
 });
 
 ayarlar.post("/parola", async (c) => {

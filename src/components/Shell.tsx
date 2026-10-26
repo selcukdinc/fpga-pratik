@@ -22,6 +22,8 @@ const IKONLAR = {
   sorular: "M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01",
   topluluk: "M9 11a3 3 0 100-6 3 3 0 000 6zM3 20c0-3.3 2.7-5 6-5s6 1.7 6 5M16 5.5a3 3 0 010 5.5M18 15c2 .6 3 2.2 3 5",
   ilerleme: "M4 20V11M10 20V5M16 20v-6M2 20h20",
+  tanitim: "M12 21a9 9 0 100-18 9 9 0 000 18zM15.5 8.5l-2 5-5 2 2-5z",
+  sss: "M12 21a9 9 0 100-18 9 9 0 000 18zM9.5 9a2.5 2.5 0 114 2c-1 .6-1.5 1.2-1.5 2.2M12 16.5v.5",
   hakkinda: "M12 21a9 9 0 100-18 9 9 0 000 18zM12 11v6M12 7.5v.5",
   gizlilik: "M12 3l8 3v6c0 4.6-3.4 7.8-8 9-4.6-1.2-8-4.4-8-9V6z",
   daralt: "M15 6l-6 6 6 6",
@@ -135,6 +137,35 @@ function HesapAlani({ route }: { route: Route }) {
   );
 }
 
+export const TANITIM_GORULDU = "fpga-pratik:tanitim-goruldu";
+
+// İlk kez gelenlere tanıtım sayfasını hatırlatan, kapatılabilen şerit
+function TanitimSeridi({ route }: { route: Route }) {
+  const [gizli, setGizli] = useState(() => {
+    try {
+      return localStorage.getItem(TANITIM_GORULDU) === "1";
+    } catch {
+      return true;
+    }
+  });
+  if (gizli || route.page === "tanitim") return null;
+  const kapat = () => {
+    try {
+      localStorage.setItem(TANITIM_GORULDU, "1");
+    } catch {
+      // gizli pencere
+    }
+    setGizli(true);
+  };
+  return (
+    <div className="tanitim-seridi">
+      <span>Siteye yeni misin? Neler yapabileceğini iki dakikada gör:</span>
+      <a href={href({ page: "tanitim" })} onClick={kapat}>Nasıl kullanılır</a>
+      <button className="icon" aria-label="Kapat" onClick={kapat}>×</button>
+    </div>
+  );
+}
+
 export function Shell({ route, currentWeek, title, status, duyuru, children }: Props) {
   const [dar, setDar] = useState(darOku);
   const [menuAcik, setMenuAcik] = useState(false);
@@ -190,6 +221,8 @@ export function Shell({ route, currentWeek, title, status, duyuru, children }: P
         <NavLink to={{ page: "topluluk" }} current={route} ikon="topluluk">Testbench'ler</NavLink>
 
         <div className="nav-section">PROJE</div>
+        <NavLink to={{ page: "tanitim" }} current={route} ikon="tanitim">Nasıl kullanılır</NavLink>
+        <NavLink to={{ page: "sss" }} current={route} ikon="sss">S.S.S.</NavLink>
         <NavLink to={{ page: "hakkinda" }} current={route} ikon="hakkinda">Hakkında</NavLink>
         <NavLink to={{ page: "gizlilik" }} current={route} ikon="gizlilik">Gizlilik</NavLink>
       </aside>
@@ -200,6 +233,7 @@ export function Shell({ route, currentWeek, title, status, duyuru, children }: P
             {inline(duyuru)}
           </div>
         )}
+        <TanitimSeridi route={route} />
         <div className="section-header">{title}</div>
         <div className="workspace-body">{children}</div>
       </main>
