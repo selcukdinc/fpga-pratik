@@ -145,6 +145,7 @@ function Istatistik({ i, secilen }: { i: SoruIstatistigi; secilen: number | null
       <p>
         İlk denemesinde doğru cevaplayanlar: <strong>%{Math.round((i.ilkDogru / i.kisi) * 100)}</strong> ({i.kisi} kişi denedi)
       </p>
+      {i.siklar && toplam > 0 && <p className="hint">Şıkların ilk denemelerde seçilme oranı:</p>}
       {i.siklar && toplam > 0 && (
         <ul className="sik-dagilimi" aria-label="İlk denemelerde şıkların seçilme oranı">
           {i.siklar.map((n, j) => {

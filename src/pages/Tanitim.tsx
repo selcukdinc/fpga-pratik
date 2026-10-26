@@ -10,7 +10,7 @@ import { TANITIM_GORULDU } from "../components/Shell";
 const KITLELER = [
   {
     baslik: "FPGA dersini alan öğrenciler",
-    metin: "Vize ve finale hazırlanırken konuyu ders ders tekrar et, haftaya göre açılan sorularla kendini dene, eksik olduğun konuları ilerleme sayfasında gör.",
+    metin: "Vize ve finale hazırlanırken konuyu ders ders tekrar et, haftaya göre açılan sorularla kendini dene; ilerleme sayfası zayıf konularını ve yanlış yaptığın soruları önüne getirir.",
   },
   {
     baslik: "VHDL'e yeni başlayanlar",
@@ -37,7 +37,7 @@ const ADIMLAR = [
   {
     gorsel: "sorular",
     baslik: "2. Soru havuzunda kendini dene",
-    metin: "Sayfanın üstünden hafta ve konu seç. Doğru/yanlış, çoktan seçmeli ve boşluk doldurma sorularının cevabı hemen kontrol edilir, açıklaması görünür.",
+    metin: "Sayfanın üstünden hafta ve konu seç; türe, zorluğa göre süz, ara ya da yalnızca çözmediklerini göster. Cevabın hemen kontrol edilir; açıklamanın yanında soruyu ilk denemede doğru yapanların oranını ve şıkların nasıl dağıldığını görürsün.",
     bag: { page: "sorular" } as const,
     bagMetni: "Soru havuzunu aç",
   },
@@ -58,7 +58,7 @@ const ADIMLAR = [
   {
     gorsel: "ilerleme",
     baslik: "5. İlerlemeni takip et",
-    metin: "Hangi konuda ne kadar doğru yaptığını gör ve eksik olduğun konulara dön. Hesap açarsan ilerlemen her cihazda seninle gelir.",
+    metin: "Son 12 haftalık etkinlik takviminde ne kadar düzenli çalıştığını gör. En zayıf üç konuna \"Tekrar et\" ile dön, yanlış yaptığın soruları tek tıkla yeniden çöz. Hesap açarsan ilerlemen her cihazda seninle gelir.",
     bag: { page: "ilerleme" } as const,
     bagMetni: "İlerlemene bak",
   },

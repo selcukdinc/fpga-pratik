@@ -32,6 +32,31 @@ export const SSS: SssBolumu[] = [
     ],
   },
   {
+    baslik: "Sorular ve ilerleme",
+    sorular: [
+      {
+        soru: "Çözmediğim ya da yanlış yaptığım soruları nasıl bulurum?",
+        cevap:
+          "Soru havuzunun üstündeki süzgeçlerden **Çözmediklerim** ya da **Yanlışlarım**'ı seç. Tür, zorluk ve arama ile daraltabilirsin; süzgeçler adreste tutulduğu için bağlantıyı kaydedip sonra aynı listeye dönebilirsin. İlerlemem sayfasındaki **Hepsini tekrar çöz** düğmesi de yanlış yaptığın soruları tek listede açar.",
+      },
+      {
+        soru: "Sorunun altında çıkan yüzde ne anlama geliyor?",
+        cevap:
+          "Cevabını gönderdikten sonra, o soruyu deneyenlerin ilk denemelerinde ne kadarının doğru yaptığı gösterilir; çoktan seçmelide her şıkkın ne sıklıkla seçildiği de görünür. Her kişinin yalnızca ilk denemesi sayılır, misafirler de dahildir. Bunlar anonim toplamlardır; kimin ne cevap verdiği görünmez.",
+      },
+      {
+        soru: "\"Tekrar etmen gereken konular\" nasıl seçiliyor?",
+        cevap:
+          "İlerlemem sayfasında, en az bir sorusunu denediğin ama henüz bitirmediğin konular doğru oranına göre sıralanır; en düşük üçü gösterilir. **Tekrar et** o konunun yalnızca çözmediğin sorularını açar.",
+      },
+      {
+        soru: "Etkinlik takvimi ve günlük seri neyi sayıyor?",
+        cevap:
+          "Takvim, son 12 haftada her gün kaç cevap gönderdiğini Türkiye saatine göre gösterir; renk koyulaştıkça o gün daha çok çalışmışsındır. Günlük seri, bugünden (bugün henüz bir şey çözmediysen dünden) geriye kesintisiz çalıştığın gün sayısıdır.",
+      },
+    ],
+  },
+  {
     baslik: "Simülasyon ve kod",
     sorular: [
       {
