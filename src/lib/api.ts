@@ -1,4 +1,4 @@
-import type { AnswerResult, ApiHata, Me, Profil, Question, Topic, TopicProgress } from "../../shared/api";
+import type { AnswerResult, ApiHata, IlerlemeAyrintisi, Me, Profil, Question, SoruDurumlari, Topic, TopicProgress } from "../../shared/api";
 import type { KayitliDuzen } from "../../shared/duzen";
 import type { Answer } from "../../shared/grade";
 import type { KodSonucu, Sinama } from "../../shared/kod";
@@ -39,6 +39,8 @@ export const api = {
   topics: () => get<{ currentWeek: number; topics: Topic[]; announcement: string | null }>("/topics"),
   questions: (topic?: string) => get<Question[]>(topic ? `/questions?topic=${encodeURIComponent(topic)}` : "/questions"),
   progress: () => get<TopicProgress[]>("/progress"),
+  ilerlemeAyrintisi: () => get<IlerlemeAyrintisi>("/progress/ayrinti"),
+  soruDurumlari: () => get<SoruDurumlari>("/questions/durum"),
   profil: (ad: string) => get<Profil>(`/profil/${encodeURIComponent(ad)}`),
   async answer(id: string, answer: Answer): Promise<AnswerResult> {
     const r = await post<AnswerResult>(`/questions/${encodeURIComponent(id)}/answer`, { answer });
