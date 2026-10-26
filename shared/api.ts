@@ -43,9 +43,29 @@ export interface Question {
   oneren?: string;
 }
 
+export interface SoruIstatistigi {
+  // Soruyu deneyen kişi sayısı ve ilk denemesinde doğru yapanlar (misafirler dahil, anonim)
+  kisi: number;
+  ilkDogru: number;
+  // Çoktan seçmeli sorularda ilk denemelerde her şıkkın kaç kez seçildiği
+  siklar?: number[];
+}
+
 export interface AnswerResult {
   correct: boolean;
   explanation: string | null;
+  istatistik?: SoruIstatistigi;
+}
+
+// Kullanıcının sorulardaki durumu: en az bir kez doğru çözdüyse "dogru",
+// denediği halde henüz doğru çözemediyse "yanlis". Denenmeyenler listede yok.
+export type SoruDurumlari = Record<string, "dogru" | "yanlis">;
+
+export interface IlerlemeAyrintisi {
+  // Son 84 gün (12 hafta), Türkiye saatine göre, eskiden yeniye
+  takvim: { gun: string; deneme: number; dogru: number }[];
+  // Denenip henüz doğru çözülemeyen sorular, en son deneneni başta
+  yanlislar: { id: string; topicId: string; topicTitle: string; week: number; ozet: string; deneme: number; son: number }[];
 }
 
 export interface TopicProgress {

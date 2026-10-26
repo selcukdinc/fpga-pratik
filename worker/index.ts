@@ -1,6 +1,8 @@
 import { Hono, type Context } from "hono";
 import { grade, type Answer, type QuestionType } from "../shared/grade";
-import type { AnswerResult, Profil, ProfilSon, Question, Topic, TopicProgress } from "../shared/api";
+import type {
+  AnswerResult, IlerlemeAyrintisi, Profil, ProfilSon, Question, SoruDurumlari, SoruIstatistigi, Topic, TopicProgress,
+} from "../shared/api";
 import { ensureGuest, loadMe, type Env } from "./session";
 import { hesap } from "./hesap";
 import { epostaAcik } from "./eposta";
@@ -126,9 +128,26 @@ app.post("/questions/:id/answer", async (c) => {
   const me = await ensureGuest(c);
   await denemeKaydet(c, me.id, c.req.param("id"), correct, body.answer);
 
-  const result: AnswerResult = { correct, explanation: q.explanation };
+  const result: AnswerResult = { correct, explanation: q.explanation, istatistik: await soruIstatistigi(c.env.DB, c.req.param("id"), q) };
   return c.json(result);
 });
+
+// Her kişinin bu sorudaki ilk denemesi üzerinden anonim toplamlar
+async function soruIstatistigi(db: D1Database, id: string, q: SoruSatiri): Promise<SoruIstatistigi> {
+  const ilk = `SELECT a.correct, a.answer FROM attempts a
+               WHERE a.question_id = ?1 AND a.id = (SELECT MIN(b.id) FROM attempts b WHERE b.question_id = ?1 AND b.user_id = a.user_id)`;
+  const t = await db.prepare(`SELECT COUNT(*) AS kisi, COALESCE(SUM(correct), 0) AS ilkDogru FROM (${ilk})`).bind(id)
+    .first<{ kisi: number; ilkDogru: number }>();
+  const ist: SoruIstatistigi = { kisi: t?.kisi ?? 0, ilkDogru: t?.ilkDogru ?? 0 };
+  if (q.type === "mcq") {
+    const sikSayisi = ((JSON.parse(q.payload) as { choices?: string[] }).choices ?? []).length;
+    const { results } = await db.prepare(
+      `SELECT json_extract(answer, '$.index') AS sik, COUNT(*) AS sayi FROM (${ilk}) GROUP BY sik`,
+    ).bind(id).all<{ sik: number | null; sayi: number }>();
+    ist.siklar = Array.from({ length: sikSayisi }, (_, i) => results.find((r) => r.sik === i)?.sayi ?? 0);
+  }
+  return ist;
+}
 
 // ---- Kod soruları ----
 
@@ -223,6 +242,55 @@ async function konuIlerlemesi(db: D1Database, userId: string): Promise<TopicProg
 }
 
 app.get("/progress", async (c) => c.json(await konuIlerlemesi(c.env.DB, c.get("me")?.id ?? "")));
+
+// Sitede görünen sorularla sınırlayan koşul (q tablosu için)
+async function gorunurKosul(db: D1Database): Promise<string> {
+  const original = await showOriginal(db);
+  return `q.active = 1 AND q.status = 'published' AND q.week <= ${await currentWeek(db)}${original ? "" : " AND q.source = 'derived'"}`;
+}
+
+app.get("/questions/durum", async (c) => {
+  const me = c.get("me");
+  if (!me) return c.json<SoruDurumlari>({});
+  const { results } = await c.env.DB.prepare(
+    "SELECT question_id AS id, MAX(correct) AS dogru FROM attempts WHERE user_id = ? GROUP BY question_id",
+  ).bind(me.id).all<{ id: string; dogru: number }>();
+  return c.json<SoruDurumlari>(Object.fromEntries(results.map((r) => [r.id, r.dogru ? "dogru" : "yanlis"])));
+});
+
+const GUN_MS = 86_400_000;
+const TR_FARK = 3 * 3_600_000;
+
+app.get("/progress/ayrinti", async (c) => {
+  const me = c.get("me");
+  const bos: IlerlemeAyrintisi = { takvim: [], yanlislar: [] };
+  const bugun = Math.floor((Date.now() + TR_FARK) / GUN_MS) * GUN_MS - TR_FARK;
+  const bas = bugun - 83 * GUN_MS;
+  const gunler = Array.from({ length: 84 }, (_, i) => new Date(bas + i * GUN_MS + TR_FARK).toISOString().slice(0, 10));
+  if (!me) return c.json<IlerlemeAyrintisi>({ ...bos, takvim: gunler.map((gun) => ({ gun, deneme: 0, dogru: 0 })) });
+
+  const db = c.env.DB;
+  const [g, y] = await db.batch([
+    db.prepare(
+      `SELECT date((created_at + ?) / 1000, 'unixepoch') AS gun, COUNT(*) AS deneme, SUM(correct) AS dogru
+       FROM attempts WHERE user_id = ? AND created_at >= ? GROUP BY gun`,
+    ).bind(TR_FARK, me.id, bas),
+    db.prepare(
+      `SELECT q.id, q.topic_id AS topicId, t.title AS topicTitle, q.week, q.prompt, COUNT(*) AS deneme, MAX(a.created_at) AS son
+       FROM attempts a JOIN questions q ON q.id = a.question_id JOIN topics t ON t.id = q.topic_id
+       WHERE a.user_id = ? AND ${await gorunurKosul(db)}
+       GROUP BY q.id HAVING MAX(a.correct) = 0 ORDER BY son DESC LIMIT 50`,
+    ).bind(me.id),
+  ]);
+  const sayilar = new Map((g!.results as { gun: string; deneme: number; dogru: number }[]).map((r) => [r.gun, r]));
+  return c.json<IlerlemeAyrintisi>({
+    takvim: gunler.map((gun) => ({ gun, deneme: sayilar.get(gun)?.deneme ?? 0, dogru: sayilar.get(gun)?.dogru ?? 0 })),
+    yanlislar: (y!.results as (IlerlemeAyrintisi["yanlislar"][number] & { prompt: string })[]).map(({ prompt, ...r }) => ({
+      ...r,
+      ozet: ozet(prompt),
+    })),
+  });
+});
 
 // Sorunun ilk satırından Markdown işaretleri atılmış kısa bir özet
 function ozet(prompt: string): string {
