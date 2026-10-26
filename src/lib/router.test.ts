@@ -9,6 +9,8 @@ describe("yönlendirici", () => {
       { page: "sorular", topic: "esz-atamalar" },
       { page: "sorular", hafta: 3 },
       { page: "ders" },
+      { page: "tanitim" },
+      { page: "sss" },
       { page: "ders", hafta: 4 },
       { page: "profil", ad: "ali_42" },
       { page: "ayarlar" },

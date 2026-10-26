@@ -2,6 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type
 import { VhdlEditor, type EditorMark } from "../components/VhdlEditor";
 import { MessagesPanel } from "../components/MessagesPanel";
 import { WaveformView } from "../components/WaveformView";
+import { DuzenAlani, type PanelTanimi } from "../components/DuzenAlani";
+import { DuzenMenusu, useDuzen } from "../components/DuzenMenusu";
+import type { PanelId } from "../../shared/duzen";
 import { checkSyntax, simulate, type SimFile, type VhdlStd } from "../sim/simulator";
 import { ORNEKLER, type Ornek } from "../sim/ornekler";
 import {
@@ -174,7 +177,8 @@ export function Sandbox({ onStatus }: Props) {
   const [vcd, setVcd] = useState<Vcd | null>(null);
   const [tab, setTab] = useState<Tab>("messages");
   const [gotoLine, setGotoLine] = useState<{ line: number; nonce: number }>();
-  const [menu, setMenu] = useState<{ x: number; y: number; dosya: string } | null>(null);
+  const [menu, setMenu] = useState<{ x: number; y: number; ogeler: MenuOgesi[] } | null>(null);
+  const [duzen, setDuzen] = useDuzen();
   const [diyalog, setDiyalog] = useState<Diyalog | null>(null);
   const [klasor, setKlasor] = useState<AcikKlasor | null>(null);
   const dosyaGirdisi = useRef<HTMLInputElement>(null);
@@ -428,6 +432,137 @@ export function Sandbox({ onStatus }: Props) {
       : "Bu dosyada entity yok."
     : null;
 
+  const projeMenusu: MenuOgesi[] = [
+    { etiket: "＋ Yeni kaynak…", yap: () => setDiyalog({ tur: "kaynak" }) },
+    { etiket: "Örnek ekle…", yap: () => setDiyalog({ tur: "ornek" }) },
+    { etiket: "", ayrac: true },
+    { etiket: "Dosya yükle…", yap: () => dosyaGirdisi.current?.click() },
+    { etiket: "Klasör aç…", yap: klasorAc },
+    ...(klasor ? [{ etiket: "Klasöre kaydet (Ctrl+S)", yap: klasoreKaydet }] : []),
+    { etiket: "", ayrac: true },
+    { etiket: "Zip olarak indir", yap: zipIndir, pasif: !ws.files.length },
+  ];
+
+  const paneller: Record<PanelId, PanelTanimi> = {
+    sources: {
+      ad: "Sources",
+      sinif: "sources",
+      baslik: (
+        <>
+          <span className="panel-ad">Sources</span>
+          <button className="icon" onClick={() => setDiyalog({ tur: "kaynak" })} title="Yeni kaynak">＋</button>
+        </>
+      ),
+      govde: (
+        <>
+          {ws.files.length === 0 ? (
+            <p className="empty">Henüz dosya yok.</p>
+          ) : (
+            <ul>
+              {ws.files.map((f) => {
+                const topDosyasi = topBirim?.dosya === f.name;
+                return (
+                  <li
+                    key={f.name}
+                    className={`${f.name === file?.name ? "active" : ""}${simulasyonda(f.name) ? "" : " pasif-dosya"}`}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      setAktifAd(f.name);
+                      setMenu({ x: e.clientX, y: e.clientY, ogeler: menuOgeleri(f.name) });
+                    }}
+                  >
+                    <button onClick={() => setAktifAd(f.name)} title={topDosyasi ? `Top: ${top}` : f.name}>
+                      <span className="file-badge">V</span>
+                      <span className="dosya-adi">{f.name}</span>
+                      {topDosyasi && <span className="top-rozeti">TOP</span>}
+                    </button>
+                    <button
+                      className="icon"
+                      aria-label={`${f.name} için işlemler`}
+                      onClick={(e) => {
+                        const r = e.currentTarget.getBoundingClientRect();
+                        setMenu({ x: r.left, y: r.bottom, ogeler: menuOgeleri(f.name) });
+                      }}
+                    >
+                      ⋮
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          {ws.files.length > 0 && <p className="hint sources-ipucu">Top yapmak için dosyaya sağ tıkla.</p>}
+        </>
+      ),
+    },
+    editor: {
+      ad: "Editör",
+      sinif: "editor",
+      baslik: (
+        <>
+          <span className="panel-ad">{file?.name ?? "Başlangıç"}</span>
+          {file && topBirim?.dosya === file.name && <span className="top-rozeti">TOP</span>}
+        </>
+      ),
+      govde: (
+        <>
+          {bilgi && (
+            <div className="editor-bilgi">
+              {bilgi}
+              {dosyaBirimleri(file!.name).length > 0 && (
+                <button onClick={() => topYap(dosyaBirimleri(file!.name).at(-1)!.ad)}>Bu dosyayı top yap</button>
+              )}
+            </div>
+          )}
+          {file ? (
+            <VhdlEditor key={file.name} value={file.text} onChange={updateFile} marks={marks} gotoLine={gotoLine} />
+          ) : (
+            <div className="bos-proje">
+              <p>Simülasyon alanı boş. Başlamak için:</p>
+              <div className="bos-proje-dugmeler">
+                <button className="primary" onClick={() => setDiyalog({ tur: "kaynak" })}>＋ Yeni kaynak</button>
+                <button onClick={() => setDiyalog({ tur: "ornek" })}>Örnek ekle</button>
+                <button onClick={() => dosyaGirdisi.current?.click()}>Dosya yükle</button>
+                <button onClick={klasorAc}>Klasör aç</button>
+              </div>
+              <p className="hint">
+                Klasör açtığında içindeki .vhd ve .vhdl dosyaları gelir; haftalık çalışmalarını ayrı klasörlerde tutabilirsin.
+                Dosyaların bu tarayıcıda saklanır, sunucuya gönderilmez.
+              </p>
+            </div>
+          )}
+        </>
+      ),
+    },
+    waves: {
+      ad: "Dalga ekranı",
+      sinif: "waves",
+      baslik: <span className="panel-ad">Dalga ekranı</span>,
+      govde: vcd ? <WaveformView vcd={vcd} /> : <p className="empty dark">Simülasyonu çalıştırınca sinyaller burada çizilir.</p>,
+    },
+    bottom: {
+      ad: "Mesajlar",
+      sinif: "bottom",
+      baslik: (
+        <div className="tabs" role="tablist">
+          <button role="tab" aria-selected={tab === "messages"} onClick={() => setTab("messages")}>
+            Messages{messages.length > 0 && ` (${messages.length})`}
+          </button>
+          <button role="tab" aria-selected={tab === "log"} onClick={() => setTab("log")}>Log</button>
+        </div>
+      ),
+      govde: (
+        <div className="tab-body">
+          {tab === "messages" ? (
+            <MessagesPanel messages={messages} onSelect={selectMessage} />
+          ) : (
+            <pre className="log">{log.join("\n").replace(/\x1b\[[0-9;]*m|\x1b\]8;;[^\x07]*\x07/g, "") || "Henüz çalıştırılmadı."}</pre>
+          )}
+        </div>
+      ),
+    },
+  };
+
   return (
     <div className="sandbox">
       <div className="toolbar">
@@ -459,13 +594,18 @@ export function Sandbox({ onStatus }: Props) {
             <option value="2008">2008</option>
           </select>
         </label>
-        <span className="toolbar-ayrac" />
-        <button onClick={() => setDiyalog({ tur: "kaynak" })}>＋ Yeni kaynak</button>
-        <button onClick={() => setDiyalog({ tur: "ornek" })}>Örnek ekle</button>
-        <button onClick={() => dosyaGirdisi.current?.click()}>Dosya yükle</button>
-        <button onClick={klasorAc}>Klasör aç</button>
+        <span className="toolbar-bosluk" />
         {klasor && <button onClick={klasoreKaydet} title="Ctrl+S">Klasöre kaydet</button>}
-        <button onClick={zipIndir} disabled={!ws.files.length}>Zip indir</button>
+        <button
+          aria-haspopup="menu"
+          onClick={(e) => {
+            const r = e.currentTarget.getBoundingClientRect();
+            setMenu({ x: r.left, y: r.bottom + 2, ogeler: projeMenusu });
+          }}
+        >
+          Proje ▾
+        </button>
+        <DuzenMenusu duzen={duzen} uygula={setDuzen} durum={onStatus} />
         <input ref={dosyaGirdisi} type="file" accept=".vhd,.vhdl" multiple hidden onChange={(e) => (yuklenenleriEkle(e.target.files), (e.target.value = ""))} />
         <input
           ref={klasorGirdisi}
@@ -477,103 +617,9 @@ export function Sandbox({ onStatus }: Props) {
         />
       </div>
 
-      <section className="panel sources">
-        <div className="panel-title">
-          Sources <button className="icon" onClick={() => setDiyalog({ tur: "kaynak" })} title="Yeni kaynak">＋</button>
-        </div>
-        {ws.files.length === 0 ? (
-          <p className="empty">Henüz dosya yok.</p>
-        ) : (
-          <ul>
-            {ws.files.map((f) => {
-              const topDosyasi = topBirim?.dosya === f.name;
-              return (
-                <li
-                  key={f.name}
-                  className={`${f.name === file?.name ? "active" : ""}${simulasyonda(f.name) ? "" : " pasif-dosya"}`}
-                  onContextMenu={(e) => {
-                    e.preventDefault();
-                    setAktifAd(f.name);
-                    setMenu({ x: e.clientX, y: e.clientY, dosya: f.name });
-                  }}
-                >
-                  <button onClick={() => setAktifAd(f.name)} title={topDosyasi ? `Top: ${top}` : f.name}>
-                    <span className="file-badge">V</span>
-                    <span className="dosya-adi">{f.name}</span>
-                    {topDosyasi && <span className="top-rozeti">TOP</span>}
-                  </button>
-                  <button
-                    className="icon"
-                    aria-label={`${f.name} için işlemler`}
-                    onClick={(e) => {
-                      const r = e.currentTarget.getBoundingClientRect();
-                      setMenu({ x: r.left, y: r.bottom, dosya: f.name });
-                    }}
-                  >
-                    ⋮
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-        {ws.files.length > 0 && <p className="hint sources-ipucu">Top yapmak için dosyaya sağ tıkla.</p>}
-      </section>
+      <DuzenAlani duzen={duzen} degistir={setDuzen} paneller={paneller} menuAc={(x, y, ogeler) => setMenu({ x, y, ogeler })} />
 
-      <section className="panel editor">
-        <div className="panel-title">
-          {file?.name ?? "Başlangıç"}
-          {file && topBirim?.dosya === file.name && <span className="top-rozeti">TOP</span>}
-        </div>
-        {bilgi && (
-          <div className="editor-bilgi">
-            {bilgi}
-            {dosyaBirimleri(file!.name).length > 0 && (
-              <button onClick={() => topYap(dosyaBirimleri(file!.name).at(-1)!.ad)}>Bu dosyayı top yap</button>
-            )}
-          </div>
-        )}
-        {file ? (
-          <VhdlEditor key={file.name} value={file.text} onChange={updateFile} marks={marks} gotoLine={gotoLine} />
-        ) : (
-          <div className="bos-proje">
-            <p>Simülasyon alanı boş. Başlamak için:</p>
-            <div className="bos-proje-dugmeler">
-              <button className="primary" onClick={() => setDiyalog({ tur: "kaynak" })}>＋ Yeni kaynak</button>
-              <button onClick={() => setDiyalog({ tur: "ornek" })}>Örnek ekle</button>
-              <button onClick={() => dosyaGirdisi.current?.click()}>Dosya yükle</button>
-              <button onClick={klasorAc}>Klasör aç</button>
-            </div>
-            <p className="hint">
-              Klasör açtığında içindeki .vhd ve .vhdl dosyaları gelir; haftalık çalışmalarını ayrı klasörlerde tutabilirsin.
-              Dosyaların bu tarayıcıda saklanır, sunucuya gönderilmez.
-            </p>
-          </div>
-        )}
-      </section>
-
-      <section className="panel waves">
-        <div className="panel-title">Dalga ekranı</div>
-        {vcd ? <WaveformView vcd={vcd} /> : <p className="empty dark">Simülasyonu çalıştırınca sinyaller burada çizilir.</p>}
-      </section>
-
-      <section className="panel bottom">
-        <div className="tabs" role="tablist">
-          <button role="tab" aria-selected={tab === "messages"} onClick={() => setTab("messages")}>
-            Messages{messages.length > 0 && ` (${messages.length})`}
-          </button>
-          <button role="tab" aria-selected={tab === "log"} onClick={() => setTab("log")}>Log</button>
-        </div>
-        <div className="tab-body">
-          {tab === "messages" ? (
-            <MessagesPanel messages={messages} onSelect={selectMessage} />
-          ) : (
-            <pre className="log">{log.join("\n").replace(/\x1b\[[0-9;]*m|\x1b\]8;;[^\x07]*\x07/g, "") || "Henüz çalıştırılmadı."}</pre>
-          )}
-        </div>
-      </section>
-
-      {menu && <BaglamMenusu x={menu.x} y={menu.y} ogeler={menuOgeleri(menu.dosya)} kapat={() => setMenu(null)} />}
+      {menu && <BaglamMenusu x={menu.x} y={menu.y} ogeler={menu.ogeler} kapat={() => setMenu(null)} />}
 
       {diyalog?.tur === "kaynak" && (
         <YeniKaynak

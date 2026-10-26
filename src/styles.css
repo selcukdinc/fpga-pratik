@@ -185,22 +185,10 @@ code { background: var(--code-bg); padding: 0 3px; border-radius: 3px; }
 .workspace-body { flex: 1; min-height: 0; overflow: auto; }
 
 /* Pratik alanı */
-.sandbox {
-  display: grid;
-  grid-template-columns: 200px minmax(0, 1fr) minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr) 200px;
-  grid-template-areas:
-    "toolbar toolbar toolbar"
-    "sources editor waves"
-    "bottom bottom bottom";
-  gap: 4px;
-  height: 100%;
-  padding: 4px;
-}
-.toolbar { grid-area: toolbar; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 2px; }
+.sandbox { display: flex; flex-direction: column; gap: 4px; height: 100%; padding: 4px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 2px; }
 .toolbar label { display: flex; gap: 4px; align-items: center; color: var(--muted); }
 .panel { background: var(--panel); border: 1px solid var(--border); display: flex; flex-direction: column; min-height: 0; min-width: 0; }
-.sources { grid-area: sources; }
 .sources ul { list-style: none; margin: 0; padding: 4px 0; overflow: auto; }
 .sources li { display: flex; align-items: center; }
 .sources li > button:first-child {
@@ -229,7 +217,6 @@ code { background: var(--code-bg); padding: 0 3px; border-radius: 3px; }
   font-size: 9px;
   font-weight: 700;
 }
-.editor { grid-area: editor; }
 .vhdl-editor { flex: 1; min-height: 0; overflow: hidden; }
 .vhdl-editor .cm-editor { height: 100%; font-size: 13px; }
 .vhdl-editor .cm-scroller { font-family: var(--mono); }
@@ -247,8 +234,7 @@ code { background: var(--code-bg); padding: 0 3px; border-radius: 3px; }
 .tok-comment { color: var(--cm-comment); font-style: italic; }
 .cm-line.cm-mark-error { background: var(--mark-error); box-shadow: inset 3px 0 var(--error); }
 .cm-line.cm-mark-warning { background: var(--mark-warning); box-shadow: inset 3px 0 var(--warning); }
-.waves { grid-area: waves; background: #000; }
-.bottom { grid-area: bottom; }
+.waves { background: #000; }
 .tabs { display: flex; background: var(--tab-bar); border-bottom: 1px solid var(--border); }
 .tabs button { border: none; border-right: 1px solid var(--border); border-radius: 0; background: none; padding: 4px 14px; }
 .tabs button[aria-selected="true"] { background: var(--tab-active); font-weight: 600; box-shadow: inset 0 -2px var(--link); }
@@ -336,13 +322,15 @@ code { background: var(--code-bg); padding: 0 3px; border-radius: 3px; }
   .shell.dar .flow-nav .panel-title { justify-content: space-between; padding: 0 8px; }
   .menu-daralt { display: none; }
   .nav-link { padding: 10px 14px; }
-  .sandbox {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto 420px 320px 220px;
-    grid-template-areas: "toolbar" "sources" "editor" "waves" "bottom";
-    height: auto;
-    padding: 4px 16px;
-  }
+  .sandbox { height: auto; padding: 4px 16px; }
+  .duzen-alani, .duzen-satir { flex-direction: column; flex: none !important; gap: 4px; }
+  .duzen-ayirici, .duzen-bos-satir { display: none; }
+  .duzen-satir > .panel { flex: none !important; }
+  .duzen-satir > .sources { height: auto; max-height: 220px; }
+  .duzen-satir > .editor { height: 420px; }
+  .duzen-satir > .waves { height: 320px; }
+  .duzen-satir > .bottom { height: 220px; }
+  .tutamak-izi, .panel-menu { display: none; }
   .questions, .progress, .about { padding: 12px 16px 40px; }
 }
 
@@ -733,3 +721,68 @@ textarea.mono { font-family: var(--mono); font-size: 12.5px; }
 .ders-test .question { max-width: 100%; }
 .ders-gezinti { display: flex; justify-content: space-between; gap: 12px; margin-top: 28px; padding-top: 12px; border-top: 1px solid var(--border); flex-wrap: wrap; }
 @media (max-width: 700px) { .ders-icindekiler ol { columns: 1; } .mini-editor { height: 240px; } }
+
+/* ---- Simülasyon alanı: pencere düzeni ---- */
+.toolbar-bosluk { flex: 1; }
+.duzen-alani { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.duzen-satir { display: flex; min-height: 0; flex-basis: 0; }
+.duzen-satir > .panel { flex-basis: 0; flex-shrink: 1; min-width: 120px; min-height: 80px; position: relative; }
+.duzen-ayirici { flex: none; background: transparent; touch-action: none; position: relative; }
+.duzen-ayirici.dikey { width: 5px; cursor: col-resize; }
+.duzen-ayirici.yatay { height: 5px; cursor: row-resize; }
+.duzen-ayirici:hover, .duzen-ayirici:active { background: var(--active); }
+body.boyutlaniyor { user-select: none; }
+body.boyutlaniyor iframe, body.boyutlaniyor canvas { pointer-events: none; }
+.panel-tutamak { display: flex; align-items: center; gap: 6px; cursor: grab; }
+.panel-tutamak .panel-ad { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.panel-tutamak .tabs { flex: 1; background: none; border: 0; }
+.bottom > .panel-tutamak { padding: 0 6px 0 4px; }
+.tutamak-izi { color: var(--muted); font-size: 11px; cursor: grab; }
+.panel-menu { margin-left: auto; opacity: 0.6; }
+.panel-tutamak:hover .panel-menu, .panel-menu:focus-visible { opacity: 1; }
+.panel.surukleniyor { opacity: 0.45; }
+.panel.birak-sol { box-shadow: inset 4px 0 var(--link); }
+.panel.birak-sag { box-shadow: inset -4px 0 var(--link); }
+.duzen-bos-satir { flex: none; height: 44px; margin: 4px 0; display: grid; place-items: center; border: 2px dashed var(--border); color: var(--muted); font-size: 12px; }
+.duzen-bos-satir.hedef { border-color: var(--link); color: var(--link); }
+.acilir { position: relative; }
+.acilir-kutu { position: absolute; right: 0; top: calc(100% + 4px); z-index: 30; background: var(--panel); border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 6px 20px rgb(0 0 0 / 0.18); padding: 10px 12px; width: 300px; }
+.duzen-menusu h4 { margin: 10px 0 4px; font-size: 12px; text-transform: uppercase; color: var(--muted); }
+.duzen-menusu .hint { font-size: 11.5px; margin: 6px 0 0; }
+.duzen-varsayilan { width: 100%; }
+.duzen-listesi { list-style: none; margin: 0; padding: 0; }
+.duzen-listesi li { display: flex; align-items: center; justify-content: space-between; padding: 2px 0; }
+.duzen-kaydet { display: flex; gap: 6px; margin-top: 8px; }
+.duzen-kaydet input { flex: 1; min-width: 0; padding: 3px 6px; border: 1px solid var(--border); border-radius: 3px; background: var(--input); color: var(--text); }
+@media (max-width: 900px) { .acilir-kutu { position: fixed; left: 16px; right: 16px; top: 120px; width: auto; } }
+
+/* ---- Tanıtım ve S.S.S. ---- */
+.tanitim-seridi { display: flex; gap: 10px; align-items: center; padding: 6px 12px; background: var(--section-header); color: var(--section-text); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.tanitim-seridi a { font-weight: 600; }
+.tanitim-seridi .icon { margin-left: auto; }
+.tanitim { max-width: 1000px; padding: 12px 16px 56px; }
+.tanitim-ust h2 { font-size: 26px; margin: 10px 0 8px; }
+.tanitim-ust p { font-size: 15px; line-height: 1.6; max-width: 760px; margin: 0; }
+.tanitim-dugmeler { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0 8px; }
+.tanitim h3 { font-size: 18px; margin: 32px 0 12px; }
+.kitleler { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.kitle { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; }
+.kitle p { margin: 6px 0 0; line-height: 1.5; color: var(--detail); }
+.adimlar { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 28px; }
+.adimlar li { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 20px; align-items: center; }
+.adimlar li.ters figure { order: 2; }
+.adimlar figure { margin: 0; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; box-shadow: 0 4px 14px rgb(0 0 0 / 0.08); background: var(--panel); }
+.adimlar img { display: block; width: 100%; height: auto; }
+.adimlar h4 { margin: 0 0 6px; font-size: 16px; }
+.adimlar p { margin: 0 0 8px; line-height: 1.6; }
+.tanitim-alt ul { line-height: 1.7; padding-left: 20px; }
+.sss { max-width: 820px; padding: 8px 16px 48px; }
+.sss h3 { font-size: 15px; margin: 22px 0 8px; }
+.sss-soru { background: var(--panel); border: 1px solid var(--border); border-radius: 4px; margin: 0 0 6px; padding: 0 12px; }
+.sss-soru summary { cursor: pointer; padding: 9px 0; font-weight: 600; }
+.sss-soru[open] summary { border-bottom: 1px solid var(--border-soft); }
+.sss-soru > p, .sss-soru > div { line-height: 1.6; }
+@media (max-width: 700px) {
+  .adimlar li { grid-template-columns: 1fr; }
+  .adimlar li.ters figure { order: 0; }
+}
