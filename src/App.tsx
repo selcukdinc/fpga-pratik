@@ -4,6 +4,7 @@ import { useRoute, type Route } from "./lib/router";
 import { api } from "./lib/api";
 import { OturumSaglayici } from "./lib/oturum";
 import { Sandbox } from "./pages/Sandbox";
+import { Ders } from "./pages/Ders";
 import { Questions } from "./pages/Questions";
 import { Progress } from "./pages/Progress";
 import { About } from "./pages/About";
@@ -23,6 +24,7 @@ function baslik(route: Route, topicTitle?: string): string {
   switch (route.page) {
     case "pratik": return "PRATİK - Simülasyon alanı";
     case "sorular": return `SORU HAVUZU - ${topicTitle ?? (route.hafta ? `${route.hafta}. hafta` : "Tüm sorular")}`;
+    case "ders": return route.hafta ? `DERS - ${route.hafta}. hafta` : "DERSLER";
     case "ilerleme": return "İLERLEME - Konu bazlı durum";
     case "hakkinda": return "HAKKINDA";
     case "gizlilik": return "GİZLİLİK";
@@ -71,6 +73,7 @@ export function App() {
       <Shell route={route} currentWeek={currentWeek} title={title} status={status} duyuru={duyuru}>
         {route.page === "pratik" && <Sandbox onStatus={setStatus} />}
         {route.page === "sorular" && <Questions topic={route.topic} hafta={route.hafta} topics={topics} />}
+        {route.page === "ders" && <Ders hafta={route.hafta} />}
         {route.page === "ilerleme" && <Progress />}
         {route.page === "hakkinda" && <About />}
         {route.page === "gizlilik" && <Gizlilik />}

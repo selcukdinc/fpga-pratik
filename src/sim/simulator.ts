@@ -92,10 +92,14 @@ export async function simulate(files: SimFile[], opts: SimulateOptions): Promise
     "-r", `--stop-time=${opts.stopTime}`, "--wave=wave.vcd", "--format=vcd",
   ];
   const res = await run({ args, files: toFiles(files), collect: ["wave.vcd"] }, opts.timeoutMs ?? DEFAULT_TIMEOUT_MS);
-  const messages = parseMessages(res.lines);
+  // Hiç sinyali olmayan bir testbench'te (yalnızca report kullanan) NVC dalga
+  // dosyası yazamayıp bu hatayı verir; benzetimin kendisi başarılıdır.
+  const tum = parseMessages(res.lines);
+  const bosDalga = (m: SimMessage) => m.severity === "fatal" && m.text.includes("fstReaderOpen failed");
+  const messages = tum.filter((m) => !bosDalga(m));
   const text = res.files["wave.vcd"];
   return {
-    ok: res.exitCode === 0 && !hasErrors(messages),
+    ok: (res.exitCode === 0 || tum.some(bosDalga)) && !hasErrors(messages),
     messages,
     log: res.lines,
     ms: performance.now() - t0,

@@ -8,6 +8,8 @@ describe("yönlendirici", () => {
       { page: "sorular" },
       { page: "sorular", topic: "esz-atamalar" },
       { page: "sorular", hafta: 3 },
+      { page: "ders" },
+      { page: "ders", hafta: 4 },
       { page: "profil", ad: "ali_42" },
       { page: "ayarlar" },
       { page: "ayarlar", sekme: "hesap" },

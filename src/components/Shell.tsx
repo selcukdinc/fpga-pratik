@@ -179,6 +179,7 @@ export function Shell({ route, currentWeek, title, status, duyuru, children }: P
         <NavLink to={{ page: "pratik" }} current={route} ikon="pratik">Simülasyon alanı</NavLink>
 
         <div className="nav-section">ÇALIŞ</div>
+        <NavLink to={{ page: "ders" }} current={route} ikon="ders">Dersler</NavLink>
         <NavLink to={{ page: "sorular" }} current={route} ikon="sorular"
           ek={currentWeek !== null && <span className="nav-rozet" title={`Sorular ${currentWeek}. haftaya kadar açık`}>H{currentWeek}</span>}>
           Soru havuzu

@@ -708,3 +708,28 @@ textarea.mono { font-family: var(--mono); font-size: 12.5px; }
 .pano-metin { grid-column: 1 / -1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (min-width: 1500px) { .soru-panosu { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (max-width: 700px) { .soru-panosu { grid-template-columns: 1fr; } }
+
+/* ---- Dersler ---- */
+.ders-sayfa { max-width: 860px; padding: 8px 16px 48px; }
+.ders-giris { margin: 6px 0 14px; }
+.ders-listesi { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.ders-listesi a { display: flex; flex-direction: column; gap: 3px; padding: 10px 14px; background: var(--panel); border: 1px solid var(--border); border-radius: 4px; color: var(--text); text-decoration: none; }
+.ders-listesi a:hover { border-color: var(--btn-primary-border); background: var(--msg-hover); }
+.ders-listesi strong { font-size: 15px; }
+.ders-hafta { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.ders-etiketler { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 3px; }
+.ders-ust h2 { margin: 2px 0 4px; font-size: 20px; }
+.ders-ust .hint { margin: 0; }
+.ders-icindekiler { background: var(--panel); border: 1px solid var(--border); border-radius: 4px; padding: 6px 14px; margin: 12px 0; }
+.ders-icindekiler ol { margin: 0; padding-left: 20px; columns: 2; column-gap: 24px; }
+.ders-icindekiler li { margin: 2px 0; break-inside: avoid; }
+.ders-bolum { margin: 22px 0; scroll-margin-top: 12px; }
+.ders-bolum h3 { font-size: 16px; margin: 0 0 6px; padding-bottom: 4px; border-bottom: 1px solid var(--border-soft); }
+.ders-bolum > p, .ders-bolum li { line-height: 1.6; }
+.mini-sim { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; padding: 10px; background: var(--panel); border: 1px solid var(--border); border-radius: 4px; }
+.mini-editor { height: 300px; }
+.mini-gorev { margin: 0; padding: 6px 10px; border-left: 3px solid var(--link); background: var(--msg-hover); }
+.mini-sim .kod-dugmeler { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.ders-test .question { max-width: 100%; }
+.ders-gezinti { display: flex; justify-content: space-between; gap: 12px; margin-top: 28px; padding-top: 12px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+@media (max-width: 700px) { .ders-icindekiler ol { columns: 1; } .mini-editor { height: 240px; } }
