@@ -180,43 +180,95 @@ Birkaç senaryoyu bu ağaçla çözelim:
   test: ["h1-fpga-acilim", "h1-fpga-asic-nre", "h1-fpga-cpu-paralel", "h1-prototip", "h1-7400-ssi"],
 };
 
+
 export const HAFTA_2: Ders = {
   hafta: 2,
   baslik: "Programlanabilir mantık ve tasarım akışı",
-  ozet: "PROM, PAL, PLA, CPLD ve FPGA yapısını; bir tasarımın koddan yongaya nasıl gittiğini öğren.",
+  ozet: "PROM, PAL, PLA, CPLD ve FPGA yapısını; bir LUT'un nasıl her kapıya dönüşebildiğini ve bir tasarımın koddan yongaya nasıl gittiğini öğren.",
   bolumler: [
     {
-      baslik: "VE-VEYA dizileri: PROM, PAL ve PLA",
+      baslik: "Çarpımların toplamı: PROM, PAL ve PLA",
       metin: md(`
-Her mantık fonksiyonu **çarpımların toplamı** biçiminde yazılabilir: önce girişlerin VE'leri (çarpım terimleri), sonra bu terimlerin VEYA'sı. İlk programlanabilir yongalar bu yapıyı doğrudan donanıma koydu: bir **VE dizisi** ve onun ardından bir **VEYA dizisi**.
+**Neden önemli?** İlk programlanabilir yongaların hepsi aynı fikre dayanır: her mantık fonksiyonu VE'lerin VEYA'sı olarak yazılabilir. Bu fikri bir kez görürsen PROM, PAL ve PLA arasındaki farkı ezberlemen gerekmez; hangi dizinin programlandığına bakman yeter.
 
-Üç klasik yapı, hangi dizinin programlanabildiğine göre ayrılır:
+Her mantık fonksiyonu **çarpımların toplamı** biçiminde yazılabilir: önce girişlerin VE'leri (**çarpım terimleri**), sonra bu terimlerin VEYA'sı. Bir doğruluk tablosundan başlayalım:
 
-- **PROM:** VE dizisi sabittir ve girişlerin tüm birleşimlerini (tüm minterimleri) üretir; VEYA dizisi programlanır. n girişte 2^n terim vardır.
-- **PAL:** VE dizisi programlanır, VEYA dizisi sabittir. Her çıkış kendine ayrılmış birkaç terimi toplar; terimler çıkışlar arasında paylaşılamaz.
-- **PLA:** Her iki dizi de programlanır. Bir çarpım terimi birden çok çıkışta kullanılabilir, bu yüzden en esnek olanıdır ama daha yavaş ve pahalıdır.
+[[G-H2-06]]
+
+Tabloda F1'in 1 olduğu dört satır var. Her satırı tek başına bir çarpım terimi olarak yazarsan (bunlara **minterim** denir) F1 dört terimin toplamı olur. Şekildeki mavi satırlar (001 ve 101) yalnızca A'da farklıdır; A ne olursa olsun B = 0 ve C = 1 iken F1 = 1'dir, yani bu iki satır tek bir **B'C** terimine sığar. Yeşil satırlar da (110 ve 111) **AB** terimine sığar. Sonuç: F1 = B'C + AB.
+
+İlk programlanabilir yongalar bu yapıyı doğrudan donanıma koydu: girişlerden çarpım terimlerini üreten bir **VE dizisi** ve onun ardından terimleri toplayan bir **VEYA dizisi**. Üç klasik yapı, hangi dizinin programlanabildiğine göre ayrılır:
 
 [[G-H2-01]]
 
-**CPLD**, birkaç PAL benzeri bloğun ortak bir bağlantı matrisiyle birleştirilmiş halidir. İhtiyaçlar büyüdükçe tek bir PLD yetmeyince bu yol seçildi. FPGA ise aynı fikrin çok daha ince taneli ve büyük devamıdır.
+| Yapı | VE dizisi | VEYA dizisi | Sonuç |
+| --- | --- | --- | --- |
+| PROM | Sabit: tüm 2^n minterim | Programlanır | n girişte 2^n terim; sadeleştirmeye gerek yok |
+| PAL | Programlanır | Sabit | Her çıkışın kendine ayrılmış birkaç terimi var; terimler paylaşılamaz |
+| PLA | Programlanır | Programlanır | Bir terim birden çok çıkışta kullanılabilir; en esnek ama daha yavaş ve pahalı |
+
+Şimdi aynı iki fonksiyonu, **F1 = AB + B'C** ve **F2 = AB + BC'**, üç yapıya da yerleştirelim. Şekillerde üstteki sütunlar girişler ve tersleridir (A, A', B, B', C, C'). Her yatay çizgi bir VE kapısına, yani bir çarpım terimine gider. Bir çizgiyle sütunun kesiştiği yerdeki **×** programlanmış bir bağlantıdır, **nokta** ise üretimde sabitlenmiş bir bağlantı.
+
+[[G-H2-07]]
+
+PROM'da VE dizisi sabittir ve 3 giriş için 2³ = 8 minterimin hepsini üretir. Biz yalnızca VEYA dizisinde hangi minterimin hangi çıkışa gideceğini seçeriz: F1 için 4, F2 için 3 bağlantı. Sadeleştirme bir şey kazandırmaz, çünkü her minterim zaten hazırdır.
+
+[[G-H2-08]]
+
+PAL'de terimleri kendimiz kurarız ama her çıkışın terimleri üretimde ona ayrılmıştır. AB terimi iki çıkışta da gerektiği için **iki kez** kurulur.
+
+[[G-H2-09]]
+
+PLA'da iki dizi de programlanır. AB terimi bir kez kurulur ve iki VEYA sütununa birden bağlanır, böylece 3 terim yeter. Bu esnekliğin bedeli, iki programlanır dizinin daha fazla anahtar ve daha uzun bir sinyal yolu gerektirmesidir: PLA daha yavaş ve daha pahalıdır.
+
+> **Çözümlü örnek:** Yukarıdaki PLA'da A = 1, B = 0, C = 1 iken F1 ve F2 kaçtır?
+>
+> 1. Önce terimleri hesapla: AB = 1·0 = 0, B'C = 1·1 = 1, BC' = 0·0 = 0.
+> 2. F1, AB ve B'C terimlerine bağlı: F1 = 0 + 1 = 1.
+> 3. F2, AB ve BC' terimlerine bağlı: F2 = 0 + 0 = 0.
+>
+> Terim sayısı sorulursa farklı terimleri say: AB, B'C, BC' üç terimdir. PLA'da ortak terim bir kez kurulduğu için 3, PAL'de AB iki kez kurulduğu için 4 VE kapısı gerekir.
+
+> **Sık hata:** PROM'un VE dizisinin programlandığını sanmak. PROM'da VE dizisi sabittir (tüm minterimler hazır), programlanan VEYA dizisidir. PAL'de tam tersi: VE programlanır, VEYA sabittir.
+`),
+      dene: ["h2-prom-terim", "h2-pla-terim-sayisi"],
+    },
+    {
+      baslik: "Tarihçe ve CPLD",
+      metin: md(`
+**Neden önemli?** Her yeni yapı, bir öncekinin sınırına çözüm olarak doğdu. Bu sırayı bilmek, FPGA'nın neden bugünkü biçimde olduğunu anlamayı kolaylaştırır.
 
 Derste verilen tarihçeye göre bu cihazlar şu sırayla ortaya çıktı:
 
-- **PROM:** 1966
-- **PLA:** 1975
-- **PAL:** 1980
-- **CPLD:** 1982
-- **FPGA:** 1985
+[[G-H2-10]]
+
+1. **PROM** (1966): VE dizisi sabit, VEYA dizisi programlanır.
+2. **PLA** (1975): İki dizi de programlanır.
+3. **PAL** (1980): VE dizisi programlanır, VEYA sabit; PLA'dan daha hızlı ve ucuz.
+4. **CPLD** (1982): Birkaç PAL benzeri blok ve aralarında bir bağlantı matrisi.
+5. **FPGA** (1985): Küçük LUT'lu blokların ızgarası ve programlanabilir bağlantılar.
+
+**CPLD neden doğdu?** Tek bir PAL'in giriş, çıkış ve terim sayısı sınırlıdır. Tasarımlar büyüdükçe birkaç PAL'i kartta yan yana koymak yerine hepsini tek yongaya almak gerekti:
+
+[[G-H2-11]]
+
+**CPLD**, PAL benzeri birkaç mantık bloğunun ortak bir **bağlantı matrisiyle** birleştirilmiş halidir. Bloklar birbirine yalnızca ortadaki matris üzerinden bağlanır. Her bloğun çıkışında, sonucu doğrudan ya da bir flip-flop üzerinden veren **makro hücreler** bulunur.
+
+FPGA aynı fikri çok daha ince taneli hale getirir: birkaç büyük blok yerine binlerce küçük blok ve onları her yönde bağlayan bir yol ağı. Bu yüzden FPGA'lar çok daha büyük devreleri alabilir.
+
+> **Dikkat:** Sıra sorulduğunda PAL'in PLA'dan **sonra** geldiğine dikkat et: PLA 1975, PAL 1980. PAL, PLA'nın yavaşlığına çözüm olarak VEYA dizisini sabitledi.
 `),
+      dene: ["h2-tarihce-sira", "h2-cpld"],
     },
     {
       baslik: "FPGA'nın içi: CLB, LUT ve bağlantılar",
       metin: md(`
-FPGA dizi yapısı yerine çok sayıda küçük blok kullanır:
+**Neden önemli?** Yazdığın her VHDL satırı sonunda LUT'lara ve flip-floplara dönüşür. Bir LUT'un yalnızca küçük bir tablo olduğunu görmek, sentez raporlarını okurken ve "bu tasarım kaç LUT tutar?" sorusunda işini kolaylaştırır.
 
-- **CLB** (yapılandırılabilir mantık bloğu): Mantık işlevlerinin kurulduğu temel blok. İçinde LUT'lar, flip-floplar ve çoklayıcılar bulunur; her birinin ayrı bir görevi vardır (aşağıda).
-- **LUT** (arama tablosu): k girişli bir LUT, 2^k bitlik küçük bir bellektir. Girişler adres olur, çıkış o adresteki bittir. Doğruluk tablosunu bu belleğe yazarak k girişli **her** fonksiyonu kurabilirsin.
-- **IOB:** Yonganın bacaklarıyla iç mantık arasındaki giriş/çıkış blokları.
+FPGA dizi yapısı yerine çok sayıda küçük blok kullanır. Üç temel yapı taşı vardır:
+
+- **CLB** (yapılandırılabilir mantık bloğu): Mantık işlevlerinin kurulduğu temel blok. İçinde LUT'lar, flip-floplar ve çoklayıcılar bulunur.
+- **IOB** (giriş/çıkış bloğu): Yonganın bacaklarıyla iç mantık arasındaki bağlantıyı kurar.
 - **Programlanabilir bağlantılar:** Blokları birbirine bağlayan anahtarlı yollar.
 
 [[G-H2-02]]
@@ -224,12 +276,44 @@ FPGA dizi yapısı yerine çok sayıda küçük blok kullanır:
 Bir CLB'nin içinde sinyal şu yolu izler:
 
 - **LUT** kombinasyonel mantık fonksiyonunu gerçekler: girişlere bakıp doğruluk tablosundaki çıkışı verir.
-- LUT'un ardından gelen **D flip-flop**, bu sonucu **saat kenarında yakalayıp saklar**. Böylece sonuç bir sonraki saat kenarına kadar sabit kalır; sayaçlar ve kayıtçılar bu flip-floplarla kurulur.
+- LUT'un ardından gelen **D flip-flop**, bu sonucu **saat kenarında yakalayıp saklar**. Sonuç bir sonraki saat kenarına kadar sabit kalır; sayaçlar ve kayıtçılar bu flip-floplarla kurulur.
 - Çıkıştaki **MUX** (çoklayıcı), CLB çıkışının flip-floptan mı (kayıtlı, saate bağlı) yoksa doğrudan LUT'tan mı (kombinasyonel) alınacağını seçer.
 
-Modern FPGA'larda bunlara ek olarak blok RAM, DSP (çarpıcı) dilimleri ve saat üreteçleri (PLL) de bulunur.
+İki yolun farkı dalgada açıkça görünür:
+
+[[G-H2-12]]
+
+Seçim 0 iken çıkış, LUT çıkışı f değiştiği anda değişir. Seçim 1 iken çıkış yalnızca saatin yükselen kenarlarında (↑) f'nin o anki değerini alır ve bir sonraki kenara kadar tutar.
+
+**LUT nedir?** k girişli bir **LUT** (arama tablosu), 2^k bitlik küçük bir bellektir. Girişler adres olur, çıkış o adresteki bittir. Doğruluk tablosunu bu belleğe yazarak k girişli **her** fonksiyonu kurabilirsin.
+
+| Giriş sayısı (k) | Bellek (2^k bit) |
+| --- | --- |
+| 2 | 4 |
+| 3 | 8 |
+| 4 | 16 |
+| 6 | 64 |
 
 [[G-H2-03]]
+
+Bellekteki bitlerden birini seçen şey bir çoklayıcıdır. Giriş sayısı arttıkça bu çoklayıcı, 2'ye 1 çoklayıcılardan oluşan bir ağaç gibi düşünülebilir:
+
+[[G-H2-13]]
+
+Her kademe bir girişe bakar ve iki yoldan birini seçer. Üç kademeden sonra sekiz hücreden yalnızca biri çıkışa ulaşır.
+
+> **Çözümlü örnek:** 2 girişli LUT'ta OR kapısı için TABLO ne olmalı? Ders örneğinde TABLO soldan sağa ba = 11, 10, 01, 00 sırasıyla yazılır.
+>
+> 1. OR, en az bir giriş 1 iken 1'dir: ba = 11 → 1, 10 → 1, 01 → 1, 00 → 0.
+> 2. Bu sırayla yan yana yaz: **"1110"**.
+>
+> Aynı yöntemle her kapının tablosunu bulabilirsin. Aşağıdaki şekilde bitlere tıklayıp dene.
+
+[[G-H2-14]]
+
+Modern FPGA'larda CLB'lere ek olarak sık kullanılan işler için hazır bloklar da vardır: **blok RAM** (hazır bellek), **DSP dilimleri** (hızlı çarpıcılar) ve saat üreten **PLL**'ler. Bunlar yongada sütunlar halinde, CLB'lerin arasına yerleşir:
+
+[[G-H2-15]]
 
 Aşağıdaki örnekte 2 girişli bir LUT'u VHDL'de sabit bir tabloyla kuruyoruz. ~TABLO~ sabitini değiştirip aynı donanımı başka bir kapıya dönüştürebilirsin.
 `),
@@ -273,33 +357,52 @@ begin
 end architecture;
 `,
       },
+      dene: ["t2-lut-nand", "t2-clb-ff"],
     },
     {
       baslik: "Tasarım akışı",
       metin: md(`
+**Neden önemli?** Vivado'da bir düğmeye basınca arka planda birçok adım çalışır. Hangi adımın neyi alıp neyi ürettiğini bilirsen bir hata mesajının hangi aşamadan geldiğini ve nereye dönmen gerektiğini hemen anlarsın.
+
 Bir FPGA tasarımı şu adımlardan geçer:
 
-- **Tasarım girişi:** Devreyi VHDL gibi bir donanım tanımlama diliyle ya da şematikle tanımlarsın.
-- **Benzetim (simülasyon):** Bir testbench ile devrenin davranışını bilgisayarda denersin. Hataları yongaya gitmeden yakalamanın en ucuz yolu budur.
-- **Sentez:** Araç, kodunu kapılardan, LUT'lardan ve flip-floplardan oluşan bir bağlantı listesine (netlist) çevirir.
-- **Eşleme:** Netlist'teki elemanlar yonganın gerçek kaynaklarına, yani CLB'lerdeki LUT ve flip-floplara dağıtılır.
-- **Yerleştirme ve yönlendirme:** Eşlenen bloklar yonga üzerinde belirli yerlere **yerleştirilir** ve aralarındaki bağlantılar **yönlendirilir**. Bağlantıların gerçek gecikmeleri burada belli olur, zamanlama burada kontrol edilir. Vivado bu son adımları birlikte **uygulama** (implementation) diye adlandırır.
-- **Bitstream üretimi ve yükleme:** Ortaya çıkan yapılandırma dosyası yongaya yüklenir.
+1. **Tasarım girişi:** Devreyi VHDL gibi bir donanım tanımlama diliyle ya da şematikle tanımlarsın.
+2. **Benzetim (simülasyon):** Bir testbench ile devrenin davranışını bilgisayarda denersin. Hataları yongaya gitmeden yakalamanın en ucuz yolu budur.
+3. **Sentez:** Araç, kodunu kapılardan, LUT'lardan ve flip-floplardan oluşan bir bağlantı listesine (**netlist**) çevirir.
+4. **Eşleme:** Netlist'teki elemanlar yonganın gerçek kaynak türlerine, yani LUT ve flip-floplara dağıtılır.
+5. **Yerleştirme:** Eşlenen her parçaya yonga üzerinde belirli bir yer, yani hangi CLB'de çalışacağı seçilir.
+6. **Yönlendirme:** Yerleştirilen bloklar ve bacaklar arasındaki bağlantılar programlanabilir yollar üzerinden kurulur. Bağlantıların gerçek gecikmeleri burada belli olur, zamanlama burada kontrol edilir.
+7. **Bitstream üretimi ve yükleme:** Ortaya çıkan yapılandırma dosyası yongaya yüklenir.
+
+Vivado eşleme, yerleştirme ve yönlendirmeyi birlikte **uygulama** (implementation) diye adlandırır.
 
 [[G-H2-04]]
 
-Vivado bu adımların hepsini tek bir arayüzde toplar:
+Aynı tam toplayıcıyı akış boyunca izleyelim:
 
-- Yeni proje sihirbazında **RTL Project** türü seçilir. Bu tür, VHDL kaynaklarından başlayıp sentez, uygulama ve bitstream üretimine kadar gider.
-- Hedef yonga (part) proje oluşturulurken ya da proje ayarlarından seçilir. Derste kullanılan **Nexys 4** kartında Artix-7 ailesinden **xc7a100tcsg324-1** yongası vardır. Parça yanlış seçilirse kısıt dosyası (XDC) ve bitstream karta uymaz.
-- Sentezden sonra RTL şemasına bakıp kodun hangi bloklara dönüştüğünü görebilirsin.
+[[G-H2-16]]
 
-Bu sitedeki simülasyon alanı ise ilk iki adımı tarayıcında yapar.
+| Adım | Girdi | Çıktı |
+| --- | --- | --- |
+| Sentez | VHDL kodu | Netlist: iki XOR, iki AND, bir OR |
+| Eşleme | Netlist | İki adet 3 girişli LUT (biri s, biri cout için) |
+| Yerleştirme | Eşlenmiş LUT'lar | Her LUT için bir CLB, her port için bir bacak |
+| Yönlendirme | Yerleşmiş bloklar | Teller ve gerçek gecikmeler |
+| Bitstream | Yönlendirilmiş tasarım | Yongaya yüklenecek dosya |
+
+Tam toplayıcının her çıkışı yalnızca üç girişe bağlı olduğu için beş kapı, eşlemede iki LUT'a sığar. Sentezdeki kapı sayısı ile kullanılan LUT sayısı bu yüzden aynı değildir.
+
+> **Sık hata:** Eşleme, yerleştirme ve yönlendirmeyi karıştırmak. Kısa yol: **eşleme** "hangi tür kaynak?" (LUT mı, flip-flop mu), **yerleştirme** "yongada nerede?" (hangi CLB), **yönlendirme** "aralarına hangi tel?" sorusunun cevabıdır.
+
+> **Dikkat:** Benzetim sentezden **önce** gelir. Hatalı bir tasarımı sentezleyip yonga üzerinde aramak çok daha zahmetlidir.
 `),
+      dene: ["h2-yonlendirme", "t2-yerlestirme"],
     },
     {
-      baslik: "Modelleme yaklaşımları",
+      baslik: "Modelleme yaklaşımları ve Vivado",
       metin: md(`
+**Neden önemli?** Sınavlarda ve gerçek projelerde bir kodu görüp "bu hangi modelleme?" diye tanıman gerekir. Üç yaklaşımın aynı devreyi tanımlayabildiğini görmek, hangisini ne zaman seçeceğine karar vermeni sağlar.
+
 Bir devreyi tanımlamanın üç temel yolu vardır:
 
 - **Yapısal modelleme:** Devreyi daha küçük bileşenlerin (component) port map ile birbirine bağlanmasıyla kurarsın, tıpkı bir şema çizer gibi. Örneğin iki yarım toplayıcı ve bir VEYA kapısından tam toplayıcı.
@@ -308,8 +411,110 @@ Bir devreyi tanımlamanın üç temel yolu vardır:
 
 [[G-H2-05]]
 
+Aynı tam toplayıcıyı üç biçimde de yazalım:
+
+[[G-H2-17]]
+
+Bir kodun hangi modelleme olduğunu anlamak için şuna bak: ~port map~ ile bileşenler bağlanıyorsa yapısal, process yoksa ve yalnızca ~<=~ atamaları varsa veri akışı, process içinde if ve case gibi komutlar varsa davranışsaldır.
+
 Gerçek tasarımlarda bu yaklaşımlar birlikte kullanılır: üst seviyede bileşenler yapısal olarak bağlanır, her bileşenin içi davranışsal yazılır.
+
+**Vivado'da proje kurmak.** Vivado yukarıdaki akışın hepsini tek bir arayüzde toplar:
+
+[[G-H2-18]]
+
+- Yeni proje sihirbazında **RTL Project** türü seçilir. Bu tür, VHDL kaynaklarından başlayıp sentez, uygulama ve bitstream üretimine kadar gider.
+- Hedef yonga (part) proje oluşturulurken ya da proje ayarlarından seçilir. Derste kullanılan **Nexys 4** kartında Artix-7 ailesinden **xc7a100tcsg324-1** yongası vardır. Parça yanlış seçilirse kısıt dosyası (XDC) ve bitstream karta uymaz.
+- Sentezden sonra **RTL şemasına** bakıp kodun hangi bloklara dönüştüğünü görebilirsin.
+
+Bu sitedeki simülasyon alanı ise ilk iki adımı, yani tasarım girişini ve benzetimi tarayıcında yapar. Aşağıdaki örnek, üç modellemenin sekiz giriş birleşiminin hepsinde aynı sonucu verdiğini bir testbench ile kontrol ediyor.
 `),
+      sim: {
+        top: "tb",
+        sure: "100ns",
+        gorev: "veri_akisi mimarisinde cout satırını \"cout <= (a and b) or cin;\" yap ve çalıştır. Hangi girişlerde fark çıktığını dalgada bul.",
+        kod: `${UST}
+-- Yarim toplayici: yapisal modelin parcasi
+entity ha is
+  port (x, y : in std_logic; s, c : out std_logic);
+end entity;
+
+architecture rtl of ha is
+begin
+  s <= x xor y;
+  c <= x and y;
+end architecture;
+
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity tam_toplayici is
+  port (a, b, cin : in std_logic; s, cout : out std_logic);
+end entity;
+
+-- 1) Yapisal: iki yarim toplayici ve bir VEYA
+architecture yapisal of tam_toplayici is
+  signal s1, c1, c2 : std_logic;
+begin
+  u1 : entity work.ha port map (a, b, s1, c1);
+  u2 : entity work.ha port map (s1, cin, s, c2);
+  cout <= c1 or c2;
+end architecture;
+
+-- 2) Veri akisi: eszamanli atamalar
+architecture veri_akisi of tam_toplayici is
+begin
+  s    <= a xor b xor cin;
+  cout <= (a and b) or (cin and (a xor b));
+end architecture;
+
+-- 3) Davranissal: girislerdeki 1'leri say
+architecture davranissal of tam_toplayici is
+begin
+  process (a, b, cin)
+    variable n : integer;
+  begin
+    n := 0;
+    if a = '1' then n := n + 1; end if;
+    if b = '1' then n := n + 1; end if;
+    if cin = '1' then n := n + 1; end if;
+    if n mod 2 = 1 then s <= '1'; else s <= '0'; end if;
+    if n >= 2 then cout <= '1'; else cout <= '0'; end if;
+  end process;
+end architecture;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity tb is
+end entity;
+
+architecture sim of tb is
+  signal a, b, cin : std_logic := '0';
+  signal s1, c1, s2, c2, s3, c3 : std_logic;
+begin
+  m1 : entity work.tam_toplayici(yapisal)     port map (a, b, cin, s1, c1);
+  m2 : entity work.tam_toplayici(veri_akisi)  port map (a, b, cin, s2, c2);
+  m3 : entity work.tam_toplayici(davranissal) port map (a, b, cin, s3, c3);
+
+  process
+    variable g : unsigned(2 downto 0);
+  begin
+    for i in 0 to 7 loop
+      g := to_unsigned(i, 3);
+      a <= g(2); b <= g(1); cin <= g(0);
+      wait for 10 ns;
+      assert s1 = s2 and s2 = s3 and c1 = c2 and c2 = c3
+        report "mimariler farkli sonuc verdi" severity error;
+    end loop;
+    report "uc mimari 8 girisin hepsinde ayni sonucu verdi";
+    wait;
+  end process;
+end architecture;
+`,
+      },
+      dene: ["h2-modelleme-kod", "h2-vivado-rtl"],
     },
   ],
   test: ["h2-pal-dizi", "h2-pla-dizi", "h2-clb-lut", "h2-lut-bit", "h2-akis-sira", "h2-sentez"],
