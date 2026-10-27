@@ -219,6 +219,11 @@ export function Shell({ route, currentWeek, title, status, duyuru, children }: P
           FPGA Pratik
         </a>
         <span className="topbar-status">{status}</span>
+        {yeniSayisi > 0 && route.page !== "yenilikler" && (
+          <a className="yeni-isareti" href="/yenilikler" title="Son ziyaretinden sonra eklenenler">
+            Yeni <span className="sayi-rozeti">{yeniSayisi}</span>
+          </a>
+        )}
         <OlcekDugmeleri />
         <TemaDugmesi />
         <HesapAlani route={route} />
