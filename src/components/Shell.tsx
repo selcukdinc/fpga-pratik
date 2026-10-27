@@ -5,6 +5,7 @@ import { TEMA_ADI, TEMA_SIRASI, useTema } from "../lib/tema";
 import { uye, useOturum } from "../lib/oturum";
 import { Avatar } from "./Avatar";
 import { inline } from "./Markdown";
+import { KutlamaBildirimi } from "./Kutlama";
 
 interface Props {
   route: Route;
@@ -239,6 +240,7 @@ export function Shell({ route, currentWeek, title, status, duyuru, children }: P
         <div className="section-header">{title}</div>
         <div className="workspace-body">{children}</div>
       </main>
+      <KutlamaBildirimi />
     </div>
   );
 }

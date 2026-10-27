@@ -10,6 +10,7 @@ import { yonetim } from "./yonetim";
 import { sosyal } from "./sosyal";
 import { topluluk } from "./topluluk";
 import { DAKIKA, SAAT, sinirAsildi } from "./sinir";
+import { ALEV, VARSAYILAN_HEDEF, seriler, type GunlukDurum } from "../shared/motivasyon";
 import { MODELLER, degerlendir, vektorUret } from "./modeller";
 import { IZ_SINIRI, TB_ADI, testbenchUret, type KodBilgisi, type KodSonucu, type Sinama, type Vektor } from "../shared/kod";
 
@@ -108,6 +109,19 @@ async function yayindakiSoru(c: Context<Env>, id: string): Promise<SoruSatiri | 
   return q;
 }
 
+const GUN_MS = 86_400_000;
+const TR_FARK = 3 * 3_600_000;
+// Türkiye saatine göre bugünün başlangıcı (ms)
+const bugunBasi = () => Math.floor((Date.now() + TR_FARK) / GUN_MS) * GUN_MS - TR_FARK;
+
+// Doğru bir cevaptan sonra bugünkü doğru sayısı; istemci hedefe ulaşıldıysa kutlar
+async function gunlukDurum(db: D1Database, userId: string, hedef: number): Promise<GunlukDurum> {
+  const r = await db.prepare("SELECT COALESCE(SUM(correct), 0) AS dogru FROM attempts WHERE user_id = ? AND created_at >= ?")
+    .bind(userId, bugunBasi())
+    .first<{ dogru: number }>();
+  return { dogru: r?.dogru ?? 0, hedef };
+}
+
 async function denemeKaydet(c: Context<Env>, userId: string, soruId: string, correct: boolean, answer: unknown) {
   await c.env.DB.prepare(
     "INSERT INTO attempts (user_id, question_id, correct, answer, created_at) VALUES (?, ?, ?, ?, ?)",
@@ -129,6 +143,7 @@ app.post("/questions/:id/answer", async (c) => {
   await denemeKaydet(c, me.id, c.req.param("id"), correct, body.answer);
 
   const result: AnswerResult = { correct, explanation: q.explanation, istatistik: await soruIstatistigi(c.env.DB, c.req.param("id"), q) };
+  if (correct) result.gunluk = await gunlukDurum(c.env.DB, me.id, me.gunlukHedef);
   return c.json(result);
 });
 
@@ -218,6 +233,7 @@ app.post("/sinama/:id", async (c) => {
   return c.json<KodSonucu>({
     correct, gecen: d.gecen, toplam: d.toplam, rapor: d.rapor, ipucu: d.ipucu,
     explanation: correct ? q.explanation : null,
+    gunluk: correct ? await gunlukDurum(c.env.DB, me.id, me.gunlukHedef) : undefined,
   });
 });
 
@@ -258,23 +274,25 @@ app.get("/questions/durum", async (c) => {
   return c.json<SoruDurumlari>(Object.fromEntries(results.map((r) => [r.id, r.dogru ? "dogru" : "yanlis"])));
 });
 
-const GUN_MS = 86_400_000;
-const TR_FARK = 3 * 3_600_000;
-
 app.get("/progress/ayrinti", async (c) => {
   const me = c.get("me");
-  const bos: IlerlemeAyrintisi = { takvim: [], yanlislar: [] };
-  const bugun = Math.floor((Date.now() + TR_FARK) / GUN_MS) * GUN_MS - TR_FARK;
+  const bugun = bugunBasi();
   const bas = bugun - 83 * GUN_MS;
   const gunler = Array.from({ length: 84 }, (_, i) => new Date(bas + i * GUN_MS + TR_FARK).toISOString().slice(0, 10));
-  if (!me) return c.json<IlerlemeAyrintisi>({ ...bos, takvim: gunler.map((gun) => ({ gun, deneme: 0, dogru: 0 })) });
+  if (!me) {
+    return c.json<IlerlemeAyrintisi>({
+      takvim: gunler.map((gun) => ({ gun, deneme: 0, dogru: 0 })), yanlislar: [],
+      hedef: VARSAYILAN_HEDEF, seri: { simdi: 0, enUzun: 0 }, alevGunleri: 0, hedefGunleri: 0,
+    });
+  }
 
   const db = c.env.DB;
+  // Bütün günler: takvim son 84 günü, seri ve rozetler hepsini kullanır
   const [g, y] = await db.batch([
     db.prepare(
       `SELECT date((created_at + ?) / 1000, 'unixepoch') AS gun, COUNT(*) AS deneme, SUM(correct) AS dogru
-       FROM attempts WHERE user_id = ? AND created_at >= ? GROUP BY gun`,
-    ).bind(TR_FARK, me.id, bas),
+       FROM attempts WHERE user_id = ? GROUP BY gun`,
+    ).bind(TR_FARK, me.id),
     db.prepare(
       `SELECT q.id, q.topic_id AS topicId, t.title AS topicTitle, q.week, q.prompt, COUNT(*) AS deneme, MAX(a.created_at) AS son
        FROM attempts a JOIN questions q ON q.id = a.question_id JOIN topics t ON t.id = q.topic_id
@@ -282,13 +300,19 @@ app.get("/progress/ayrinti", async (c) => {
        GROUP BY q.id HAVING MAX(a.correct) = 0 ORDER BY son DESC LIMIT 50`,
     ).bind(me.id),
   ]);
-  const sayilar = new Map((g!.results as { gun: string; deneme: number; dogru: number }[]).map((r) => [r.gun, r]));
+  const tumGunler = g!.results as { gun: string; deneme: number; dogru: number }[];
+  const sayilar = new Map(tumGunler.map((r) => [r.gun, r]));
+  const hedef = me.gunlukHedef;
   return c.json<IlerlemeAyrintisi>({
     takvim: gunler.map((gun) => ({ gun, deneme: sayilar.get(gun)?.deneme ?? 0, dogru: sayilar.get(gun)?.dogru ?? 0 })),
     yanlislar: (y!.results as (IlerlemeAyrintisi["yanlislar"][number] & { prompt: string })[]).map(({ prompt, ...r }) => ({
       ...r,
       ozet: ozet(prompt),
     })),
+    hedef,
+    seri: seriler(tumGunler.map((r) => r.gun), gunler[gunler.length - 1]!),
+    alevGunleri: tumGunler.filter((r) => r.dogru >= ALEV).length,
+    hedefGunleri: hedef > 0 ? tumGunler.filter((r) => r.dogru >= hedef).length : 0,
   });
 });
 

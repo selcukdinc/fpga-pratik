@@ -1,5 +1,6 @@
 // Kod yazma soruları: port tanımları, gizli testbench üretimi ve iz okuma.
 //
+import type { GunlukDurum } from "./motivasyon";
 // Akış: sunucu her denemede rastgele giriş vektörleri seçip bir "sınama"
 // açar ve bu vektörleri içeren testbench'i istemciye gönderir. Tarayıcı
 // öğrencinin tasarımıyla birlikte testbench'i NVC'de çalıştırır; testbench
@@ -53,6 +54,7 @@ export interface KodSonucu {
   rapor: RaporSatiri[] | null;
   ipucu: string | null;
   explanation: string | null;
+  gunluk?: GunlukDurum;
 }
 
 export const TB_ADI = "tb_sinama";

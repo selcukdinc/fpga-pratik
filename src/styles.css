@@ -822,6 +822,50 @@ body.boyutlaniyor iframe, body.boyutlaniyor canvas { pointer-events: none; }
 .takvim-hucre.b3 { background: var(--isi-3); }
 .takvim-hucre.b4 { background: var(--isi-4); }
 .takvim-izgara .takvim-hucre:not(.bos):hover { outline: 1px solid var(--text); }
+/* B4: alev basamakları (bir günde 10/25/50 doğru) */
+.takvim-hucre.kivilcim, .takvim-hucre.parilti, .takvim-hucre.alev { position: relative; }
+.takvim-hucre.kivilcim::after { content: ""; position: absolute; inset: 30%; border-radius: 50%; background: #ffb300; box-shadow: 0 0 3px 1px rgba(255, 179, 0, .8); }
+.takvim-hucre.parilti { box-shadow: 0 0 0 1px #ff9800, 0 0 6px 1px rgba(255, 152, 0, .75); }
+.takvim-hucre.alev { background: linear-gradient(to top, #d32f2f, #ff7a00 55%, #ffd54f); box-shadow: 0 0 7px 2px rgba(255, 87, 34, .7); z-index: 1; animation: alev-titre 1.1s ease-in-out infinite alternate; }
+.takvim-hucre.alev::before { content: ""; position: absolute; left: 1px; right: 1px; bottom: 55%; height: 75%; border-radius: 50% 50% 45% 45% / 75% 75% 25% 25%;
+  background: radial-gradient(ellipse at 50% 100%, #fff59d 0, #ffb300 40%, rgba(255, 87, 34, 0) 72%); transform-origin: 50% 100%; animation: alev-dil .7s ease-in-out infinite alternate; pointer-events: none; }
+@keyframes alev-titre { from { filter: brightness(1); } to { filter: brightness(1.2) saturate(1.15); } }
+@keyframes alev-dil { from { transform: scaleY(.75) skewX(-6deg); opacity: .75; } to { transform: scaleY(1.15) skewX(6deg); opacity: 1; } }
+.takvim-suslar { display: inline-flex; align-items: center; gap: 3px; margin-left: auto; padding-left: 12px; }
+.takvim-suslar .takvim-hucre { margin-left: 6px; }
+.bugun { display: grid; grid-template-columns: auto 1fr auto; gap: 6px 12px; align-items: center; margin: 0 0 18px; padding: 8px 12px; background: var(--panel); border: 1px solid var(--border); border-radius: 4px; }
+.bugun.tamam { border-color: var(--green); }
+p.bugun { display: block; }
+.bugun .bar { min-width: 120px; }
+.rozetler { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+.rozetler li { display: flex; gap: 10px; align-items: center; padding: 8px 10px; background: var(--panel); border: 1px dashed var(--border); border-radius: 4px; opacity: .6; }
+.rozetler li > span:last-child { display: flex; flex-direction: column; font-size: 13px; }
+.rozetler li .hint { font-size: 11.5px; }
+.rozetler .rozet-ikon { font-size: 24px; filter: grayscale(1); }
+.rozetler li.kazanildi { opacity: 1; border-style: solid; border-color: var(--btn-primary-border); background: var(--msg-hover); }
+.rozetler li.kazanildi .rozet-ikon { filter: none; }
+@media (max-width: 700px) { .bugun { grid-template-columns: 1fr; } .takvim-suslar { margin-left: 0; padding-left: 6px; } .takvim-lejant { flex-wrap: wrap; } }
+
+/* B4: hedef ve alev kutlaması */
+.kutlama-alani { position: fixed; left: 0; right: 0; bottom: 18px; display: flex; justify-content: center; pointer-events: none; z-index: 50; padding: 0 12px; }
+.kutlama { position: relative; display: flex; align-items: center; gap: 10px; max-width: 520px; padding: 10px 12px 10px 14px; background: var(--panel); color: var(--text);
+  border: 1px solid var(--green); border-radius: 6px; box-shadow: 0 6px 24px rgba(0, 0, 0, .25); pointer-events: auto; animation: kutlama-gir .35s ease-out; }
+.kutlama-alev { border-color: #ff7a00; }
+.kutlama-ikon { font-size: 26px; animation: kutlama-zipla .6s ease-out 2; }
+.kutlama-kapat { margin-left: 4px; font-size: 18px; line-height: 1; }
+.kutlama-konfeti { position: absolute; left: 30px; top: 50%; width: 0; height: 0; }
+.kutlama-konfeti i { position: absolute; width: 6px; height: 9px; border-radius: 1px; background: var(--green); opacity: 0;
+  animation: konfeti 1.1s ease-out forwards; transform: rotate(var(--a)) translateY(0); }
+.kutlama-konfeti i:nth-child(3n) { background: #ffb300; }
+.kutlama-konfeti i:nth-child(3n+1) { background: var(--link); }
+.kutlama-alev .kutlama-konfeti i:nth-child(2n) { background: #ff5722; }
+@keyframes konfeti { 0% { opacity: 1; transform: rotate(var(--a)) translateY(0) scale(1); } 100% { opacity: 0; transform: rotate(var(--a)) translateY(calc(var(--r) * -1)) scale(.6); } }
+@keyframes kutlama-gir { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes kutlama-zipla { 50% { transform: scale(1.3); } }
+@media (prefers-reduced-motion: reduce) {
+  .takvim-hucre.alev, .takvim-hucre.alev::before, .kutlama, .kutlama-ikon { animation: none; }
+  .kutlama-konfeti { display: none; }
+}
 .takvim-lejant { display: flex; align-items: center; gap: 3px; margin-top: 8px; font-size: 11px; color: var(--muted); }
 .takvim-lejant .takvim-hucre { width: 10px; height: 10px; }
 .takvim-tablo { margin-top: 6px; font-size: 12px; }

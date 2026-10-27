@@ -5,6 +5,7 @@ import type { KodSonucu, Sinama } from "../../shared/kod";
 import type { Okunmamis, Oneri, OneriGirdi, PanelOneri, Yazisma, YazismaOzeti } from "../../shared/sosyal";
 import type { BildirimTuru, PanelBildirim, Paylasimlar, Tb, TbGirdi, TbOzeti } from "../../shared/topluluk";
 import type { PanelAyarlar, PanelKayit, PanelKullanici, PanelOzet, PanelPano, PanelSoru, SoruGirdi } from "../../shared/yonetim";
+import { kutlamaBildir } from "./kutlama";
 
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(`/api${path}`, { credentials: "same-origin" });
@@ -45,10 +46,15 @@ export const api = {
   async answer(id: string, answer: Answer): Promise<AnswerResult> {
     const r = await post<AnswerResult>(`/questions/${encodeURIComponent(id)}/answer`, { answer });
     if (!r.ok) throw new Error(r.hata.error);
+    kutlamaBildir(r.data.gunluk);
     return r.data;
   },
   sinama: (id: string) => post<Sinama>(`/questions/${encodeURIComponent(id)}/sinama`),
-  sinamaGonder: (id: string, iz: string[]) => post<KodSonucu>(`/sinama/${encodeURIComponent(id)}`, { iz }),
+  async sinamaGonder(id: string, iz: string[]) {
+    const r = await post<KodSonucu>(`/sinama/${encodeURIComponent(id)}`, { iz });
+    if (r.ok) kutlamaBildir(r.data.gunluk);
+    return r;
+  },
   topluluk: {
     paylasimlar: (soru: string) => get<Paylasimlar>(`/topluluk/paylasimlar/${encodeURIComponent(soru)}`),
     paylas: (soru: string, kod: string | null) => post<{ ok: true }>(`/topluluk/paylasimlar/${encodeURIComponent(soru)}`, { kod }),
@@ -85,7 +91,7 @@ export const api = {
     sifreDogrula: (id: string, kod: string, parola: string) => post<Me>("/hesap/sifre/dogrula", { id, kod, parola }),
   },
   ayarlar: {
-    profil: (b: { publicProfile?: boolean; avatar?: string; avatarBg?: string | null; notifyEmail?: boolean }) => post<Me>("/hesap/ayarlar/profil", b),
+    profil: (b: { publicProfile?: boolean; avatar?: string; avatarBg?: string | null; notifyEmail?: boolean; gunlukHedef?: number }) => post<Me>("/hesap/ayarlar/profil", b),
     parola: (mevcut: string, yeni: string) => post<{ ok: true }>("/hesap/ayarlar/parola", { mevcut, yeni }),
     kullaniciAdi: (yeni: string) => post<Me>("/hesap/ayarlar/kullanici-adi", { yeni }),
     eposta: (yeni: string, parola: string) => post<Kod>("/hesap/ayarlar/eposta", { yeni, parola }),
