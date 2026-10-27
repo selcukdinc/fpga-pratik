@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { grade } from "./grade";
+import { boslukSonuclari, grade } from "./grade";
 
 describe("grade", () => {
   it("doğru/yanlış", () => {
@@ -17,6 +17,14 @@ describe("grade", () => {
     expect(grade("fill", want, { blanks: ["UNSIGNED", "rising_edge( clk )"] })).toBe(true);
     expect(grade("fill", want, { blanks: ["signed", "rising_edge(clk)"] })).toBe(false);
     expect(grade("fill", want, { blanks: ["unsigned"] })).toBe(false);
+  });
+
+  it("boşluklar ayrı ayrı değerlendirilir", () => {
+    const want = { blanks: [["1"], ["-1", "- 1"], ["2"]] };
+    expect(boslukSonuclari(want, { blanks: ["1", "1", "2"] })).toEqual([true, false, true]);
+    expect(boslukSonuclari(want, { blanks: ["1", "-1", "2"] })).toEqual([true, true, true]);
+    expect(boslukSonuclari(want, { blanks: ["1"] })).toBeNull();
+    expect(boslukSonuclari({ index: 1 }, { blanks: ["1"] })).toBeNull();
   });
 
   it("tip uyuşmazlığı yanlış sayılır", () => {

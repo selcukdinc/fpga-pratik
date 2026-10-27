@@ -1,5 +1,5 @@
 import { Hono, type Context } from "hono";
-import { grade, type Answer, type QuestionType } from "../shared/grade";
+import { boslukSonuclari, grade, type Answer, type QuestionType } from "../shared/grade";
 import type {
   AnswerResult, IlerlemeAyrintisi, Profil, ProfilSon, Question, SoruDurumlari, SoruIstatistigi, Topic, TopicProgress,
 } from "../shared/api";
@@ -105,12 +105,14 @@ app.post("/questions/:id/answer", async (c) => {
   if (!q) return c.json({ error: "soru bulunamadı" }, 404);
   if (q.type === "code" || q.type === "wave") return c.json({ error: "bu soru tipi bu yoldan cevaplanmaz" }, 400);
 
-  const correct = grade(q.type, JSON.parse(q.answer), body.answer);
+  const beklenen = JSON.parse(q.answer);
+  const correct = grade(q.type, beklenen, body.answer);
   const me = await ensureGuest(c);
   await denemeKaydet(c, me.id, c.req.param("id"), correct, body.answer);
   await tekrarIsle(c.env.DB, me.id, c.req.param("id"), correct);
 
   const result: AnswerResult = { correct, explanation: q.explanation, istatistik: await soruIstatistigi(c.env.DB, c.req.param("id"), q) };
+  if (q.type === "fill") result.bosluklar = boslukSonuclari(beklenen, body.answer) ?? undefined;
   if (correct) result.gunluk = await gunlukDurum(c.env.DB, me.id, me.gunlukHedef);
   return c.json(result);
 });

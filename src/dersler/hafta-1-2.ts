@@ -27,7 +27,7 @@ Bir FPGA'ya "program" yüklediğimizde aslında bir yazılım çalıştırmayız
 - **Birim maliyet:** Yüz binlerce adet üretildiğinde ASIC'in tanesi FPGA'dan ucuza gelir. Az sayıda ürün için FPGA daha ekonomiktir.
 - **Performans ve güç:** Aynı işi yapan ASIC genellikle daha hızlıdır ve daha az güç harcar, çünkü yalnızca gereken transistörleri içerir.
 - **Esneklik:** FPGA sahada güncellenebilir. ASIC'te bir hata, yeni bir üretim turu demektir.
-- **Analog devreler:** ASIC'e analog bloklar da konabilir; FPGA'nın programlanabilir kısmı sayısaldır.
+- **Analog devreler:** ASIC aynı kalıpta analog alıcı-verici gibi tam analog devreler barındırabilir. FPGA'larda ADC ya da PLL gibi bazı özel bloklar bulunur, ama tam analog devreler bulunmaz; programlanabilir kısım sayısaldır.
 
 [[G-H1-02]]
 
@@ -46,6 +46,9 @@ FPGA'da ise yazdığın her parça kendi donanımına dönüşür ve hepsi **ayn
 - Paralel işlerde (görüntü işleme, sinyal işleme, haberleşme) FPGA, aynı saat hızındaki işlemciden çok daha fazla iş çıkarabilir.
 - Zamanlaması kesin olmalı olan arayüzlerde FPGA öngörülebilir davranır; araya bir işletim sistemi girmez.
 - Karmaşık, sırayla ilerleyen ve sık değişen işlerde işlemci daha pratiktir.
+- İşlemci kayan noktalı sayılar gibi veri tiplerini ek bir tasarım yapmadan, doğrudan işler. FPGA'da bunun için ayrıca donanım tasarlamak gerekir.
+
+Dört seçenek **en esnekten en verimliye** şöyle sıralanır: **CPU → GPU → FPGA → ASIC**. Bu sırada sağa gittikçe esneklik ve kullanım kolaylığı azalır, performans ve güç verimliliği artar. GPU, çok sayıda basit çekirdeğiyle işlemciden daha paralel ama FPGA kadar özelleştirilemeyen bir ara noktadır.
 
 VHDL yazarken bu farkı akılda tutmak önemlidir: VHDL bir programlama dili gibi görünse de bir **donanım tanımlama dilidir**.
 `),
@@ -53,12 +56,14 @@ VHDL yazarken bu farkı akılda tutmak önemlidir: VHDL bir programlama dili gib
     {
       baslik: "Entegre devre ölçekleri",
       metin: md(`
-Entegre devreler içerdikleri kapı sayısına göre kabaca sınıflanır:
+Entegre devreler içerdikleri kapı sayısına göre sınıflanır. Derste verilen aralıklar şunlardır:
 
-- **SSI** (küçük ölçek): birkaç kapı. Örnek: dört tane iki girişli NAND içeren 7400.
-- **MSI** (orta ölçek): onlarca kapı. Sayıcılar, çoklayıcılar, kod çözücüler.
-- **LSI** (büyük ölçek): yüzlerce ile binlerce kapı. İlk mikroişlemciler.
-- **VLSI** (çok büyük ölçek): yüz binlerce ve daha fazlası. Günümüz işlemcileri ve FPGA'lar.
+- **SSI** (küçük ölçek): 1-20 kapı. Örnek: dört tane iki girişli NAND içeren 7400.
+- **MSI** (orta ölçek): 20-100 kapı. Sayıcılar, çoklayıcılar, kod çözücüler. Örnek: 74LS90 sayıcı entegresi.
+- **LSI** (büyük ölçek): 100-5000 kapı. İlk mikroişlemciler.
+- **VLSI** (çok büyük ölçek): 5000 ve üzeri kapı. Günümüz işlemcileri ve FPGA'lar bu sınırın çok üstündedir.
+
+CPLD ya da FPGA bir ölçek değil, programlanabilir mantık türüdür.
 
 Programlanabilir mantık, bu ölçeklerdeki hazır parçaları kartta bir araya getirmek yerine tek bir yongada istediğin devreyi kurmanı sağladı.
 `),
@@ -85,7 +90,15 @@ Her mantık fonksiyonu **çarpımların toplamı** biçiminde yazılabilir: önc
 
 [[G-H2-01]]
 
-**CPLD**, birkaç PAL benzeri bloğun ortak bir bağlantı matrisiyle birleştirilmiş halidir.
+**CPLD**, birkaç PAL benzeri bloğun ortak bir bağlantı matrisiyle birleştirilmiş halidir. İhtiyaçlar büyüdükçe tek bir PLD yetmeyince bu yol seçildi. FPGA ise aynı fikrin çok daha ince taneli ve büyük devamıdır.
+
+Derste verilen tarihçeye göre bu cihazlar şu sırayla ortaya çıktı:
+
+- **PROM:** 1966
+- **PLA:** 1975
+- **PAL:** 1980
+- **CPLD:** 1982
+- **FPGA:** 1985
 `),
     },
     {
@@ -93,12 +106,18 @@ Her mantık fonksiyonu **çarpımların toplamı** biçiminde yazılabilir: önc
       metin: md(`
 FPGA dizi yapısı yerine çok sayıda küçük blok kullanır:
 
-- **CLB** (yapılandırılabilir mantık bloğu): Mantık işlevlerinin kurulduğu temel blok. İçinde LUT'lar, flip-floplar ve çoklayıcılar bulunur.
+- **CLB** (yapılandırılabilir mantık bloğu): Mantık işlevlerinin kurulduğu temel blok. İçinde LUT'lar, flip-floplar ve çoklayıcılar bulunur; her birinin ayrı bir görevi vardır (aşağıda).
 - **LUT** (arama tablosu): k girişli bir LUT, 2^k bitlik küçük bir bellektir. Girişler adres olur, çıkış o adresteki bittir. Doğruluk tablosunu bu belleğe yazarak k girişli **her** fonksiyonu kurabilirsin.
 - **IOB:** Yonganın bacaklarıyla iç mantık arasındaki giriş/çıkış blokları.
 - **Programlanabilir bağlantılar:** Blokları birbirine bağlayan anahtarlı yollar.
 
 [[G-H2-02]]
+
+Bir CLB'nin içinde sinyal şu yolu izler:
+
+- **LUT** kombinasyonel mantık fonksiyonunu gerçekler: girişlere bakıp doğruluk tablosundaki çıkışı verir.
+- LUT'un ardından gelen **D flip-flop**, bu sonucu **saat kenarında yakalayıp saklar**. Böylece sonuç bir sonraki saat kenarına kadar sabit kalır; sayaçlar ve kayıtçılar bu flip-floplarla kurulur.
+- Çıkıştaki **MUX** (çoklayıcı), CLB çıkışının flip-floptan mı (kayıtlı, saate bağlı) yoksa doğrudan LUT'tan mı (kombinasyonel) alınacağını seçer.
 
 Modern FPGA'larda bunlara ek olarak blok RAM, DSP (çarpıcı) dilimleri ve saat üreteçleri (PLL) de bulunur.
 
@@ -155,25 +174,33 @@ Bir FPGA tasarımı şu adımlardan geçer:
 - **Tasarım girişi:** Devreyi VHDL gibi bir donanım tanımlama diliyle ya da şematikle tanımlarsın.
 - **Benzetim (simülasyon):** Bir testbench ile devrenin davranışını bilgisayarda denersin. Hataları yongaya gitmeden yakalamanın en ucuz yolu budur.
 - **Sentez:** Araç, kodunu kapılardan, LUT'lardan ve flip-floplardan oluşan bir bağlantı listesine (netlist) çevirir.
-- **Uygulama (implementation):** Netlist yonganın gerçek kaynaklarına **yerleştirilir** ve aralarındaki bağlantılar **yönlendirilir**. Zamanlama burada kontrol edilir.
+- **Eşleme:** Netlist'teki elemanlar yonganın gerçek kaynaklarına, yani CLB'lerdeki LUT ve flip-floplara dağıtılır.
+- **Yerleştirme ve yönlendirme:** Eşlenen bloklar yonga üzerinde belirli yerlere **yerleştirilir** ve aralarındaki bağlantılar **yönlendirilir**. Bağlantıların gerçek gecikmeleri burada belli olur, zamanlama burada kontrol edilir. Vivado bu son adımları birlikte **uygulama** (implementation) diye adlandırır.
 - **Bitstream üretimi ve yükleme:** Ortaya çıkan yapılandırma dosyası yongaya yüklenir.
 
 [[G-H2-04]]
 
-Vivado bu adımların hepsini tek bir arayüzde toplar: sentezden sonra RTL şemasına bakabilir, hedef yonga (part) seçimini proje ayarlarından yapabilirsin. Bu sitedeki simülasyon alanı ise ilk iki adımı tarayıcında yapar.
+Vivado bu adımların hepsini tek bir arayüzde toplar:
+
+- Yeni proje sihirbazında **RTL Project** türü seçilir. Bu tür, VHDL kaynaklarından başlayıp sentez, uygulama ve bitstream üretimine kadar gider.
+- Hedef yonga (part) proje oluşturulurken ya da proje ayarlarından seçilir. Derste kullanılan **Nexys 4** kartında Artix-7 ailesinden **xc7a100tcsg324-1** yongası vardır. Parça yanlış seçilirse kısıt dosyası (XDC) ve bitstream karta uymaz.
+- Sentezden sonra RTL şemasına bakıp kodun hangi bloklara dönüştüğünü görebilirsin.
+
+Bu sitedeki simülasyon alanı ise ilk iki adımı tarayıcında yapar.
 `),
     },
     {
       baslik: "Modelleme yaklaşımları",
       metin: md(`
-Bir devreyi tanımlamanın iki temel yolu vardır:
+Bir devreyi tanımlamanın üç temel yolu vardır:
 
-- **Yapısal modelleme:** Devreyi daha küçük bileşenlerin birbirine bağlanmasıyla kurarsın, tıpkı bir şema çizer gibi. Örneğin iki yarım toplayıcı ve bir VEYA kapısından tam toplayıcı.
-- **Davranışsal modelleme:** Devrenin ne yapacağını anlatırsın, nasıl kurulacağını sentez aracına bırakırsın. Örneğin ~s <= a + b;~
+- **Yapısal modelleme:** Devreyi daha küçük bileşenlerin (component) port map ile birbirine bağlanmasıyla kurarsın, tıpkı bir şema çizer gibi. Örneğin iki yarım toplayıcı ve bir VEYA kapısından tam toplayıcı.
+- **Veri akışı modellemesi:** Process kullanmadan, eşzamanlı sinyal atamalarıyla verinin girişlerden çıkışa nasıl aktığını yazarsın. Örneğin ~y <= (a and b) or c;~ ya da ~s <= a + b;~
+- **Davranışsal modelleme:** Devrenin ne yapacağını bir **process** içinde if, case gibi sıralı komutlarla anlatırsın, nasıl kurulacağını sentez aracına bırakırsın.
 
 [[G-H2-05]]
 
-Gerçek tasarımlarda ikisi birlikte kullanılır: üst seviyede bileşenler yapısal olarak bağlanır, her bileşenin içi davranışsal yazılır.
+Gerçek tasarımlarda bu yaklaşımlar birlikte kullanılır: üst seviyede bileşenler yapısal olarak bağlanır, her bileşenin içi davranışsal yazılır.
 `),
     },
   ],
