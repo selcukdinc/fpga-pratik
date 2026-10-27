@@ -166,9 +166,12 @@ type Diyalog =
 
 interface Props {
   onStatus: (s: string) => void;
+  // Başka bir sayfaya geçilince simülasyon alanı kapanmaz, gizlenir; gizliyken
+  // klavye kısayolları çalışmaz
+  aktif?: boolean;
 }
 
-export function Sandbox({ onStatus }: Props) {
+export function Sandbox({ onStatus, aktif = true }: Props) {
   const [ws, setWs] = useState<Workspace>(yukle);
   const [aktifAd, setAktifAd] = useState<string | null>(() => ws.files[0]?.name ?? null);
   const [busy, setBusy] = useState<null | "check" | "sim">(null);
@@ -340,14 +343,14 @@ export function Sandbox({ onStatus }: Props) {
   // Ctrl/Cmd+S: klasör açıksa klasöre kaydeder
   useEffect(() => {
     const tus = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s" && klasor) {
+      if (aktif && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s" && klasor) {
         e.preventDefault();
         klasoreKaydet();
       }
     };
     window.addEventListener("keydown", tus);
     return () => window.removeEventListener("keydown", tus);
-  }, [klasor, klasoreKaydet]);
+  }, [aktif, klasor, klasoreKaydet]);
 
   // ---- Çalıştırma ----
 

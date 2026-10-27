@@ -58,8 +58,14 @@ export function duzenDuzelt(d: unknown): Duzen {
   // Eksik kalan paneller alt satıra eklenir
   for (const id of PANELLER) if (!gorulen.has(id)) alt.push({ id, oran: 1 });
   if (!ust.length && !alt.length) return VARSAYILAN_DUZEN;
+  // Paylar satırda toplam 1 olacak şekilde ölçeklenir. Toplamı 1'den küçük kalan
+  // bir satır (ör. bir panel taşındıktan sonra) pencereyi doldurmaz, sağda boşluk kalırdı.
+  const olcekle = (s: PanelYeri[]) => {
+    const t = s.reduce((a, p) => a + p.oran, 0);
+    return s.map((p) => ({ ...p, oran: p.oran / t }));
+  };
   const ustOran = Number(g.ustOran);
-  return { ust, alt, ustOran: Number.isFinite(ustOran) ? sinirla(ustOran, 0.15, 0.9) : VARSAYILAN_DUZEN.ustOran };
+  return { ust: olcekle(ust), alt: olcekle(alt), ustOran: Number.isFinite(ustOran) ? sinirla(ustOran, 0.15, 0.9) : VARSAYILAN_DUZEN.ustOran };
 }
 
 // Sunucuya gelen kayıtlı düzen listesini denetler; hata yoksa düzeltilmiş listeyi döner

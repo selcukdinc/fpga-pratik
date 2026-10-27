@@ -68,6 +68,16 @@ export function App() {
     );
   }, []);
 
+  // Simülasyon alanı ve soru havuzu başka bir sayfaya geçilince kapanmaz, gizlenir:
+  // yazılan kod, dalga ekranı, soruların cevapları ve kaydırma yeri korunur
+  const [pratikAcildi, setPratikAcildi] = useState(route.page === "pratik");
+  const [sonSorular, setSonSorular] = useState<{ topic?: string; hafta?: number } | null>(null);
+  useEffect(() => {
+    if (route.page === "pratik") setPratikAcildi(true);
+    if (route.page === "sorular") setSonSorular({ topic: route.topic, hafta: route.hafta });
+  }, [route]);
+  const sorularProps = route.page === "sorular" ? { topic: route.topic, hafta: route.hafta } : sonSorular;
+
   const topicTitle = route.page === "sorular" && route.topic ? topics.find((t) => t.id === route.topic)?.title : undefined;
   const title = baslik(route, topicTitle);
 
@@ -78,8 +88,16 @@ export function App() {
   return (
     <OturumSaglayici>
       <Shell route={route} currentWeek={currentWeek} title={title} status={status} duyuru={duyuru}>
-        {route.page === "pratik" && <Sandbox onStatus={setStatus} />}
-        {route.page === "sorular" && <Questions topic={route.topic} hafta={route.hafta} topics={topics} />}
+        {(route.page === "pratik" || pratikAcildi) && (
+          <div className="sayfa-tut" hidden={route.page !== "pratik"}>
+            <Sandbox onStatus={setStatus} aktif={route.page === "pratik"} />
+          </div>
+        )}
+        {sorularProps && (
+          <div className="sayfa-tut" hidden={route.page !== "sorular"}>
+            <Questions topic={sorularProps.topic} hafta={sorularProps.hafta} topics={topics} />
+          </div>
+        )}
         {route.page === "ders" && <Ders hafta={route.hafta} />}
         {route.page === "ilerleme" && <Progress />}
         {route.page === "tekrar" && <Tekrar />}

@@ -103,6 +103,8 @@ export function DuzenAlani({ duzen, degistir, paneller, menuAc }: Props) {
     if (!s.length) return bosSatir(satir);
     const tekSatir = !duzen[satir === "ust" ? "alt" : "ust"].length;
     const yukseklik = tekSatir ? 1 : satir === "ust" ? duzen.ustOran : 1 - duzen.ustOran;
+    // flex-grow toplamı 1'in altına düşerse satır dolmaz; paylar toplama bölünür
+    const toplam = s.reduce((t, p) => t + p.oran, 0) || 1;
     return (
       <div className="duzen-satir" style={{ flexGrow: yukseklik }} data-satir={satir}>
         {s.map((p, i) => {
@@ -126,7 +128,7 @@ export function DuzenAlani({ duzen, degistir, paneller, menuAc }: Props) {
             <section
               key={p.id}
               className={`panel ${t.sinif}${surukle === p.id ? " surukleniyor" : ""}${cizgi}`}
-              style={{ flexGrow: p.oran }}
+              style={{ flexGrow: p.oran / toplam }}
               data-panel={p.id}
               onDragOver={(e) => uzerinde(e, satir, i)}
               onDrop={birak}
