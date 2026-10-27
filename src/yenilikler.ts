@@ -14,6 +14,18 @@ export interface Yenilik {
 
 export const YENILIKLER: Yenilik[] = [
   {
+    pr: 26,
+    tarih: "2026-10-27",
+    baslik: "2. hafta dersi derinleşti",
+    maddeler: [
+      "Aynı iki fonksiyon PROM, PAL ve PLA'ya adım adım yerleştiriliyor; hangi bağlantının programlandığını şekilde görebilirsin.",
+      "Tarihçe zaman çizgisi, CPLD'nin içi, CLB'de kayıtlı ve kayıtsız yolun dalgası, 3 girişli LUT'un çoklayıcı ağacı ve FPGA'nın kaynak haritası eklendi.",
+      "**LUT'a bit yaz, kapıyı gör:** tablodaki bitlere tıklayınca LUT'un hangi kapıya dönüştüğünü görürsün.",
+      "Tasarım akışı aynı tam toplayıcı üzerinde adım adım anlatılıyor. Üç modelleme biçimi yan yana, bir benzetimle de üçünün aynı sonucu verdiği gösteriliyor.",
+      "Her bölümde çözümlü örnek, sık hatalar ve **Kendini dene** soruları var.",
+    ],
+  },
+  {
     pr: 25,
     tarih: "2026-10-27",
     baslik: "Yenilikler üst çubukta da görünüyor",

@@ -7,6 +7,7 @@ import { cizgi, kutu, mux, nokta, ok, ozelVeya, satirlar, ve, veya, yazi, yol, t
 
 import type { Gorsel } from "./tip";
 import { HAFTA_1_GORSELLERI } from "./hafta-1";
+import { HAFTA_2_GORSELLERI } from "./hafta-2";
 
 export type { Gorsel } from "./tip";
 
@@ -429,6 +430,7 @@ export const GORSELLER: Gorsel[] = [
     boy: 204,
     icerik: yapisalDavranissal(),
   },
+  ...HAFTA_2_GORSELLERI,
   {
     kod: "G-H3-01",
     baslik: "Bir VHDL dosyasının üç bölümü",
