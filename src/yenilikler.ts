@@ -14,6 +14,18 @@ export interface Yenilik {
 
 export const YENILIKLER: Yenilik[] = [
   {
+    pr: 27,
+    tarih: "2026-10-27",
+    baslik: "3. hafta dersi derinleşti",
+    maddeler: [
+      "Ders 8 bölüme ayrıldı; toplayıcılar ve numeric_std aritmetiği kendi bölümlerini aldı, öznitelikler üç bölümde anlatılıyor.",
+      "Port modları, tam toplayıcının kapıları, 4 bitlik elde zinciri, operatör öncelik merdiveni, bit bit kaydırma, sayı doğrusunda mod ve rem, taşmayı gösteren sayı çemberi gibi 17 yeni şekil eklendi.",
+      "**Öznitelik gezgini:** bir aralık ve bir öznitelik seç; 'left, 'high, 'range gibi özniteliklerin hangi kutuyu gösterdiğini ve sonucunu gör.",
+      "Beş yeni benzetim: 4 bitlik toplayıcı, taşma, dizi öznitelikleri, saat kenarları ve sayım tipleri.",
+      "Her bölümde çözümlü örnek, sık hatalar ve **Kendini dene** soruları var.",
+    ],
+  },
+  {
     pr: 26,
     tarih: "2026-10-27",
     baslik: "2. hafta dersi derinleşti",
