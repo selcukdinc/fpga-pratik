@@ -18,6 +18,9 @@ export interface DersBolumu {
   baslik: string;
   metin: string;
   sim?: MiniSim;
+  // Bölümün sonundaki "Kendini dene": soru havuzundan 1-2 soru (konu sonu
+  // testindekilerden farklı)
+  dene?: string[];
 }
 
 export interface Ders {
