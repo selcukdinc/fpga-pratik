@@ -14,6 +14,7 @@ import { tbSilSorgulari } from "./topluluk";
 import { parolaDogru, parolaOzeti, yinelemeSayisi } from "./parola";
 import { COOKIE, endSession, loadUser, otherSessionsQuery, sha256, startSession, type Env } from "./session";
 import { DAKIKA, SAAT, sinirAsildi, sinirDolu, sinirSifirla } from "./sinir";
+import { HEDEF_SECENEKLERI } from "../shared/motivasyon";
 
 const hesap = new Hono<Env>();
 
@@ -306,18 +307,20 @@ async function parolaKontrol(c: C, parola: string): Promise<boolean> {
 }
 
 ayarlar.post("/profil", async (c) => {
-  const b = await govde<{ publicProfile: boolean; avatar: string; avatarBg: string | null; notifyEmail: boolean }>(c);
+  const b = await govde<{ publicProfile: boolean; avatar: string; avatarBg: string | null; notifyEmail: boolean; gunlukHedef: number }>(c);
   const me = c.get("me")!;
   const publicProfile = typeof b.publicProfile === "boolean" ? b.publicProfile : me.publicProfile;
   const notifyEmail = typeof b.notifyEmail === "boolean" ? b.notifyEmail : me.notifyEmail;
+  const gunlukHedef = b.gunlukHedef === undefined ? me.gunlukHedef : b.gunlukHedef;
+  if (!HEDEF_SECENEKLERI.includes(gunlukHedef)) return hata(c, 400, "Geçersiz günlük hedef.");
   const avatar = b.avatar === undefined ? me.avatar : metin(b.avatar);
   const avatarBg = b.avatarBg === undefined ? me.avatarBg : b.avatarBg;
   if (avatar && !AVATAR_IDLERI.has(avatar)) return hata(c, 400, "Böyle bir avatar yok.");
   if (avatarBg !== null && !(AVATAR_ZEMINLERI as readonly string[]).includes(metin(avatarBg))) {
     return hata(c, 400, "Böyle bir zemin rengi yok.");
   }
-  await c.env.DB.prepare("UPDATE users SET public_profile = ?, avatar = ?, avatar_bg = ?, notify_email = ? WHERE id = ?")
-    .bind(publicProfile ? 1 : 0, avatar, avatarBg, notifyEmail ? 1 : 0, me.id)
+  await c.env.DB.prepare("UPDATE users SET public_profile = ?, avatar = ?, avatar_bg = ?, notify_email = ?, gunluk_hedef = ? WHERE id = ?")
+    .bind(publicProfile ? 1 : 0, avatar, avatarBg, notifyEmail ? 1 : 0, gunlukHedef, me.id)
     .run();
   return c.json(await loadUser(c.env.DB, me.id));
 });

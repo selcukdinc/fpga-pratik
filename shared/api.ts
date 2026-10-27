@@ -2,6 +2,7 @@
 
 import type { QuestionType } from "./grade";
 import type { KodBilgisi } from "./kod";
+import type { GunlukDurum, Seriler } from "./motivasyon";
 
 export interface Me {
   id: string;
@@ -19,6 +20,8 @@ export interface Me {
   notifyEmail: boolean;
   // Susturulduysa bu zamana kadar öneri gönderemez
   mutedUntil: number | null;
+  // Günlük doğru cevap hedefi; 0 kapalı
+  gunlukHedef: number;
   // Sunucu e-posta gönderebiliyor mu (kayıt ve sıfırlama buna bağlı)
   epostaAcik?: boolean;
 }
@@ -55,6 +58,8 @@ export interface AnswerResult {
   correct: boolean;
   explanation: string | null;
   istatistik?: SoruIstatistigi;
+  // Doğru cevaptan sonra bugünkü doğru sayısı ve hedef
+  gunluk?: GunlukDurum;
 }
 
 // Kullanıcının sorulardaki durumu: en az bir kez doğru çözdüyse "dogru",
@@ -66,6 +71,11 @@ export interface IlerlemeAyrintisi {
   takvim: { gun: string; deneme: number; dogru: number }[];
   // Denenip henüz doğru çözülemeyen sorular, en son deneneni başta
   yanlislar: { id: string; topicId: string; topicTitle: string; week: number; ozet: string; deneme: number; son: number }[];
+  hedef: number;
+  // Bütün zamanlar üzerinden
+  seri: Seriler;
+  alevGunleri: number;
+  hedefGunleri: number;
 }
 
 export interface TopicProgress {

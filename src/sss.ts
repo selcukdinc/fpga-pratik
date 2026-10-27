@@ -54,6 +54,11 @@ export const SSS: SssBolumu[] = [
         cevap:
           "Takvim, son 12 haftada her gün kaç cevap gönderdiğini Türkiye saatine göre gösterir; renk koyulaştıkça o gün daha çok çalışmışsındır. Günlük seri, bugünden (bugün henüz bir şey çözmediysen dünden) geriye kesintisiz çalıştığın gün sayısıdır.",
       },
+      {
+        soru: "Günlük hedef, alev ve rozetler nedir?",
+        cevap:
+          "Günlük hedef, bir günde vermek istediğin doğru cevap sayısıdır (başlangıçta 10). Hedefe ulaştığın an kısa bir kutlama görürsün; hedefi **Ayarlar**'dan değiştirebilir ya da kapatabilirsin. Takvimde 10 doğru yaptığın günlerde kıvılcım, 25'te parıltı görünür; 50 doğruya ulaştığın günün kutusu alev alır. Rozetler 7, 30 ve 100 günlük seriler gibi kişisel hedeflerdir. Bunları yalnızca sen görürsün; sıralama ya da başkalarıyla karşılaştırma yoktur.",
+      },
     ],
   },
   {

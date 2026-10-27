@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { href } from "../lib/router";
 import { uye, useOturum } from "../lib/oturum";
-import { basamak, seri } from "../lib/ilerleme";
+import { basamak } from "../lib/ilerleme";
+import { ALEV, KIVILCIM, PARILTI, gunSusu, rozetler } from "../../shared/motivasyon";
 import type { IlerlemeAyrintisi, TopicProgress } from "../../shared/api";
 
 type Gun = IlerlemeAyrintisi["takvim"][number];
@@ -44,8 +45,8 @@ function Takvim({ takvim }: { takvim: Gun[] }) {
               g ? (
                 <span
                   key={j}
-                  className={`takvim-hucre b${basamak(g.deneme, enCok)}`}
-                  title={`${tarihYaz(g.gun)}: ${g.deneme ? `${g.deneme} deneme, ${g.dogru} doğru` : "deneme yok"}`}
+                  className={`takvim-hucre b${basamak(g.deneme, enCok)} ${gunSusu(g.dogru) ?? ""}`}
+                  title={`${tarihYaz(g.gun)}: ${g.deneme ? `${g.deneme} deneme, ${g.dogru} doğru` : "deneme yok"}${SUS_ADI[gunSusu(g.dogru) ?? ""] ?? ""}`}
                 />
               ) : (
                 <span key={j} className="takvim-hucre bos" />
@@ -59,6 +60,11 @@ function Takvim({ takvim }: { takvim: Gun[] }) {
         {[0, 1, 2, 3, 4].map((b) => <span key={b} className={`takvim-hucre b${b}`} aria-hidden="true" />)}
         Çok
         <span className="hint"> (en yoğun gün: {enCok} deneme)</span>
+        <span className="takvim-suslar">
+          <span className="takvim-hucre b2 kivilcim" aria-hidden="true" /> {KIVILCIM}+ doğru
+          <span className="takvim-hucre b3 parilti" aria-hidden="true" /> {PARILTI}+
+          <span className="takvim-hucre b4 alev" aria-hidden="true" /> {ALEV}+ alev
+        </span>
       </figcaption>
       <details className="takvim-tablo">
         <summary>Tablo olarak göster</summary>
@@ -75,6 +81,37 @@ function Takvim({ takvim }: { takvim: Gun[] }) {
   );
 }
 
+const SUS_ADI: Record<string, string> = { kivilcim: " · kıvılcım", parilti: " · parıltı", alev: " · alev günü 🔥" };
+
+function Bugun({ dogru, hedef, uyeMi }: { dogru: number; hedef: number; uyeMi: boolean }) {
+  if (!hedef) {
+    return (
+      <p className="hint bugun">
+        Bugün {dogru} doğru. Günlük hedefin kapalı; <a href="/ayarlar">Ayarlar</a>'dan açabilirsin.
+      </p>
+    );
+  }
+  const tamam = dogru >= hedef;
+  return (
+    <div className={`bugun${tamam ? " tamam" : ""}`}>
+      <div>
+        <strong>{tamam ? "🎯 Günlük hedef tamam" : "Bugünkü hedef"}</strong>
+        <span className="hint">
+          {" "}{Math.min(dogru, hedef)} / {hedef} doğru
+          {tamam && dogru > hedef ? ` (toplam ${dogru})` : ""}
+          {!tamam && ` · ${hedef - dogru} kaldı`}
+        </span>
+      </div>
+      <div className="bar" role="progressbar" aria-valuemin={0} aria-valuemax={hedef} aria-valuenow={Math.min(dogru, hedef)} aria-label="Günlük hedef">
+        <div style={{ width: `${Math.min(100, Math.round((dogru / hedef) * 100))}%` }} />
+      </div>
+      <span className="hint">
+        {uyeMi ? <a href="/ayarlar">Hedefi değiştir</a> : <><a href="/kayit">Hesap açarsan</a> hedefini değiştirebilirsin.</>}
+      </span>
+    </div>
+  );
+}
+
 const oran = (r: TopicProgress) => (r.total ? r.correct / r.total : 0);
 const yuzde = (x: number) => `%${Math.round(x * 100)}`;
 
@@ -86,7 +123,7 @@ export function Progress() {
 
   useEffect(() => {
     api.progress().then(setRows, (e) => setError(String(e)));
-    api.ilerlemeAyrintisi().then(setAyrinti, () => setAyrinti({ takvim: [], yanlislar: [] }));
+    api.ilerlemeAyrintisi().then(setAyrinti, () => setAyrinti({ takvim: [], yanlislar: [], hedef: 0, seri: { simdi: 0, enUzun: 0 }, alevGunleri: 0, hedefGunleri: 0 }));
   }, []);
 
   if (error) return <p className="empty">İlerleme yüklenemedi: {error}</p>;
@@ -122,12 +159,37 @@ export function Progress() {
         <div className="pano-kart"><strong>{dogru} / {toplam}</strong><span>soru çözüldü</span></div>
         <div className="pano-kart"><strong>{deneme ? yuzde(dogruDeneme / deneme) : "–"}</strong><span>son 12 haftada isabet</span></div>
         <div className="pano-kart"><strong>{aktifGun}</strong><span>aktif gün (12 hafta)</span></div>
-        <div className="pano-kart"><strong>{seri(ayrinti.takvim)}</strong><span>günlük seri</span></div>
+        <div className="pano-kart">
+          <strong>{ayrinti.seri.simdi}{ayrinti.seri.simdi >= 3 ? " 🔥" : ""}</strong>
+          <span>günlük seri · en uzun {ayrinti.seri.enUzun}</span>
+        </div>
       </div>
+
+      <Bugun dogru={ayrinti.takvim[ayrinti.takvim.length - 1]?.dogru ?? 0} hedef={ayrinti.hedef} uyeMi={uye(me)} />
 
       <section className="ilerleme-bolum">
         <h3>Etkinlik</h3>
         <Takvim takvim={ayrinti.takvim} />
+      </section>
+
+      <section className="ilerleme-bolum">
+        <h3>Rozetler</h3>
+        <p className="hint">Yalnızca sen görürsün; kimseyle karşılaştırılmaz.</p>
+        <ul className="rozetler">
+          {rozetler({ enUzunSeri: ayrinti.seri.enUzun, alevGunleri: ayrinti.alevGunleri, hedefGunleri: ayrinti.hedefGunleri, cozulen: dogru, toplam }).map((r) => {
+            const kazanildi = r.ilerleme >= r.esik;
+            return (
+              <li key={r.id} className={kazanildi ? "kazanildi" : undefined}>
+                <span className="rozet-ikon" aria-hidden="true">{r.ikon}</span>
+                <span>
+                  <strong>{r.ad}</strong>
+                  <span className="hint">{r.aciklama}</span>
+                  <span className="hint">{kazanildi ? "Kazanıldı" : `${Math.min(r.ilerleme, r.esik)} / ${r.esik}`}</span>
+                </span>
+              </li>
+            );
+          })}
+        </ul>
       </section>
 
       <div className="ilerleme-iki">

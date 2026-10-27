@@ -8,6 +8,7 @@ import { Avatar } from "../components/Avatar";
 import { AvatarSecici } from "../components/AvatarSecici";
 import { Alan, FormHatasi, KodAlani, ParolaGucuCubugu } from "../components/Form";
 import type { Me } from "../../shared/api";
+import { ALEV, HEDEF_SECENEKLERI } from "../../shared/motivasyon";
 
 function Bolum({ baslik, children }: { baslik: string; children: ReactNode }) {
   return (
@@ -99,6 +100,36 @@ function BildirimAyari({ me }: { me: Me }) {
         <p className="hint">Okunmamış cevaplar her durumda menüdeki Mesajlarım bölümünde görünür.</p>
         {g.mesaj}
         <button className="primary" type="submit" disabled={bildirim === me.notifyEmail || g.mesgul}>Kaydet</button>
+      </form>
+    </Bolum>
+  );
+}
+
+function GunlukHedefAyari({ me }: { me: Me }) {
+  const { setMe } = useOturum();
+  const [hedef, setHedef] = useState(me.gunlukHedef);
+  const g = useGonderim();
+  const kaydet = (e: FormEvent) => {
+    e.preventDefault();
+    void g.calistir(() => api.ayarlar.profil({ gunlukHedef: hedef }), "Kaydedildi.", setMe);
+  };
+  return (
+    <Bolum baslik="Günlük hedef">
+      <form onSubmit={kaydet}>
+        <label>
+          Her gün{" "}
+          <select value={hedef} onChange={(e) => setHedef(Number(e.target.value))}>
+            {HEDEF_SECENEKLERI.map((h) => (
+              <option key={h} value={h}>{h ? `${h} doğru cevap` : "hedef yok"}</option>
+            ))}
+          </select>
+        </label>
+        <p className="hint">
+          Hedefe ulaştığın an kısa bir kutlama görürsün; İlerlemem sayfası da bugünkü durumunu gösterir. Bir günde{" "}
+          {ALEV} doğruya ulaşırsan takvimde o günün kutusu alev alır.
+        </p>
+        {g.mesaj}
+        <button className="primary" type="submit" disabled={hedef === me.gunlukHedef || g.mesgul}>Kaydet</button>
       </form>
     </Bolum>
   );
@@ -313,6 +344,7 @@ export function Ayarlar({ sekme = "profil" }: { sekme?: AyarSekmesi }) {
             Profil sayfan: <a href={href({ page: "profil", ad: me.username })}>/profil/{me.username}</a>
           </p>
           <ProfilAyari me={me} />
+          <GunlukHedefAyari me={me} />
           <KullaniciAdiAyari key={me.username} me={me} />
         </>
       )}
