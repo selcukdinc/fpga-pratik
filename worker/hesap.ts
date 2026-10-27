@@ -8,6 +8,7 @@ import {
 } from "../shared/hesap";
 import { AVATAR_IDLERI, AVATAR_ZEMINLERI, rastgeleAvatar } from "../shared/avatarlar";
 import { duzenleriDenetle } from "../shared/duzen";
+import { olcekGecerli } from "../shared/gorunum";
 import type { ApiHata } from "../shared/api";
 import { dortHaneliKod, epostaAcik, kodGonder } from "./eposta";
 import { tbSilSorgulari } from "./topluluk";
@@ -325,6 +326,14 @@ ayarlar.post("/profil", async (c) => {
   await c.env.DB.prepare("UPDATE users SET public_profile = ?, avatar = ?, avatar_bg = ?, notify_email = ?, gunluk_hedef = ? WHERE id = ?")
     .bind(publicProfile ? 1 : 0, avatar, avatarBg, notifyEmail ? 1 : 0, gunlukHedef, me.id)
     .run();
+  return c.json(await loadUser(c.env.DB, me.id));
+});
+
+ayarlar.put("/gorunum", async (c) => {
+  const b = await govde<{ yaziOlcek: number | null }>(c);
+  if (b.yaziOlcek !== null && !olcekGecerli(b.yaziOlcek)) return hata(c, 400, "Geçersiz metin boyutu.");
+  const me = c.get("me")!;
+  await c.env.DB.prepare("UPDATE users SET yazi_olcek = ? WHERE id = ?").bind(b.yaziOlcek, me.id).run();
   return c.json(await loadUser(c.env.DB, me.id));
 });
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Shell } from "./components/Shell";
+import { OlcekliSayfa } from "./components/Olcek";
 import { useRoute, type Route } from "./lib/router";
 import { api } from "./lib/api";
 import { OturumSaglayici } from "./lib/oturum";
@@ -93,34 +94,36 @@ export function App() {
             <Sandbox onStatus={setStatus} aktif={route.page === "pratik"} />
           </div>
         )}
-        {sorularProps && (
-          <div className="sayfa-tut" hidden={route.page !== "sorular"}>
-            <Questions topic={sorularProps.topic} hafta={sorularProps.hafta} topics={topics} />
-          </div>
-        )}
-        {route.page === "ders" && <Ders hafta={route.hafta} />}
-        {route.page === "ilerleme" && <Progress />}
-        {route.page === "tekrar" && <Tekrar />}
-        {route.page === "hakkinda" && <About />}
-        {route.page === "tanitim" && <Tanitim />}
-        {route.page === "sss" && <Sss />}
-        {route.page === "terimler" && <Terimler />}
-        {route.page === "gizlilik" && <Gizlilik />}
-        {route.page === "giris" && <Giris sonra={route.sonra} />}
-        {route.page === "kayit" && <Kayit />}
-        {route.page === "sifre-sifirla" && <SifreSifirla />}
-        {route.page === "profil" && <Profil ad={route.ad} />}
-        {route.page === "ayarlar" && <Ayarlar sekme={route.sekme} />}
-        {route.page === "oner" && <Oner />}
-        {route.page === "mesajlar" && <Mesajlar id={route.id} />}
-        {route.page === "topluluk" && <Topluluk konu={route.konu} />}
-        {route.page === "topluluk-tb" && <ToplulukTb id={route.id} />}
-        {route.page === "yonetim" && <Yonetim bolum={route.bolum} soru={route.soru} alt={route.alt} />}
-        {route.page === "bulunamadi" && (
-          <p className="empty">
-            Bu adreste bir sayfa yok. <a href="/sorular">Sorulara git</a>
-          </p>
-        )}
+        <OlcekliSayfa gizli={route.page === "pratik"}>
+          {sorularProps && (
+            <div className="sayfa-tut" hidden={route.page !== "sorular"}>
+              <Questions topic={sorularProps.topic} hafta={sorularProps.hafta} topics={topics} />
+            </div>
+          )}
+          {route.page === "ders" && <Ders hafta={route.hafta} />}
+          {route.page === "ilerleme" && <Progress />}
+          {route.page === "tekrar" && <Tekrar />}
+          {route.page === "hakkinda" && <About />}
+          {route.page === "tanitim" && <Tanitim />}
+          {route.page === "sss" && <Sss />}
+          {route.page === "terimler" && <Terimler />}
+          {route.page === "gizlilik" && <Gizlilik />}
+          {route.page === "giris" && <Giris sonra={route.sonra} />}
+          {route.page === "kayit" && <Kayit />}
+          {route.page === "sifre-sifirla" && <SifreSifirla />}
+          {route.page === "profil" && <Profil ad={route.ad} />}
+          {route.page === "ayarlar" && <Ayarlar sekme={route.sekme} />}
+          {route.page === "oner" && <Oner />}
+          {route.page === "mesajlar" && <Mesajlar id={route.id} />}
+          {route.page === "topluluk" && <Topluluk konu={route.konu} />}
+          {route.page === "topluluk-tb" && <ToplulukTb id={route.id} />}
+          {route.page === "yonetim" && <Yonetim bolum={route.bolum} soru={route.soru} alt={route.alt} />}
+          {route.page === "bulunamadi" && (
+            <p className="empty">
+              Bu adreste bir sayfa yok. <a href="/sorular">Sorulara git</a>
+            </p>
+          )}
+        </OlcekliSayfa>
       </Shell>
     </OturumSaglayici>
   );

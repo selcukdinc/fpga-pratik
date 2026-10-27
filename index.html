@@ -14,6 +14,10 @@
         try { t = localStorage.getItem("tema") || "sistem"; } catch (e) {}
         var koyu = t === "koyu" || (t !== "acik" && matchMedia("(prefers-color-scheme: dark)").matches);
         document.documentElement.dataset.theme = koyu ? "dark" : "light";
+        // Metin boyutu da ilk çizimden önce uygulanır (src/lib/olcek.ts ile aynı anahtar)
+        var o = 0;
+        try { o = Number(localStorage.getItem("fpga-pratik:yazi-olcek")); } catch (e) {}
+        if (o >= 85 && o <= 150) document.documentElement.style.setProperty("--yazi-olcek", String(o / 100));
       })();
     </script>
   </head>

@@ -40,6 +40,11 @@ export const SSS: SssBolumu[] = [
           "Ders ve sorularda geçen terimlerin İngilizcesi, Vivado'da ve belgelerde o adla karşına çıkacağı için her kullanımda parantez içinde yazılır: \"mandal (latch)\" gibi. Hepsinin listesi ve kısa anlamları **Terimler** sayfasındadır; Türkçe ya da İngilizce arayabilirsin.",
       },
       {
+        soru: "Yazılar çok küçük ya da çok büyük. Nasıl değiştiririm?",
+        cevap:
+          "Üst çubuktaki **A−** ve **A+** düğmeleri tüm sayfalardaki yazıları %85 ile %150 arasında küçültür ya da büyütür; aradaki yüzdeye tıklayınca varsayılan boyuta dönülür. Seçim bu tarayıcıda saklanır, hesabınla girdiysen hesabına da kaydedilir ve başka cihazda da aynı boyut gelir. Aynı ayar **Ayarlar** sayfasında da var. Geniş ekranda kod içeren sorular iki sütuna ayrılır: soru solda, kod sağda.",
+      },
+      {
         soru: "Dersin belli bir bölümüne bağlantı verebilir miyim?",
         cevap:
           "Evet. Dersin başındaki içindekiler listesinden bir başlığa tıklayınca adres `/ders/3#bolum-2` gibi o bölümü gösterir; bu bağlantıyı açan kişi doğrudan o bölüme gelir.",

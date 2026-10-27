@@ -22,6 +22,8 @@ export interface Me {
   mutedUntil: number | null;
   // Günlük doğru cevap hedefi; 0 kapalı
   gunlukHedef: number;
+  // Hesaba kaydedilen metin boyutu (yüzde); null ise tarayıcıdaki seçim
+  yaziOlcek: number | null;
   // Sunucu e-posta gönderebiliyor mu (kayıt ve sıfırlama buna bağlı)
   epostaAcik?: boolean;
 }

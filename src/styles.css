@@ -292,7 +292,7 @@ code { background: var(--code-bg); padding: 0 3px; border-radius: 3px; }
 .question { background: var(--panel); border: 1px solid var(--border); border-left: 4px solid var(--border); margin: 12px 0; padding: 10px 14px; }
 .question.correct { border-left-color: var(--green); }
 .question.wrong { border-left-color: var(--error); }
-.question header { display: flex; gap: 8px; align-items: center; }
+.question header { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
 .q-num { font-weight: 600; white-space: nowrap; }
 .tag { font-size: 11px; padding: 0 6px; border-radius: 8px; background: var(--tag-bg); color: var(--muted); }
 .tag-original { background: var(--tag-original-bg); color: var(--tag-original-text); }
@@ -1010,3 +1010,38 @@ body.boyutlaniyor-dikey { cursor: ns-resize; user-select: none; }
 .terimler table { border-collapse: collapse; width: 100%; background: var(--panel); }
 .terimler th, .terimler td { border: 1px solid var(--border); padding: 4px 8px; text-align: left; vertical-align: top; }
 .terimler th { background: var(--panel-header); }
+
+/* ---- Metin boyutu ve ortalanmış düzen ---- */
+:root { --yazi-olcek: 1; }
+/* Simülasyon alanı dışındaki sayfalar seçilen oranla ölçeklenir ve ortalanır */
+.sayfa-olcek { zoom: var(--yazi-olcek); }
+.sayfa-olcek > :not(.sayfa-tut), .sayfa-olcek > .sayfa-tut > *, .yonetim > .panel-genel { margin-inline: auto; }
+.sayfa-olcek > .empty { text-align: center; }
+.tekrar { max-width: 860px; padding: 8px 16px 40px; }
+/* Simülasyon alanında düzen sabit kalır, yalnızca editör ve mesaj yazıları büyür */
+.sandbox .vhdl-editor .cm-editor { font-size: calc(13px * var(--yazi-olcek)); }
+.sandbox .log { font-size: calc(12px * var(--yazi-olcek)); }
+
+.olcek-dugmeleri { display: inline-flex; }
+.olcek-dugmeleri button { padding: 0 7px; border-radius: 0; font-variant-numeric: tabular-nums; }
+.olcek-dugmeleri button:first-child { border-radius: 3px 0 0 3px; }
+.olcek-dugmeleri button:last-child { border-radius: 0 3px 3px 0; }
+.olcek-dugmeleri button + button { margin-left: -1px; }
+.olcek-dugmeleri button:first-child { font-size: 11px; }
+.olcek-dugmeleri button:last-child { font-size: 14px; }
+.olcek-yuzde { min-width: 46px; }
+@media (max-width: 600px) { .olcek-yuzde, .tema-adi { display: none; } }
+
+/* Geniş ekranda kod içeren sorular iki sütun: solda soru ve cevap, sağda kod */
+[data-genis] .questions { max-width: 1240px; }
+[data-genis] .questions > :not(.question), [data-genis] .questions > .question:not(.kodlu) { max-width: 820px; margin-inline: auto; }
+[data-genis] .question.kodlu {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); column-gap: 20px;
+  grid-template-rows: auto auto auto auto auto 1fr; align-items: start;
+}
+[data-genis] .question.kodlu > * { grid-column: 1; }
+[data-genis] .question.kodlu > header { grid-column: 1 / -1; }
+[data-genis] .question.kodlu > .q-kod { grid-column: 2; grid-row: 2 / -1; position: sticky; top: 8px; }
+[data-genis] .question.kodlu > .q-kod .md > :first-child, [data-genis] .question.kodlu > .q-kod > :first-child { margin-top: 8px; }
+[data-genis] .question.kod.kodlu > .kod-sorusu { grid-column: 2; grid-row: 2 / -1; margin-top: 8px; }
+[data-genis] .question.kod.kodlu > .q-metin { position: sticky; top: 8px; }

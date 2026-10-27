@@ -5,6 +5,7 @@ import { Markdown, inline } from "../components/Markdown";
 import { KodSorusu } from "../components/KodSorusu";
 import { href } from "../lib/router";
 import { boslukEtiketi, bosluklariAyir } from "../lib/bosluk";
+import { koduAyir } from "../lib/kodAyir";
 import type { AnswerResult, Question, SoruDurumlari, SoruIstatistigi, Topic } from "../../shared/api";
 import type { Answer } from "../../shared/grade";
 
@@ -27,12 +28,26 @@ function Baslik({ q, n }: { q: Question; n: number }) {
   );
 }
 
+// Soru metni; kod bloğu varsa önü, kod ve arkası ayrı öğeler olur (geniş
+// ekranda kod sağ sütuna yerleşir, dar ekranda sıra aynen korunur)
+function SoruMetni({ metin }: { metin: string }) {
+  const p = koduAyir(metin);
+  if (!p) return <Markdown text={metin} terim />;
+  return (
+    <>
+      {p.once.trim() && <div className="q-metin"><Markdown text={p.once} terim /></div>}
+      <div className="q-kod"><Markdown text={p.kod} /></div>
+      {p.sonra.trim() && <div className="q-sonra"><Markdown text={p.sonra} terim /></div>}
+    </>
+  );
+}
+
 function KodKarti({ q, n }: { q: Question; n: number }) {
   const [dogru, setDogru] = useState<boolean | null>(null);
   return (
-    <article className={`question kod${dogru === null ? "" : dogru ? " correct" : " wrong"}`} data-soru={q.id} id={`soru-${q.id}`}>
+    <article className={`question kod kodlu${dogru === null ? "" : dogru ? " correct" : " wrong"}`} data-soru={q.id} id={`soru-${q.id}`}>
       <Baslik q={q} n={n} />
-      <Markdown text={q.prompt} terim />
+      <div className="q-metin"><Markdown text={q.prompt} terim /></div>
       <KodSorusu id={q.id} bilgi={q.payload.kod!} onSonuc={setDogru} />
     </article>
   );
@@ -95,11 +110,13 @@ function KapaliKart({ q, n }: { q: Question; n: number }) {
   const dogruBosluk = bosSonuc?.filter(Boolean).length ?? 0;
 
   const bosluk = q.type === "fill" ? bosluklariAyir(q.prompt, blanks.length) : null;
+  const metin = bosluk ? bosluk.metin : q.prompt;
+  const kodlu = koduAyir(metin) !== null;
 
   return (
-    <article className={`question${result ? (result.correct ? " correct" : " wrong") : ""}`} data-soru={q.id} id={`soru-${q.id}`}>
+    <article className={`question${kodlu ? " kodlu" : ""}${result ? (result.correct ? " correct" : " wrong") : ""}`} data-soru={q.id} id={`soru-${q.id}`}>
       <Baslik q={q} n={n} />
-      <Markdown text={bosluk ? bosluk.metin : q.prompt} terim />
+      <SoruMetni metin={metin} />
 
       {q.type === "tf" && (
         <div className="choices">
