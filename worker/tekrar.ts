@@ -40,7 +40,8 @@ export async function tekrarIsle(db: D1Database, userId: string, soruId: string,
     ).bind(userId, soruId, g.kutu, bugun + g.gun! * GUN_MS, simdi, vadeli ? simdi : null),
   ];
   // İlk kez yanlış yapılan (ya da öğrenilmişken unutulan) sorunun kavramından,
-  // kişinin hiç denemediği birkaç soru da ertesi güne eklenir
+  // kişinin hiç denemediği birkaç soru da ertesi güne eklenir. Önce yedek havuzdan
+  // seçilir: o sorular başka yerde görünmediği için gerçekten görülmemiş sorulardır
   if (!r || r.kutu === OGRENILDI) {
     sorgular.push(
       db.prepare(
@@ -51,7 +52,7 @@ export async function tekrarIsle(db: D1Database, userId: string, soruId: string,
            AND (q.kavram = k.kavram OR (k.kavram IS NULL AND q.topic_id = k.topic_id))
            AND NOT EXISTS (SELECT 1 FROM attempts a WHERE a.user_id = ?1 AND a.question_id = q.id)
            AND NOT EXISTS (SELECT 1 FROM tekrarlar t WHERE t.user_id = ?1 AND t.question_id = q.id)
-         ORDER BY q.difficulty, random() LIMIT ${ILISKILI_SAYISI}`,
+         ORDER BY q.yedek DESC, q.difficulty, random() LIMIT ${ILISKILI_SAYISI}`,
       ).bind(userId, bugun + GUN_MS, simdi, soruId),
     );
   }

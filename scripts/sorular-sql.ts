@@ -4,7 +4,7 @@
 // Yönetim panelinde değiştirilmiş sorulara (updated_at dolu) dokunulmaz.
 import { writeFileSync } from "node:fs";
 import { konular, sorular } from "../content/sorular/index.ts";
-import { kavramOf } from "../shared/kavramlar.ts";
+import { KAVRAMLAR, kavramOf } from "../shared/kavramlar.ts";
 import type { Soru } from "../content/sorular/tipler.ts";
 import { MODELLER } from "../worker/modeller.ts";
 
@@ -43,7 +43,9 @@ for (const s of sorular) {
   if (s.tip === "mcq" && !(s.dogru >= 0 && s.dogru < s.secenekler.length)) throw new Error(`${s.id}: geçersiz doğru şık`);
   if (s.tip === "fill" && s.bosluklar.some((b) => b.length === 0)) throw new Error(`${s.id}: boş cevap listesi`);
   if (s.tip === "code" && !MODELLER[s.id]) throw new Error(`${s.id}: worker/modeller.ts içinde referans modeli yok`);
-  if (!kavramOf(s.id)) throw new Error(`${s.id}: content/sorular/kavramlar.ts içinde kavramı yok`);
+  const kavram = s.kavram ?? kavramOf(s.id);
+  if (!kavram || !KAVRAMLAR[kavram]) throw new Error(`${s.id}: kavramı yok (shared/kavramlar.ts ya da sorunun kavram alanı)`);
+  if (s.kavram && kavramOf(s.id)) throw new Error(`${s.id}: kavram iki yerde verilmiş`);
 }
 
 const satirlar: string[] = [
@@ -69,14 +71,18 @@ for (const s of sorular) {
   );
 }
 
-// Kavram panelden düzenlenmez; panelde değiştirilmiş sorularda da güncellenir
+// Kavram ve yedek panelden düzenlenmez; panelde değiştirilmiş sorularda da güncellenir
 satirlar.push("");
-for (const s of sorular) satirlar.push(`UPDATE questions SET kavram = ${q(kavramOf(s.id)!)} WHERE id = ${q(s.id)};`);
+for (const s of sorular) {
+  satirlar.push(
+    `UPDATE questions SET kavram = ${q((s.kavram ?? kavramOf(s.id))!)}, yedek = ${s.yedek ? 1 : 0} WHERE id = ${q(s.id)};`,
+  );
+}
 
 writeFileSync(hedef, satirlar.join("\n") + "\n");
 const say = (f: (s: Soru) => boolean) => sorular.filter(f).length;
 console.log(
   `${hedef}: ${konular.length} konu, ${sorular.length} soru ` +
     `(orijinal ${say((s) => s.kaynak === "original")}, türetilmiş ${say((s) => s.kaynak === "derived")}, ` +
-    `NVC ile doğrulanan ${say((s) => !!s.dogrulama || s.tip === "code")})`,
+    `yedek ${say((s) => !!s.yedek)}, NVC ile doğrulanan ${say((s) => !!s.dogrulama || s.tip === "code")})`,
 );

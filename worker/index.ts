@@ -61,7 +61,7 @@ app.get("/questions", async (c) => {
   // answer sütunu bilinçli olarak seçilmiyor
   const sql = `SELECT ${SORU_SUTUNLARI}
                FROM questions q JOIN topics t ON t.id = q.topic_id LEFT JOIN users u ON u.id = q.suggested_by
-               WHERE q.active = 1 AND q.status = 'published' AND q.week <= ?${original ? "" : " AND q.source = 'derived'"}${topic ? " AND q.topic_id = ?" : ""}
+               WHERE q.active = 1 AND q.status = 'published' AND q.yedek = 0 AND q.week <= ?${original ? "" : " AND q.source = 'derived'"}${topic ? " AND q.topic_id = ?" : ""}
                ORDER BY q.week, t.sort, q.difficulty, q.rowid`;
   const stmt = c.env.DB.prepare(sql);
   const { results } = await (topic ? stmt.bind(week, topic) : stmt.bind(week)).all<SoruListeSatiri>();
@@ -216,7 +216,7 @@ async function konuIlerlemesi(db: D1Database, userId: string): Promise<TopicProg
             COUNT(DISTINCT a.question_id) AS attempted,
             COUNT(DISTINCT CASE WHEN a.correct = 1 THEN a.question_id END) AS correct
      FROM topics t
-     LEFT JOIN questions q ON q.topic_id = t.id AND q.active = 1 AND q.status = 'published' AND q.week <= ?${original ? "" : " AND q.source = 'derived'"}
+     LEFT JOIN questions q ON q.topic_id = t.id AND q.active = 1 AND q.status = 'published' AND q.yedek = 0 AND q.week <= ?${original ? "" : " AND q.source = 'derived'"}
      LEFT JOIN attempts a ON a.question_id = q.id AND a.user_id = ?
      WHERE t.week <= ?
      GROUP BY t.id ORDER BY t.week, t.sort`,
@@ -260,7 +260,7 @@ app.get("/progress/ayrinti", async (c) => {
     db.prepare(
       `SELECT q.id, q.topic_id AS topicId, t.title AS topicTitle, q.week, q.prompt, COUNT(*) AS deneme, MAX(a.created_at) AS son
        FROM attempts a JOIN questions q ON q.id = a.question_id JOIN topics t ON t.id = q.topic_id
-       WHERE a.user_id = ? AND ${await gorunurKosul(db)}
+       WHERE a.user_id = ? AND ${await gorunurKosul(db)} AND q.yedek = 0
        GROUP BY q.id HAVING MAX(a.correct) = 0 ORDER BY son DESC LIMIT 50`,
     ).bind(me.id),
   ]);

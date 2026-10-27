@@ -10,7 +10,7 @@ import { TANITIM_GORULDU } from "../components/Shell";
 const KITLELER = [
   {
     baslik: "FPGA dersini alan öğrenciler",
-    metin: "Vize ve finale hazırlanırken konuyu ders ders tekrar et, haftaya göre açılan sorularla kendini dene; ilerleme sayfası zayıf konularını ve yanlış yaptığın soruları önüne getirir.",
+    metin: "Vize ve finale hazırlanırken konuyu ders ders tekrar et, haftaya göre açılan sorularla kendini dene. Yanlış yaptığın sorular aralıklı tekrarla unutmadan önce yeniden karşına çıkar; ilerleme sayfası zayıf konularını gösterir.",
   },
   {
     baslik: "VHDL'e yeni başlayanlar",
@@ -30,14 +30,14 @@ const ADIMLAR = [
   {
     gorsel: "ders",
     baslik: "1. Konuyu Dersler'den oku",
-    metin: "Her hafta için kısa bir anlatım var. İçindeki örnekleri düzenleyip ▶ Çalıştır'a basınca benzetim tarayıcında çalışır; dersin sonunda kısa bir test seni bekler.",
+    metin: "Her hafta için kısa bir anlatım, içindekiler listesi ve konuyu gösteren şekiller var. Terimlerin İngilizcesi parantez içinde yazar. Örnekleri düzenleyip ▶ Çalıştır'a basınca benzetim tarayıcında çalışır; editörü alt kenarından sürükleyerek uzatabilir, dalga ekranında imleci sürükleyip değerleri okuyabilirsin. Dersin sonunda kısa bir test seni bekler.",
     bag: { page: "ders" } as const,
     bagMetni: "Derslere git",
   },
   {
     gorsel: "sorular",
     baslik: "2. Soru havuzunda kendini dene",
-    metin: "Sayfanın üstünden hafta ve konu seç; türe, zorluğa göre süz, ara ya da yalnızca çözmediklerini göster. Cevabın hemen kontrol edilir; açıklamanın yanında soruyu ilk denemede doğru yapanların oranını ve şıkların nasıl dağıldığını görürsün.",
+    metin: "Sayfanın üstünden hafta ve konu seç; türe, zorluğa göre süz, ara ya da yalnızca çözmediklerini göster. Şıklar her açılışta karışık sırayla gelir. Cevabın hemen kontrol edilir; açıklamanın yanında soruyu ilk denemede doğru yapanların oranını ve şıkların nasıl dağıldığını görürsün.",
     bag: { page: "sorular" } as const,
     bagMetni: "Soru havuzunu aç",
   },
@@ -49,16 +49,23 @@ const ADIMLAR = [
     bagMetni: "Bir kod sorusu dene",
   },
   {
+    gorsel: "tekrar",
+    baslik: "4. Yanlışlarını aralıklı tekrarla pekiştir",
+    metin: "Yanlış yaptığın soru ertesi gün Tekrar sayfasına düşer; doğru bildikçe 3, 7, 14 ve 30 gün arayla yeniden gelir. Aynı kavramdan henüz görmediğin sorular da eklenir; bunların bir kısmı soru havuzunda hiç görünmeyen yedek sorulardır, yani gerçekten ilk kez karşılaşırsın. Menüdeki sayı bugün kaç sorunun beklediğini gösterir.",
+    bag: { page: "tekrar" } as const,
+    bagMetni: "Tekrar sayfasını aç",
+  },
+  {
     gorsel: "pratik",
-    baslik: "4. Simülasyon alanında serbest çalış",
+    baslik: "5. Simülasyon alanında serbest çalış",
     metin: "Kendi tasarımını ve testbench'ini yaz ya da hazır bir örnek ekle. Pencereleri sürükleyip boyutlandırarak düzenini kurabilir, dosyalarını klasöre ya da zip olarak alabilirsin.",
     bag: { page: "pratik" } as const,
     bagMetni: "Simülasyon alanına git",
   },
   {
     gorsel: "ilerleme",
-    baslik: "5. İlerlemeni takip et",
-    metin: "Son 12 haftalık etkinlik takviminde ne kadar düzenli çalıştığını gör. En zayıf üç konuna \"Tekrar et\" ile dön, yanlış yaptığın soruları tek tıkla yeniden çöz. Hesap açarsan ilerlemen her cihazda seninle gelir.",
+    baslik: "6. Günlük hedefini tut, ilerlemeni izle",
+    metin: "Günde kaç doğru cevap vermek istediğini Ayarlar'dan seç; hedefe ulaştığın an kısa bir kutlama görürsün. Etkinlik takviminde 10, 25 ve 50 doğru yaptığın günler kıvılcım, parıltı ve alevle işaretlenir; serin ve rozetlerin yalnızca sana görünür. En zayıf üç konuna \"Tekrar et\" ile dön. Hesap açarsan ilerlemen her cihazda seninle gelir.",
     bag: { page: "ilerleme" } as const,
     bagMetni: "İlerlemene bak",
   },
@@ -77,9 +84,9 @@ export function Tanitim() {
       <header className="tanitim-ust">
         <h2>VHDL'i tarayıcında yazarak öğren</h2>
         <p>
-          FPGA Pratik, FPGA ve sayısal tasarım dersine hazırlanmak için ücretsiz ve açık kaynaklı bir çalışma alanı. Kısa
-          dersler, haftalara ayrılmış sorular, otomatik sınanan kod soruları ve tarayıcında çalışan bir VHDL simülatörü tek
-          yerde. Kurulum gerekmez; yazdığın kod bilgisayarından çıkmaz.
+          FPGA Pratik, FPGA ve sayısal tasarım dersine hazırlanmak için ücretsiz ve açık kaynaklı bir çalışma alanı. Şekilli
+          kısa dersler, haftalara ayrılmış yaklaşık 300 soru, otomatik sınanan kod soruları, yanlışlar için aralıklı tekrar ve
+          tarayıcında çalışan bir VHDL simülatörü tek yerde. Kurulum gerekmez; yazdığın kod bilgisayarından çıkmaz.
         </p>
         <div className="tanitim-dugmeler">
           <a className="buton primary" href={href({ page: "ders" })}>Derslerle başla</a>
@@ -123,6 +130,7 @@ export function Tanitim() {
         <ul>
           <li><strong>Kurulum yok:</strong> Vivado kurmadan, herhangi bir bilgisayarda ya da telefonda çalışabilirsin.</li>
           <li><strong>Hemen geri bildirim:</strong> cevabının doğru olup olmadığını ve nedenini aynı anda görürsün.</li>
+          <li><strong>Unutmadan pekiştirme:</strong> yanlışların, unutmaya başladığın aralıklarla yeniden karşına çıkar.</li>
           <li><strong>Gizlilik:</strong> reklam ve takip çerezi yok; kodun sen paylaşmadıkça tarayıcında kalır.</li>
         </ul>
         <p>

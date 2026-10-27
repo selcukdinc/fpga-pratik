@@ -22,7 +22,7 @@ export const SSS: SssBolumu[] = [
       {
         soru: "Sorular nereden geliyor?",
         cevap:
-          "Sorular haftalık ders konularından ve geçmiş sınavların konularından derlenir, kendi cümlelerimizle yazılır. Bir sunumdaki soruya dayananlar **Orijinal**, aynı konudan yeni türetilenler **Türetilmiş** etiketi taşır.",
+          "Sorular haftalık ders konularından ve geçmiş sınavların konularından derlenir, kendi cümlelerimizle yazılır. Bir sunumdaki soruya dayananlar **Orijinal**, aynı konudan yeni türetilenler **Türetilmiş** etiketi taşır. Davranış anlatan soruların cevapları gerçek bir VHDL simülatörüyle (NVC) denenerek doğrulanır.",
       },
       {
         soru: "Neden bazı haftaların soruları görünmüyor?",
@@ -32,8 +32,38 @@ export const SSS: SssBolumu[] = [
     ],
   },
   {
+    baslik: "Dersler",
+    sorular: [
+      {
+        soru: "Metindeki parantez içindeki İngilizce kelimeler ne?",
+        cevap:
+          "Ders ve sorularda geçen terimlerin İngilizcesi, Vivado'da ve belgelerde o adla karşına çıkacağı için her kullanımda parantez içinde yazılır: \"mandal (latch)\" gibi. Hepsinin listesi ve kısa anlamları **Terimler** sayfasındadır; Türkçe ya da İngilizce arayabilirsin.",
+      },
+      {
+        soru: "Dersin belli bir bölümüne bağlantı verebilir miyim?",
+        cevap:
+          "Evet. Dersin başındaki içindekiler listesinden bir başlığa tıklayınca adres `/ders/3#bolum-2` gibi o bölümü gösterir; bu bağlantıyı açan kişi doğrudan o bölüme gelir.",
+      },
+      {
+        soru: "Bir ders şeklinde hata gördüm. Nasıl bildiririm?",
+        cevap:
+          "Her şeklin altında `G-H2-03` gibi bir kod yazar. Giriş yapıp Mesajlarım'dan bu kodla birlikte neyin yanlış olduğunu yazman yeterli; düzeltilecek şekil kodla hemen bulunur.",
+      },
+    ],
+  },
+  {
     baslik: "Sorular ve ilerleme",
     sorular: [
+      {
+        soru: "Şıklar neden her açılışta farklı sırada?",
+        cevap:
+          "Doğru cevabı şıkkın yerinden ezberlemeyesin diye şıklar her açılışta karıştırılır. Cevabın, şıkkın kendisine göre kontrol edilir; şık dağılımı istatistikleri de sıraya değil şıkkın içeriğine göre tutulur.",
+      },
+      {
+        soru: "Boşluk doldurma sorularında cevabı nasıl yazmalıyım?",
+        cevap:
+          "Her kutunun yanında ne istendiği yazar: tek boşlukta \"Cevap\", birden çok boşlukta \"1. boşluk: S\" gibi. Büyük ve küçük harf, baştaki ve sondaki boşluklar önemsenmez. Bit ve vektör cevaplarını tırnaklı (`'1'`, `\"0101\"`) ya da tırnaksız yazabilirsin.",
+      },
       {
         soru: "Çözmediğim ya da yanlış yaptığım soruları nasıl bulurum?",
         cevap:
@@ -57,7 +87,12 @@ export const SSS: SssBolumu[] = [
       {
         soru: "Tekrar sayfası nasıl çalışıyor?",
         cevap:
-          "Yanlış yaptığın her soru tekrar kutusuna girer ve ertesi gün **Tekrar** sayfasında yeniden sorulur. Doğru cevapladıkça soru bir sonraki kutuya geçer ve 3, 7, 14, 30 gün arayla tekrar gelir; 5. kutuyu da geçince öğrenilmiş sayılır. Yanlış cevap soruyu 1. kutuya döndürür. Bir soruyu ilk kez yanlış yaptığında aynı kavramdan henüz görmediğin iki soru da eklenir. Günde en çok 20 tekrar yapılır, menüdeki sayı bugün kaç soru beklediğini gösterir. E-posta ile hatırlatma yapılmaz.",
+          "Yanlış yaptığın her soru tekrar kutusuna girer ve ertesi gün **Tekrar** sayfasında yeniden sorulur. Doğru cevapladıkça soru bir sonraki kutuya geçer ve 3, 7, 14, 30 gün arayla tekrar gelir; 5. kutuyu da geçince öğrenilmiş sayılır. Yanlış cevap soruyu 1. kutuya döndürür. Bir soruyu ilk kez yanlış yaptığında aynı kavramdan henüz görmediğin iki soru da eklenir; bunlar önce yedek havuzdan seçilir. Günde en çok 20 tekrar yapılır, menüdeki sayı bugün kaç soru beklediğini gösterir. E-posta ile hatırlatma yapılmaz.",
+      },
+      {
+        soru: "Tekrar'da gelen bazı sorular neden soru havuzunda yok?",
+        cevap:
+          "Türetilmiş soruların bir kısmı **yedek havuzdadır**: soru havuzunda ve ilerleme toplamlarında görünmez, yalnızca Tekrar sayfasında çıkar. Bir kavramda yanlış yaptığında o kavramın yedek sorularından biri gelir; böylece cevabını önceden görmediğin, gerçekten yeni bir soruyla kendini sınarsın.",
       },
       {
         soru: "Günlük hedef, alev ve rozetler nedir?",
@@ -83,6 +118,16 @@ export const SSS: SssBolumu[] = [
         soru: "Bu site Vivado'nun yerine geçer mi?",
         cevap:
           "Hayır. Burada yazdığın kodu derleyip benzetimini yapabilirsin ama sentez, yerleştirme ve bir karta yükleme yapılmaz. Amaç, VHDL'i ve benzetimi hızlıca denemek ve sınava hazırlanmaktır.",
+      },
+      {
+        soru: "Dalga ekranında belli bir andaki değerleri nasıl okurum?",
+        cevap:
+          "Dalga ekranına tıkla ya da imleci basılı tutup sürükle; imleç sinyal değişimlerine yapışır ve o andaki değerler sinyal adlarının yanında görünür. Dalga ekranı seçiliyken ← ve → tuşları bir önceki ya da sonraki değişime atlar. Benzetim hatasız bitince \"✓ Benzetim tamamlandı\" yazısı çıkar.",
+      },
+      {
+        soru: "Ders ya da kod sorusundaki editör çok kısa. Büyütebilir miyim?",
+        cevap:
+          "Evet. Editörün alt kenarını aşağı sürükle (klavyeyle odaklanıp ↑ ve ↓ da olur); en fazla kodun tamamı görünecek kadar uzar. **Tümünü göster** tek tıkla bu boya getirir, alt kenara çift tıklamak varsayılan boya döndürür.",
       },
       {
         soru: "Simülasyon \"zaman sınırını aştı\" diyor. Ne yapmalıyım?",

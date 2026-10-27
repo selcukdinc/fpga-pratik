@@ -171,11 +171,11 @@ yonetim.get("/konular", async (c) => {
 type SoruSatiri = {
   id: string; topic_id: string; week: number; type: PanelSoru["type"]; source: PanelSoru["source"]; prompt: string;
   payload: string; answer: string; explanation: string | null; difficulty: number; source_ref: string | null;
-  status: PanelSoru["status"]; active: number; updated_at: number | null; deneme: number; dogru: number;
+  status: PanelSoru["status"]; active: number; updated_at: number | null; yedek: number; deneme: number; dogru: number;
 };
 
 const SORU_SQL = `SELECT q.id, q.topic_id, q.week, q.type, q.source, q.prompt, q.payload, q.answer, q.explanation,
-                         q.difficulty, q.source_ref, q.status, q.active, q.updated_at,
+                         q.difficulty, q.source_ref, q.status, q.active, q.updated_at, q.yedek,
                          COUNT(a.id) AS deneme, COALESCE(SUM(a.correct), 0) AS dogru
                   FROM questions q JOIN topics t ON t.id = q.topic_id
                   LEFT JOIN attempts a ON a.question_id = q.id`;
@@ -196,6 +196,7 @@ function panelSoru(r: SoruSatiri): PanelSoru {
     status: r.status,
     active: r.active === 1,
     updatedAt: r.updated_at,
+    yedek: r.yedek === 1,
     deneme: r.deneme,
     dogru: r.dogru,
   };

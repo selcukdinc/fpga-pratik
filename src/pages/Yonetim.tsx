@@ -226,6 +226,7 @@ function SoruListesi() {
                       <span className={`tag tag-${s.source}`}>{s.source === "original" ? "Orijinal" : "Türetilmiş"}</span>
                       <span className="tag">H{s.week}</span>
                       {s.updatedAt && <span className="tag" title="Panelde değiştirildi">panel</span>}
+                      {s.yedek && <span className="tag" title="Soru listesinde görünmez, aralıklı tekrarda gelir">yedek</span>}
                       <div className="panel-ozet">{inline(s.prompt.replace(/```[\s\S]*?```/g, "[kod]").slice(0, 140))}</div>
                       <div className="hint">{konuAdi.get(s.topicId)}</div>
                     </td>
