@@ -26,6 +26,8 @@ export interface PanelSoru extends Omit<SoruGirdi, "type"> {
   id: string;
   week: number;
   updatedAt: number | null;
+  // Yedek havuzda: soru listesinde görünmez, yalnızca aralıklı tekrarda gelir
+  yedek: boolean;
   deneme: number;
   dogru: number;
 }

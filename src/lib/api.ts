@@ -6,6 +6,7 @@ import type { Okunmamis, Oneri, OneriGirdi, PanelOneri, Yazisma, YazismaOzeti } 
 import type { BildirimTuru, PanelBildirim, Paylasimlar, Tb, TbGirdi, TbOzeti } from "../../shared/topluluk";
 import type { PanelAyarlar, PanelKayit, PanelKullanici, PanelOzet, PanelPano, PanelSoru, SoruGirdi } from "../../shared/yonetim";
 import { kutlamaBildir } from "./kutlama";
+import type { TekrarCevabi } from "../../shared/tekrar";
 
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(`/api${path}`, { credentials: "same-origin" });
@@ -41,6 +42,8 @@ export const api = {
   questions: (topic?: string) => get<Question[]>(topic ? `/questions?topic=${encodeURIComponent(topic)}` : "/questions"),
   progress: () => get<TopicProgress[]>("/progress"),
   ilerlemeAyrintisi: () => get<IlerlemeAyrintisi>("/progress/ayrinti"),
+  tekrar: () => get<TekrarCevabi>("/tekrar"),
+  tekrarSayisi: () => get<{ n: number }>("/tekrar/sayi"),
   soruDurumlari: () => get<SoruDurumlari>("/questions/durum"),
   profil: (ad: string) => get<Profil>(`/profil/${encodeURIComponent(ad)}`),
   async answer(id: string, answer: Answer): Promise<AnswerResult> {
