@@ -1085,3 +1085,6 @@ body.boyutlaniyor-dikey { cursor: ns-resize; user-select: none; }
 .yenilik ul { margin: 0; padding-left: 18px; line-height: 1.55; }
 .yenilik ul li + li { margin-top: 3px; }
 .yeni-etiket { background: var(--green); color: #fff; }
+.yeni-isareti { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; font-weight: 600; color: var(--green); text-decoration: none; }
+.yeni-isareti:hover { text-decoration: underline; }
+.yeni-isareti .sayi-rozeti { background: var(--green); margin-left: 0; }
