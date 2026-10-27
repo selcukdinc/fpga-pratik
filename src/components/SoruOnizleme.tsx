@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { Markdown, inline } from "./Markdown";
+import { boslukEtiketi, bosluklariAyir } from "../lib/bosluk";
 
 interface Props {
   type: "tf" | "mcq" | "fill" | "code";
@@ -15,13 +16,14 @@ interface Props {
 }
 
 export function SoruOnizleme({ type, prompt, choices, dogruSik, bosluk, explanation, aciklamaBasligi, ust }: Props) {
+  const ayrik = type === "fill" ? bosluklariAyir(prompt, bosluk) : null;
   return (
     <article className="question">
       <header>
         <span className="q-num">Soru</span>
         {ust}
       </header>
-      <Markdown text={prompt || "Soru metni burada görünür."} />
+      <Markdown text={(ayrik ? ayrik.metin : prompt) || "Soru metni burada görünür."} />
       {type === "tf" && <div className="choices"><label>○ Doğru</label><label>○ Yanlış</label></div>}
       {type === "mcq" && (
         <div className="choices">
@@ -35,7 +37,13 @@ export function SoruOnizleme({ type, prompt, choices, dogruSik, bosluk, explanat
       {type === "fill" && (
         <div className="choices">
           {Array.from({ length: bosluk }, (_, i) => (
-            <label key={i}>Boşluk {i + 1} <input className="mono" disabled /></label>
+            <label key={i} className="bosluk">
+              <span className="bosluk-etiket">
+                {boslukEtiketi(i, bosluk)}
+                {ayrik?.adlar[i] && <>: {inline(ayrik.adlar[i]!)}</>}
+              </span>
+              <input className="mono" disabled />
+            </label>
           ))}
         </div>
       )}

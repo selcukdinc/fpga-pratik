@@ -1,0 +1,71 @@
+// Ders ve kod sorularındaki editör kutusu: alt kenarından sürüklenerek
+// boyutlandırılır, "Tümünü göster" ile kodun tamamı sığacak kadar uzar.
+
+import { useRef, useState, type KeyboardEvent, type PointerEvent as RPointerEvent, type ReactNode } from "react";
+
+const EN_AZ = 120;
+const EN_COK = 1600;
+
+export function BoyutluEditor({ sinif, children }: { sinif?: string; children: ReactNode }) {
+  const kutu = useRef<HTMLDivElement>(null);
+  // null: CSS'teki varsayılan yükseklik
+  const [yukseklik, setYukseklik] = useState<number | null>(null);
+  const [tam, setTam] = useState(false);
+
+  const surukle = (e: RPointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0 || !kutu.current) return;
+    e.preventDefault();
+    const tutamak = e.currentTarget;
+    tutamak.setPointerCapture(e.pointerId);
+    const y0 = e.clientY;
+    const h0 = kutu.current.getBoundingClientRect().height;
+    setTam(false);
+    const hareket = (m: PointerEvent) => setYukseklik(Math.min(EN_COK, Math.max(EN_AZ, h0 + m.clientY - y0)));
+    const bitir = () => {
+      tutamak.removeEventListener("pointermove", hareket);
+      tutamak.removeEventListener("pointerup", bitir);
+      tutamak.removeEventListener("pointercancel", bitir);
+      document.body.classList.remove("boyutlaniyor-dikey");
+    };
+    document.body.classList.add("boyutlaniyor-dikey");
+    tutamak.addEventListener("pointermove", hareket);
+    tutamak.addEventListener("pointerup", bitir);
+    tutamak.addEventListener("pointercancel", bitir);
+  };
+
+  const klavye = (e: KeyboardEvent) => {
+    if ((e.key !== "ArrowDown" && e.key !== "ArrowUp") || !kutu.current) return;
+    e.preventDefault();
+    const h = kutu.current.getBoundingClientRect().height + (e.key === "ArrowDown" ? 40 : -40);
+    setTam(false);
+    setYukseklik(Math.min(EN_COK, Math.max(EN_AZ, h)));
+  };
+
+  return (
+    <div className="boyutlu-editor">
+      <div
+        ref={kutu}
+        className={`kod-editor${sinif ? ` ${sinif}` : ""}${tam ? " tam" : ""}`}
+        style={!tam && yukseklik ? { height: yukseklik } : undefined}
+      >
+        {children}
+      </div>
+      <div className="editor-alt">
+        <div
+          className="editor-tutamak"
+          role="separator"
+          aria-orientation="horizontal"
+          aria-label="Editör yüksekliği"
+          tabIndex={0}
+          title="Sürükleyerek boyutlandır"
+          onPointerDown={surukle}
+          onKeyDown={klavye}
+          onDoubleClick={() => (setTam(false), setYukseklik(null))}
+        />
+        <button className="baglanti-dugme" onClick={() => setTam(!tam)} aria-pressed={tam}>
+          {tam ? "Küçült" : "Tümünü göster"}
+        </button>
+      </div>
+    </div>
+  );
+}

@@ -175,6 +175,8 @@ export function Sandbox({ onStatus }: Props) {
   const [messages, setMessages] = useState<SimMessage[]>([]);
   const [log, setLog] = useState<string[]>([]);
   const [vcd, setVcd] = useState<Vcd | null>(null);
+  // Başarılı çalıştırma sayısı: dalga panelindeki parlamayı yeniden başlatır
+  const [parla, setParla] = useState(0);
   const [tab, setTab] = useState<Tab>("messages");
   const [gotoLine, setGotoLine] = useState<{ line: number; nonce: number }>();
   const [menu, setMenu] = useState<{ x: number; y: number; ogeler: MenuOgesi[] } | null>(null);
@@ -401,7 +403,8 @@ export function Sandbox({ onStatus }: Props) {
     yaz(r, on);
     if (r.vcd) setVcd(r.vcd);
     setBusy(null);
-    if (r.vcd && r.ok) onStatus(`Simülasyon tamamlandı: ${top}, ${ws.stopTime} (${Math.round(r.ms)} ms)`);
+    if (r.vcd && r.ok) setParla((n) => n + 1);
+    if (r.vcd && r.ok) onStatus(`✓ Simülasyon tamamlandı: ${top}, ${ws.stopTime} (${Math.round(r.ms)} ms)`);
     else if (r.timedOut) onStatus("Simülasyon zaman sınırını aştı; sonsuz bir döngü olabilir");
     else if (r.vcd) onStatus(`Simülasyon bir hatayla durdu: ${ozet(r.messages)}`);
     else onStatus(`Simülasyon başlamadı: ${ozet(r.messages)}`);
@@ -538,7 +541,12 @@ export function Sandbox({ onStatus }: Props) {
       ad: "Dalga ekranı",
       sinif: "waves",
       baslik: <span className="panel-ad">Dalga ekranı</span>,
-      govde: vcd ? <WaveformView vcd={vcd} /> : <p className="empty dark">Simülasyonu çalıştırınca sinyaller burada çizilir.</p>,
+      govde: vcd ? (
+        <>
+          <WaveformView vcd={vcd} />
+          {parla > 0 && <span className="parla-katman" key={parla} aria-hidden="true" />}
+        </>
+      ) : <p className="empty dark">Simülasyonu çalıştırınca sinyaller burada çizilir.</p>,
     },
     bottom: {
       ad: "Mesajlar",

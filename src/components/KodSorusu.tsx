@@ -2,6 +2,7 @@
 // sunucunun "nerede takıldı" raporu.
 
 import { useEffect, useMemo, useState } from "react";
+import { BoyutluEditor } from "./BoyutluEditor";
 import { VhdlEditor, type EditorMark } from "./VhdlEditor";
 import { MessagesPanel } from "./MessagesPanel";
 import { WaveformView } from "./WaveformView";
@@ -171,9 +172,9 @@ export function KodSorusu({ id, bilgi, onSonuc }: { id: string; bilgi: KodBilgis
 
   return (
     <div className="kod-sorusu">
-      <div className="kod-editor">
+      <BoyutluEditor>
         <VhdlEditor value={kod} onChange={setKod} marks={isaretler} gotoLine={gotoLine} />
-      </div>
+      </BoyutluEditor>
       <div className="kod-dugmeler">
         <button className="primary" onClick={sina} disabled={durum !== null}>
           {durum && durum !== "kontrol" ? DURUM_METNI[durum] : "▶ Sına"}
