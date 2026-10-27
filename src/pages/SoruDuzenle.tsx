@@ -9,6 +9,7 @@ import { MetinAlani } from "../components/MetinAlani";
 import { SoruOnizleme } from "../components/SoruOnizleme";
 import { soruGirdisiHatasi, type PanelSoru, type PanelSoruTipi, type SoruGirdi } from "../../shared/yonetim";
 import type { Topic } from "../../shared/api";
+import { sikUyarilari } from "../lib/sik-denetimi";
 
 const BOS: SoruGirdi = {
   topicId: "",
@@ -201,6 +202,7 @@ export function SoruDuzenle({ id }: { id: string }) {
             {g.choices.length < 6 && (
               <button type="button" onClick={() => ayarla({ choices: [...g.choices, ""] })}>+ Şık ekle</button>
             )}
+            {sikUyarilari(g.choices, (g.answer as { index: number }).index).map((u) => <p key={u} className="hint uyari">{u}</p>)}
           </fieldset>
         )}
 

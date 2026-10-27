@@ -12,6 +12,7 @@ export type Route =
   | { page: "hakkinda" }
   | { page: "tanitim" }
   | { page: "sss" }
+  | { page: "terimler" }
   | { page: "gizlilik" }
   | { page: "giris"; sonra?: string }
   | { page: "kayit" }
@@ -59,6 +60,7 @@ export function parsePath(path: string, search = ""): Route {
     case "hakkinda":
     case "tanitim":
     case "sss":
+    case "terimler":
     case "gizlilik":
     case "kayit":
     case "sifre-sifirla":

@@ -218,7 +218,7 @@ export function KodSorusu({ id, bilgi, onSonuc }: { id: string; bilgi: KodBilgis
               {sonuc.ipucu && <p className="kod-ipucu">İpucu: {sonuc.ipucu}</p>}
             </>
           )}
-          {sonuc.explanation && <Markdown text={sonuc.explanation} />}
+          {sonuc.explanation && <Markdown text={sonuc.explanation} terim />}
         </div>
       )}
 

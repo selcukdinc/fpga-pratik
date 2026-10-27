@@ -10,6 +10,7 @@ import { MetinAlani } from "../components/MetinAlani";
 import { SoruOnizleme } from "../components/SoruOnizleme";
 import { oneriHatasi, type Oneri, type OneriGirdi, type OneriTipi } from "../../shared/sosyal";
 import type { Topic } from "../../shared/api";
+import { sikUyarilari } from "../lib/sik-denetimi";
 
 const TUR_ADI: Record<OneriTipi, string> = { tf: "Doğru / yanlış", mcq: "Çoktan seçmeli", fill: "Boşluk doldurma", code: "Kod yazma" };
 const DURUM_ADI = { pending: "İnceleniyor", accepted: "Kabul edildi", rejected: "Kabul edilmedi" } as const;
@@ -148,6 +149,7 @@ export function Oner() {
                   onChange={(e) => ayarla({ choices: g.choices.map((x, j) => (j === i ? e.target.value : x)) })} />
               </div>
             ))}
+            {sikUyarilari(g.choices, (g.answer as { index: number }).index).map((u) => <p key={u} className="hint uyari">{u}</p>)}
           </fieldset>
         )}
         {g.type === "fill" && (
