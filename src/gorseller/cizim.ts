@@ -57,3 +57,112 @@ export const mux = (x: number, y: number, w: number, h: number, egim = 0.2, cls 
 };
 
 export const svg = (en: number, boy: number, icerik: string) => ({ en, boy, icerik });
+
+// ---- Dalga diyagramı ----
+// Her satır bir sinyaldir; dalga dizgisindeki her karakter bir zaman dilimidir:
+// '0' ve '1' seviye, 'x' bilinmeyen, 'z' yüksek empedans, '=' veri dizisindeki
+// sıradaki değerle yeni bir vektör değeri, '.' önceki dilimin devamı.
+// Saat için "01010101" gibi yazılır.
+export interface DalgaSatiri {
+  ad: string;
+  dalga: string;
+  veri?: string[];
+  // Dalganın sınıfı; vurgulanacak sinyal için "g-dalga g-renk-a-cizgi" gibi
+  cls?: string;
+}
+
+export interface DalgaSecenek {
+  // Sinyal adlarına ayrılan genişlik
+  etiketEn?: number;
+  // Bir zaman diliminin genişliği
+  adim?: number;
+  // Satır yüksekliği ve satırlar arası mesafe
+  boy?: number;
+  ara?: number;
+  // Dikey kesik çizgiler: dilim sırası (0'dan) ve üstüne yazılacak etiket
+  isaretler?: { t: number; etiket?: string }[];
+}
+
+export function dalga(x: number, y: number, satirlar: DalgaSatiri[], o: DalgaSecenek = {}): string {
+  const { etiketEn = 70, adim = 36, boy = 20, ara = 34, isaretler = [] } = o;
+  const x0 = x + etiketEn;
+  let s = "";
+  for (const m of isaretler) {
+    const mx = x0 + m.t * adim;
+    s += cizgi([[mx, y - 8], [mx, y + (satirlar.length - 1) * ara + boy + 6]], "g-kesik");
+    if (m.etiket) s += yazi(mx, y - 16, m.etiket, "g-mini g-soluk");
+  }
+  satirlar.forEach((sat, i) => {
+    const ust = y + i * ara;
+    const alt = ust + boy;
+    const orta = ust + boy / 2;
+    const cls = sat.cls ?? "g-dalga";
+    s += yazi(x0 - 10, orta, sat.ad, "g-kod g-kucuk", "end");
+    let onceki = "";
+    let veriSira = 0;
+    let etiket = "";
+    let etiketBas = 0;
+    const etiketYaz = (bitis: number) => {
+      if (etiket && bitis - etiketBas >= 14) s += yazi((etiketBas + bitis) / 2, orta, etiket, "g-mini g-kod");
+    };
+    for (let k = 0; k < sat.dalga.length; k++) {
+      let c = sat.dalga[k]!;
+      const xa = x0 + k * adim;
+      const xb = xa + adim;
+      if (c === ".") c = onceki === "=" ? "~" : onceki;
+      if (c === "0" || c === "1") {
+        const yy = c === "1" ? ust : alt;
+        if (onceki === "0" || onceki === "1") {
+          if (onceki !== c) s += cizgi([[xa, onceki === "1" ? ust : alt], [xa, yy]], cls);
+        }
+        s += cizgi([[xa, yy], [xb, yy]], cls);
+      } else if (c === "z") {
+        s += cizgi([[xa, orta], [xb, orta]], "g-dalga-z");
+      } else if (c === "x") {
+        s += kutu(xa, ust, adim, boy, "g-dalga-x");
+      } else if (c === "=" || c === "~") {
+        if (c === "=") {
+          etiketYaz(xa);
+          etiket = sat.veri?.[veriSira++] ?? "";
+          etiketBas = xa;
+          s += yol(`M${xa},${orta} L${xa + 4},${ust} M${xa},${orta} L${xa + 4},${alt}`, cls);
+          s += cizgi([[xa + 4, ust], [xb, ust]], cls) + cizgi([[xa + 4, alt], [xb, alt]], cls);
+        } else {
+          s += cizgi([[xa, ust], [xb, ust]], cls) + cizgi([[xa, alt], [xb, alt]], cls);
+        }
+      }
+      onceki = c === "~" ? "=" : c;
+      if (c !== "=" && c !== "~") {
+        etiketYaz(xa);
+        etiket = "";
+      }
+    }
+    etiketYaz(x0 + sat.dalga.length * adim);
+  });
+  return s;
+}
+
+// ---- Bit dizisi ----
+// Bir vektörün bitlerini soldan sağa kutucuklar halinde çizer. indisler verilirse
+// her kutunun altına indisi yazılır; vurgu'daki konumlar (0 = en soldaki kutu)
+// vurguCls ile boyanır.
+export interface BitSecenek {
+  en?: number;
+  boy?: number;
+  indisler?: (number | string)[];
+  vurgu?: number[];
+  vurguCls?: string;
+  cls?: string;
+}
+
+export function bitDizisi(x: number, y: number, bitler: string | string[], o: BitSecenek = {}): string {
+  const { en = 28, boy = 26, indisler, vurgu = [], vurguCls = "g-dolu g-secili", cls = "g-kutu" } = o;
+  const liste = typeof bitler === "string" ? [...bitler] : bitler;
+  let s = "";
+  liste.forEach((b, i) => {
+    const bx = x + i * en;
+    s += kutu(bx, y, en, boy, vurgu.includes(i) ? vurguCls : cls) + yazi(bx + en / 2, y + boy / 2, b, "g-kod g-kucuk");
+    if (indisler?.[i] !== undefined) s += yazi(bx + en / 2, y + boy + 11, String(indisler[i]), "g-mini g-soluk");
+  });
+  return s;
+}

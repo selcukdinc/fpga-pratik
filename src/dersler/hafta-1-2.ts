@@ -3,70 +3,178 @@ import { UST, md, type Ders } from "./tipler";
 export const HAFTA_1: Ders = {
   hafta: 1,
   baslik: "FPGA nedir? FPGA, ASIC ve işlemci",
-  ozet: "FPGA'nın ne olduğunu, ASIC ve işlemciyle farkını ve ne zaman tercih edildiğini öğren.",
+  ozet: "FPGA'nın içinde ne olduğunu, ASIC ve işlemciyle farkını, entegre ölçeklerini ve hangi işte hangisinin seçileceğini öğren.",
   bolumler: [
     {
       baslik: "FPGA: sahada programlanabilen kapı dizisi",
       metin: md(`
-**FPGA** (Field Programmable Gate Array), üretildikten sonra kullanıcının içindeki bağlantıları yeniden kurabildiği bir entegre devredir. Yonganın içinde binlerce küçük mantık bloğu, bunları birbirine bağlayan programlanabilir yollar ve dış dünyayla konuşan giriş/çıkış blokları vardır.
+**Neden önemli?** Bu derste yazacağın her VHDL satırı sonunda bir FPGA'nın içinde gerçek bir devreye dönüşecek. FPGA'nın içini bir kez gözünde canlandırırsan, ilerideki "bu kod neden böyle sentezlendi?" sorularının çoğu kendiliğinden cevaplanır.
+
+**FPGA** (Field Programmable Gate Array), üretildikten sonra kullanıcının içindeki bağlantıları yeniden kurabildiği bir entegre devredir. "Field programmable", yani **sahada programlanabilir** ifadesi, yonganın fabrikadan çıktıktan sonra, kullanıcının elinde yapılandırılabildiğini anlatır.
 
 [[G-H1-01]]
 
-Bir FPGA'ya "program" yüklediğimizde aslında bir yazılım çalıştırmayız; hangi mantık bloğunun hangi işlevi göreceğini ve blokların nasıl bağlanacağını belirleyen bir yapılandırma dosyası (**bitstream**) yükleriz. Yani FPGA, istediğimiz sayısal devreye dönüşen boş bir devre kartı gibi düşünülebilir.
+Şekildeki üç yapı taşına bak:
+
+- **CLB** (mantık bloğu): Izgara biçiminde dizilmiş kutular. Asıl mantık işlemleri bunların içinde yapılır. İçlerinde küçük tablolar (LUT), flip-floplar ve çoklayıcılar vardır; ayrıntısını 2. haftada göreceğiz.
+- **IOB** (giriş/çıkış bloğu): Kenardaki küçük kutular. Yonganın bacaklarını içerideki mantığa bağlar.
+- **Programlanabilir bağlantılar:** CLB'lerin arasındaki gri kanallar. Kesişim noktalarındaki **anahtar kutuları** hangi telin hangisine bağlanacağını belirler. Şekildeki mavi yol, yapılandırmayla kurulmuş örnek bir bağlantıdır: bir giriş bloğundan bir CLB'ye, oradan başka bir CLB'ye.
+
+Bir anahtar kutusunu yakından inceleyelim. Dört yönden gelen teller kutuda buluşur ve aralarındaki her olası bağlantının bir anahtarı vardır. Her anahtarı küçük bir bellek hücresindeki tek bir bit açar ya da kapatır:
+
+[[G-H1-05]]
+
+Şekilde sol-üst ve sağ-alt bağlantılarının bitleri 1 olduğu için bu teller birbirine bağlanmış, diğerleri açık kalmış. Yonganın içinde bunun gibi milyonlarca bit vardır.
+
+**Bitstream nedir?** Bir FPGA'ya "program" yüklediğimizde aslında bir yazılım çalıştırmayız. Bütün bu bitleri, yani hangi CLB'nin hangi işlevi göreceğini ve hangi anahtarın kapalı olacağını tek seferde yazan bir yapılandırma dosyası yükleriz. Bu dosyaya **bitstream** denir.
+
+[[G-H1-04]]
+
+Şekildeki iki bitstream aynı yongaya yükleniyor. A yüklendiğinde bazı CLB'ler ve yollar bir toplayıcı kuracak şekilde seçilir; B yüklendiğinde aynı yonga bir sayaca dönüşür. Yonga değişmedi, yalnızca yapılandırma değişti.
 
 - Yapılandırma değiştirilerek aynı yonga başka bir devreye dönüştürülebilir.
 - Hata bulunduğunda yeni bir yonga üretmeye gerek kalmaz, tasarım güncellenip yeniden yüklenir.
+- Çoğu FPGA'da yapılandırma bitleri SRAM hücrelerinde durur ve güç kesilince silinir. Bu yüzden kartlarda bitstream ayrı bir flash bellekte saklanır ve her açılışta yongaya yeniden yüklenir.
+
+> **Dikkat:** "FPGA'yı programlamak" ifadesi yanıltıcı olabilir. FPGA komut çalıştırmaz; yüklenen bitstream onu bir devreye dönüştürür. VHDL de bu yüzden bir programlama dili değil, bir **donanım tanımlama dilidir**.
 `),
+      dene: ["t1-donanim-tanim", "t1-asic-hata"],
     },
     {
       baslik: "ASIC ile karşılaştırma",
       metin: md(`
+**Neden önemli?** Bir ürün tasarlarken ilk karar çoğu zaman "FPGA mı, ASIC mi?" sorusudur. Cevap tasarımın kendisinden çok üretim adedine ve tasarımın değişip değişmeyeceğine bağlıdır.
+
 **ASIC** (Application Specific Integrated Circuit) tek bir iş için özel olarak tasarlanıp üretilen yongadır. Devre silikona bir kez kazınır ve sonradan değiştirilemez.
 
-- **Bir kerelik maliyet (NRE):** ASIC'te maske ve üretim hazırlığı çok pahalıdır. FPGA'da bu maliyet yoktur; hazır yongayı satın alıp kullanırsın.
-- **Birim maliyet:** Yüz binlerce adet üretildiğinde ASIC'in tanesi FPGA'dan ucuza gelir. Az sayıda ürün için FPGA daha ekonomiktir.
-- **Performans ve güç:** Aynı işi yapan ASIC genellikle daha hızlıdır ve daha az güç harcar, çünkü yalnızca gereken transistörleri içerir.
-- **Esneklik:** FPGA sahada güncellenebilir. ASIC'te bir hata, yeni bir üretim turu demektir.
-- **Analog devreler:** ASIC aynı kalıpta analog alıcı-verici gibi tam analog devreler barındırabilir. FPGA'larda ADC ya da PLL gibi bazı özel bloklar bulunur, ama tam analog devreler bulunmaz; programlanabilir kısım sayısaldır.
+| Özellik | FPGA | ASIC |
+| --- | --- | --- |
+| Bir kerelik maliyet (NRE) | Yok denecek kadar az: hazır yonga alınır | Çok yüksek: tasarım, doğrulama, maske |
+| Birim maliyet | Yüksek | Çok adette düşük |
+| Performans ve güç | İyi | Daha hızlı, daha az güç |
+| Sonradan değişiklik | Sahada yeniden yüklenir | İmkânsız, yeni üretim turu gerekir |
+| Analog devre | ADC, PLL gibi bazı özel bloklar; tam analog devre yok | Analog alıcı-verici gibi tam analog devreler aynı kalıpta olabilir |
+| Ürüne çıkış süresi | Kısa | Uzun |
+
+ASIC'in daha hızlı ve az güç harcar olmasının nedeni, yalnızca gereken transistörleri içermesidir. FPGA'da programlanabilir bağlantılar ve kullanılmayan kaynaklar ek gecikme ve güç getirir.
+
+**Hata düzeltmenin bedeli:** İki yolun en büyük farkı, bir hata bulunduğunda ne olduğudur.
+
+[[G-H1-07]]
+
+ASIC'te testte çıkan bir hata yeni bir maske ve üretim turu demektir; bu aylar sürer ve çok pahalıdır. FPGA'da kod düzeltilir, yeniden sentezlenir ve dakikalar içinde yüklenir. Bu yüzden FPGA'lar sık sık **prototip** olarak kullanılır: bir ASIC ya da işlemci tasarımı silikona gönderilmeden önce FPGA üzerinde çalıştırılıp doğrulanır.
+
+**Maliyet ne zaman tersine döner?** Toplam maliyeti iki doğru olarak düşün. FPGA sıfırdan başlar ama her adette tane fiyatı kadar yükselir. ASIC yüksek bir NRE ile başlar ama yavaş yükselir.
 
 [[G-H1-02]]
 
-Bu yüzden FPGA'lar sık sık **prototip** olarak da kullanılır: bir ASIC tasarımı silikona gönderilmeden önce FPGA üzerinde çalıştırılıp doğrulanır.
+Kesişme noktasının solunda FPGA, sağında ASIC daha ucuzdur. Bu noktayı hesaplamak kolaydır:
+
+> **Çözümlü örnek:** FPGA'nın tanesi 50 TL ve bir kerelik maliyeti yok. ASIC'in NRE'si 2.000.000 TL, tanesi 10 TL. Kaç adette eşitlenirler?
+>
+> 1. FPGA toplamı: 50·n. ASIC toplamı: 2.000.000 + 10·n.
+> 2. Eşitle: 50·n = 2.000.000 + 10·n, yani 40·n = 2.000.000.
+> 3. n = 50.000 adet. Bundan az üretimde FPGA, fazlasında ASIC ucuzdur.
+
+Aşağıdaki şekil aynı hesabı ölçekli çizer. Adet kaydırıcısını oynatıp değerleri değiştirerek kesişme noktasının nasıl kaydığını gör:
+
+[[G-H1-06]]
+
+> **Sık hata:** "ASIC her zaman daha ucuzdur" demek. ASIC yalnızca çok adette ucuzdur. 20 adetlik bir laboratuvar cihazında NRE adetlere bölünemez ve FPGA açık ara ucuzdur.
 `),
+      dene: ["t1-nre-tanim", "h1-asic-seri-uretim"],
     },
     {
-      baslik: "İşlemci (CPU) ile karşılaştırma",
+      baslik: "CPU, GPU, FPGA ve ASIC",
       metin: md(`
-Bir işlemci, belleğindeki komutları **sırayla** okuyup yürütür. Aynı donanım her komutta farklı bir iş yapar.
+**Neden önemli?** FPGA ile işlemci arasındaki farkı anlamak, VHDL'i doğru düşünmenin anahtarıdır: VHDL'de yazdığın satırlar sırayla yürütülmez, hepsi aynı anda çalışan donanıma dönüşür.
 
-FPGA'da ise yazdığın her parça kendi donanımına dönüşür ve hepsi **aynı anda** çalışır. Bir toplayıcı, bir karşılaştırıcı ve bir sayaç tasarladıysan üçü her saat çevriminde birlikte çalışır.
+Bir işlemci (CPU), belleğindeki komutları **sırayla** okuyup yürütür. Aynı donanım her komutta farklı bir iş yapar. FPGA'da ise yazdığın her parça kendi donanımına dönüşür ve hepsi **aynı anda** çalışır.
 
 [[G-H1-03]]
 
-- Paralel işlerde (görüntü işleme, sinyal işleme, haberleşme) FPGA, aynı saat hızındaki işlemciden çok daha fazla iş çıkarabilir.
-- Zamanlaması kesin olmalı olan arayüzlerde FPGA öngörülebilir davranır; araya bir işletim sistemi girmez.
-- Karmaşık, sırayla ilerleyen ve sık değişen işlerde işlemci daha pratiktir.
-- İşlemci kayan noktalı sayılar gibi veri tiplerini ek bir tasarım yapmadan, doğrudan işler. FPGA'da bunun için ayrıca donanım tasarlamak gerekir.
+Şekilde işlemci üç çevrimde toplama, karşılaştırma ve saymayı birer kez yapıyor. FPGA'da her işin kendi donanımı olduğu için aynı üç çevrimde her iş üçer kez yapılıyor.
 
-Dört seçenek **en esnekten en verimliye** şöyle sıralanır: **CPU → GPU → FPGA → ASIC**. Bu sırada sağa gittikçe esneklik ve kullanım kolaylığı azalır, performans ve güç verimliliği artar. GPU, çok sayıda basit çekirdeğiyle işlemciden daha paralel ama FPGA kadar özelleştirilemeyen bir ara noktadır.
+Bu farkı sayılarla görelim. 8 bağımsız toplama yapılacak olsun:
 
-VHDL yazarken bu farkı akılda tutmak önemlidir: VHDL bir programlama dili gibi görünse de bir **donanım tanımlama dilidir**.
+[[G-H1-09]]
+
+Üstteki saat dalgası çevrimleri gösteriyor. CPU'nun tek yürütme birimi her çevrimde bir toplama yapar ve işi 8 çevrimde bitirir. FPGA'da 8 ayrı toplayıcı kurulmuştur ve hepsi ilk saat kenarında birlikte çalışır: 8 toplama 1 çevrimde biter. FPGA'nın saat hızı işlemciden düşük olsa bile paralel işlerde çok daha fazla iş çıkarmasının nedeni budur.
+
+**Kim nerede güçlü?**
+
+- **FPGA:** Paralel işler (görüntü ve sinyal işleme, haberleşme) ve zamanlaması kesin olması gereken arayüzler. Araya bir işletim sistemi ya da kesme girmediği için her çevrimde aynı iş öngörülebilir biçimde yapılır.
+- **CPU:** Karmaşık, sırayla ilerleyen ve sık değişen işler. İşlemci kayan noktalı sayılar gibi veri tiplerini ek bir tasarım yapmadan, doğrudan işler; FPGA'da bunun için ayrıca donanım tasarlamak gerekir.
+- **GPU:** Çok sayıda basit çekirdekle aynı işlemi çok sayıda veriye uygular. İşlemciden daha paralel, ama FPGA kadar özelleştirilemez.
+
+Dört seçenek tek bir eksende sıralanabilir:
+
+[[G-H1-08]]
+
+Sağa gittikçe performans ve güç verimliliği artar, sola gittikçe esneklik ve kullanım kolaylığı artar. Sıra: **CPU → GPU → FPGA → ASIC**.
+
+> **Sık hata:** Sıralamada FPGA ile GPU'nun yerini karıştırmak. GPU hâlâ komut çalıştıran bir işlemcidir, bu yüzden FPGA'dan daha esnek ama daha az verimlidir.
 `),
+      dene: ["h1-esneklik-verim", "t1-paralel-sayi"],
     },
     {
       baslik: "Entegre devre ölçekleri",
       metin: md(`
-Entegre devreler içerdikleri kapı sayısına göre sınıflanır. Derste verilen aralıklar şunlardır:
+**Neden önemli?** Programlanabilir mantığın neden ortaya çıktığını anlamak için önce entegrelerin nasıl büyüdüğüne bakmak gerekir: devreler büyüdükçe hazır parçaları kartta birleştirmek zorlaştı.
 
-- **SSI** (küçük ölçek): 1-20 kapı. Örnek: dört tane iki girişli NAND içeren 7400.
-- **MSI** (orta ölçek): 20-100 kapı. Sayıcılar, çoklayıcılar, kod çözücüler. Örnek: 74LS90 sayıcı entegresi.
-- **LSI** (büyük ölçek): 100-5000 kapı. İlk mikroişlemciler.
-- **VLSI** (çok büyük ölçek): 5000 ve üzeri kapı. Günümüz işlemcileri ve FPGA'lar bu sınırın çok üstündedir.
+Entegre devreler içerdikleri mantık kapısı sayısına göre sınıflanır. Derste verilen aralıklar:
 
-CPLD ya da FPGA bir ölçek değil, programlanabilir mantık türüdür.
+| Sınıf | Açılımı | Kapı sayısı | Örnek |
+| --- | --- | --- | --- |
+| SSI | küçük ölçek | 1-20 | 7400: dört NAND |
+| MSI | orta ölçek | 20-100 | 74LS90 sayıcı, çoklayıcılar, kod çözücüler |
+| LSI | büyük ölçek | 100-5000 | ilk mikroişlemciler |
+| VLSI | çok büyük ölçek | 5000 ve üzeri | günümüz işlemcileri ve FPGA'lar |
 
-Programlanabilir mantık, bu ölçeklerdeki hazır parçaları kartta bir araya getirmek yerine tek bir yongada istediğin devreyi kurmanı sağladı.
+Bu aralıklar her biri öncekinin katları olduğu için en iyi logaritmik bir eksende görünür:
+
+[[G-H1-10]]
+
+Şeritte her çentik 10 kat demektir. Günümüz FPGA'ları milyonlarca kapıya denk mantık içerir ve VLSI sınırının çok ötesindedir.
+
+Bir SSI entegresinin içine bakalım:
+
+[[G-H1-11]]
+
+7400'ün 14 bacağı vardır. İçinde dört tane iki girişli NAND (VE DEĞİL) kapısı bulunur; örneğin 1 ve 2 numaralı bacaklar bir kapının girişi, 3 numara çıkışıdır. 14 besleme (VCC), 7 topraktır (GND). Toplam 4 kapı olduğu için SSI sınıfındadır.
+
+> **Dikkat:** CPLD ve FPGA birer ölçek değil, programlanabilir mantık türüdür. "Sayıcı içeren onlarca kapılık entegre hangi ölçekte?" sorusunun cevabı MSI'dır, CPLD değil.
+
+Programlanabilir mantık, bu ölçeklerdeki hazır parçaları kartta bir araya getirmek yerine tek bir yongada istediğin devreyi kurmanı sağladı. Bu yolculuğun ayrıntısı 2. haftanın konusu.
 `),
+      dene: ["h1-entegre-olcek", "t1-vlsi"],
+    },
+    {
+      baslik: "Hangisini seçmeli?",
+      metin: md(`
+**Neden önemli?** Sınavda ve gerçek hayatta sorular çoğu zaman bir senaryo olarak gelir: "Şu cihaz için hangisi uygundur?" Doğru cevabı bulmak için birkaç soruyu sırayla sormak yeterlidir.
+
+[[G-H1-12]]
+
+Karar ağacını yukarıdan aşağı oku:
+
+1. İş paralel mi, zamanlaması kesin mi? Değilse, yani iş sırayla ilerleyen ve sık değişen bir yazılımsa, işlemci en pratik seçimdir.
+2. Paralelse: tasarım kesinleşti mi ve çok yüksek adette mi üretilecek? Evetse ASIC'in yüksek NRE'si adetlere bölünür ve birim maliyet en düşük olur. Değilse FPGA uygundur.
+3. ASIC seçilse bile tasarım önce FPGA'da prototiplenir; hatalar pahalı üretim turundan önce ucuza bulunur.
+
+Birkaç senaryoyu bu ağaçla çözelim:
+
+| Senaryo | Seçim | Neden |
+| --- | --- | --- |
+| Tasarımı kesinleşmiş oyuncak kontrol devresi, 1 milyon adet | ASIC | NRE çok adede bölünür, birim maliyet en düşük |
+| Algoritması birkaç yılda bir güncellenecek baz istasyonu | FPGA | Gerçek zamanlı paralel iş, sahada güncellenebilir |
+| 20 adetlik, tasarımı değişebilecek ölçüm cihazı | FPGA | NRE karşılanamaz, değişiklik gerekecek |
+| Sık değişen, adım adım ilerleyen masaüstü uygulaması | CPU | Sıralı iş, yazılımla değiştirmek kolay |
+| Silikona gidecek yeni bir işlemci tasarımı | Önce FPGA, sonra ASIC | Hatalar prototipte ucuza bulunur |
+
+> **İpucu:** Senaryoda "güncellenecek", "değişebilir" ya da "az adet" geçiyorsa FPGA'ya; "kesinleşmiş" ve "milyon adet" geçiyorsa ASIC'e; "sırayla", "sık değişen yazılım" geçiyorsa işlemciye yönel.
+`),
+      dene: ["h1-fpga-guncelleme", "t1-prototip-neden"],
     },
   ],
   test: ["h1-fpga-acilim", "h1-fpga-asic-nre", "h1-fpga-cpu-paralel", "h1-prototip", "h1-7400-ssi"],

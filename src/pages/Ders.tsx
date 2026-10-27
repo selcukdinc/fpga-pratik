@@ -43,19 +43,37 @@ function DersListesi() {
   );
 }
 
-function KonuSonuTesti({ ders }: { ders: DersVerisi }) {
-  const [sorular, setSorular] = useState<Question[] | null>(null);
-  const [hata, setHata] = useState(false);
+// Ders sayfasındaki sorular (bölüm sonu "Kendini dene" ve konu sonu testi) tek
+// istekle yüklenir
+type SoruDurumu = Map<string, Question> | "hata" | null;
+
+function useSorular(ders: DersVerisi): SoruDurumu {
+  const [sorular, setSorular] = useState<SoruDurumu>(null);
   useEffect(() => {
     setSorular(null);
-    api.questions().then((liste) => {
-      const m = new Map(liste.map((q) => [q.id, q]));
-      setSorular(ders.test.map((id) => m.get(id)).filter((q): q is Question => !!q));
-    }, () => setHata(true));
+    api.questions().then((liste) => setSorular(new Map(liste.map((q) => [q.id, q]))), () => setSorular("hata"));
   }, [ders]);
+  return sorular;
+}
 
-  if (hata) return <p className="bad">Sorular yüklenemedi.</p>;
-  if (!sorular) return <p className="empty">Yükleniyor…</p>;
+function KendiniDene({ ids, sorular }: { ids: string[]; sorular: SoruDurumu }) {
+  if (!(sorular instanceof Map)) return null;
+  const liste = ids.map((id) => sorular.get(id)).filter((q): q is Question => !!q);
+  if (!liste.length) return null;
+  return (
+    <div className="kendini-dene">
+      <h4>Kendini dene</h4>
+      {liste.map((q, i) => (
+        <QuestionCard key={q.id} q={q} n={i + 1} />
+      ))}
+    </div>
+  );
+}
+
+function KonuSonuTesti({ ders, sorular: hepsi }: { ders: DersVerisi; sorular: SoruDurumu }) {
+  if (hepsi === "hata") return <p className="bad">Sorular yüklenemedi.</p>;
+  if (!hepsi) return <p className="empty">Yükleniyor…</p>;
+  const sorular = ders.test.map((id) => hepsi.get(id)).filter((q): q is Question => !!q);
   if (sorular.length === 0) return <p className="empty">Bu haftanın soruları henüz açılmadı.</p>;
   return (
     <>
@@ -75,6 +93,7 @@ function DersSayfasi({ ders }: { ders: DersVerisi }) {
   useEffect(() => {
     if (location.hash) document.getElementById(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView();
   }, []);
+  const sorular = useSorular(ders);
   const onceki = dersBul(ders.hafta - 1);
   const sonraki = dersBul(ders.hafta + 1);
   return (
@@ -98,12 +117,13 @@ function DersSayfasi({ ders }: { ders: DersVerisi }) {
           <h3>{inline(b.baslik, true)}</h3>
           <Markdown text={b.metin} terim />
           {b.sim && <MiniSim key={`${ders.hafta}-${i}`} sim={b.sim} />}
+          {b.dene && <KendiniDene ids={b.dene} sorular={sorular} />}
         </section>
       ))}
 
       <section id="test" className="ders-bolum ders-test">
         <h3>Konu sonu testi</h3>
-        <KonuSonuTesti ders={ders} />
+        <KonuSonuTesti ders={ders} sorular={sorular} />
       </section>
 
       <nav className="ders-gezinti" aria-label="Dersler arasında">

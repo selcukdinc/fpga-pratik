@@ -14,6 +14,21 @@ describe("dersler", () => {
       }
     }
   });
+  it("Kendini dene soruları havuzda, yedek değil ve konu sonu testinde yok", () => {
+    for (const d of DERSLER) {
+      const goruldu = new Set(d.test);
+      for (const b of d.bolumler)
+        for (const id of b.dene ?? []) {
+          const s = kimlikler.get(id);
+          expect(s, id).toBeDefined();
+          expect(s!.tip, id).not.toBe("code");
+          expect(s!.yedek ?? false, id).toBe(false);
+          expect(s!.hafta <= d.hafta, id).toBe(true);
+          expect(goruldu.has(id), `${id} iki kez`).toBe(false);
+          goruldu.add(id);
+        }
+    }
+  });
   it("her benzetimin en üst birimi kodda tanımlı", () => {
     for (const d of DERSLER)
       for (const b of d.bolumler)
