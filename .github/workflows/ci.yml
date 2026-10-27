@@ -1,9 +1,10 @@
 name: CI
 
+# Otomatik tetikleyiciler kapalı: GitHub Actions hesabında bir sorun çözülene kadar
+# CI yalnızca Actions sekmesinden elle çalıştırılır. Geri açmak için push ve
+# pull_request tetikleyicilerini yeniden ekleyin.
 on:
-  push:
-    branches: [main]
-  pull_request:
+  workflow_dispatch:
 
 jobs:
   test:

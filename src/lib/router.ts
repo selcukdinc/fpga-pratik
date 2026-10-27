@@ -9,6 +9,7 @@ export type Route =
   | { page: "sorular"; topic?: string; hafta?: number }
   | { page: "ders"; hafta?: number }
   | { page: "ilerleme" }
+  | { page: "tekrar" }
   | { page: "hakkinda" }
   | { page: "tanitim" }
   | { page: "sss" }
@@ -57,6 +58,7 @@ export function parsePath(path: string, search = ""): Route {
       return Number.isInteger(hafta) && hafta > 0 ? { page: "ders", hafta } : { page: "ders" };
     }
     case "ilerleme":
+    case "tekrar":
     case "hakkinda":
     case "tanitim":
     case "sss":

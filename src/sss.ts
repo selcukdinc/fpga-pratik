@@ -55,6 +55,11 @@ export const SSS: SssBolumu[] = [
           "Takvim, son 12 haftada her gün kaç cevap gönderdiğini Türkiye saatine göre gösterir; renk koyulaştıkça o gün daha çok çalışmışsındır. Günlük seri, bugünden (bugün henüz bir şey çözmediysen dünden) geriye kesintisiz çalıştığın gün sayısıdır.",
       },
       {
+        soru: "Tekrar sayfası nasıl çalışıyor?",
+        cevap:
+          "Yanlış yaptığın her soru tekrar kutusuna girer ve ertesi gün **Tekrar** sayfasında yeniden sorulur. Doğru cevapladıkça soru bir sonraki kutuya geçer ve 3, 7, 14, 30 gün arayla tekrar gelir; 5. kutuyu da geçince öğrenilmiş sayılır. Yanlış cevap soruyu 1. kutuya döndürür. Bir soruyu ilk kez yanlış yaptığında aynı kavramdan henüz görmediğin iki soru da eklenir. Günde en çok 20 tekrar yapılır, menüdeki sayı bugün kaç soru beklediğini gösterir. E-posta ile hatırlatma yapılmaz.",
+      },
+      {
         soru: "Günlük hedef, alev ve rozetler nedir?",
         cevap:
           "Günlük hedef, bir günde vermek istediğin doğru cevap sayısıdır (başlangıçta 10). Hedefe ulaştığın an kısa bir kutlama görürsün; hedefi **Ayarlar**'dan değiştirebilir ya da kapatabilirsin. Takvimde 10 doğru yaptığın günlerde kıvılcım, 25'te parıltı görünür; 50 doğruya ulaştığın günün kutusu alev alır. Rozetler 7, 30 ve 100 günlük seriler gibi kişisel hedeflerdir. Bunları yalnızca sen görürsün; sıralama ya da başkalarıyla karşılaştırma yoktur.",
