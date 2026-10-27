@@ -32,7 +32,7 @@ function KodKarti({ q, n }: { q: Question; n: number }) {
   return (
     <article className={`question kod${dogru === null ? "" : dogru ? " correct" : " wrong"}`} data-soru={q.id} id={`soru-${q.id}`}>
       <Baslik q={q} n={n} />
-      <Markdown text={q.prompt} />
+      <Markdown text={q.prompt} terim />
       <KodSorusu id={q.id} bilgi={q.payload.kod!} onSonuc={setDogru} />
     </article>
   );
@@ -40,7 +40,10 @@ function KodKarti({ q, n }: { q: Question; n: number }) {
 
 function KapaliKart({ q, n }: { q: Question; n: number }) {
   const [tf, setTf] = useState<boolean | null>(null);
+  // choice: şıkkın asıl sırası (sunucuya giden). sira: ekranda gösterilen sıra,
+  // soru her açıldığında ve "Tekrar dene"de karışır; şıkkın yeri ezberlenmesin
   const [choice, setChoice] = useState<number | null>(null);
+  const [sira, setSira] = useState(() => karistir(q.payload.choices?.length ?? 0));
   const [blanks, setBlanks] = useState<string[]>(() => Array(q.payload.blanks ?? 0).fill(""));
   const [result, setResult] = useState<AnswerResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +72,7 @@ function KapaliKart({ q, n }: { q: Question; n: number }) {
     setResult(null);
     setTf(null);
     setChoice(null);
+    setSira(karistir(q.payload.choices?.length ?? 0));
     setBlanks(Array(q.payload.blanks ?? 0).fill(""));
   };
 
@@ -77,7 +81,7 @@ function KapaliKart({ q, n }: { q: Question; n: number }) {
   return (
     <article className={`question${result ? (result.correct ? " correct" : " wrong") : ""}`} data-soru={q.id} id={`soru-${q.id}`}>
       <Baslik q={q} n={n} />
-      <Markdown text={bosluk ? bosluk.metin : q.prompt} />
+      <Markdown text={bosluk ? bosluk.metin : q.prompt} terim />
 
       {q.type === "tf" && (
         <div className="choices">
@@ -92,10 +96,10 @@ function KapaliKart({ q, n }: { q: Question; n: number }) {
 
       {q.type === "mcq" && (
         <div className="choices">
-          {q.payload.choices?.map((c, i) => (
+          {sira.map((i, yer) => (
             <label key={i}>
               <input type="radio" name={q.id} checked={choice === i} onChange={() => setChoice(i)} disabled={!!result} />
-              <span className="choice-letter">{String.fromCharCode(65 + i)})</span> <span>{inline(c)}</span>
+              <span className="choice-letter">{String.fromCharCode(65 + yer)})</span> <span>{inline(q.payload.choices![i]!, true)}</span>
             </label>
           ))}
         </div>
@@ -107,7 +111,7 @@ function KapaliKart({ q, n }: { q: Question; n: number }) {
             <label key={i} className="bosluk">
               <span className="bosluk-etiket">
                 {boslukEtiketi(i, blanks.length)}
-                {bosluk?.adlar[i] && <>: {inline(bosluk.adlar[i]!)}</>}
+                {bosluk?.adlar[i] && <>: {inline(bosluk.adlar[i]!, true)}</>}
               </span>
               <input
                 className="mono"
@@ -127,8 +131,8 @@ function KapaliKart({ q, n }: { q: Question; n: number }) {
         {result ? (
           <>
             <strong className={result.correct ? "ok" : "bad"}>{result.correct ? "Doğru" : "Yanlış"}</strong>
-            {result.explanation && <Markdown text={result.explanation} />}
-            {result.istatistik && <Istatistik i={result.istatistik} secilen={choice} />}
+            {result.explanation && <Markdown text={result.explanation} terim />}
+            {result.istatistik && <Istatistik i={result.istatistik} secilen={choice} sira={sira} />}
             <button onClick={reset}>Tekrar dene</button>
           </>
         ) : (
@@ -142,8 +146,18 @@ function KapaliKart({ q, n }: { q: Question; n: number }) {
   );
 }
 
+// 0..n-1 sayılarının rastgele bir sırası (Fisher-Yates)
+function karistir(n: number): number[] {
+  const a = Array.from({ length: n }, (_, i) => i);
+  for (let i = n - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j]!, a[i]!];
+  }
+  return a;
+}
+
 // Cevaptan sonra gösterilen anonim istatistik: herkesin ilk denemesi sayılır
-function Istatistik({ i, secilen }: { i: SoruIstatistigi; secilen: number | null }) {
+function Istatistik({ i, secilen, sira }: { i: SoruIstatistigi; secilen: number | null; sira: number[] }) {
   if (!i.kisi) return null;
   const toplam = i.siklar?.reduce((a, b) => a + b, 0) ?? 0;
   return (
@@ -154,11 +168,12 @@ function Istatistik({ i, secilen }: { i: SoruIstatistigi; secilen: number | null
       {i.siklar && toplam > 0 && <p className="hint">Şıkların ilk denemelerde seçilme oranı:</p>}
       {i.siklar && toplam > 0 && (
         <ul className="sik-dagilimi" aria-label="İlk denemelerde şıkların seçilme oranı">
-          {i.siklar.map((n, j) => {
+          {sira.map((j, yer) => {
+            const n = i.siklar![j] ?? 0;
             const pct = Math.round((n / toplam) * 100);
             return (
               <li key={j} className={secilen === j ? "secilen" : undefined}>
-                <span className="choice-letter">{String.fromCharCode(65 + j)})</span>
+                <span className="choice-letter">{String.fromCharCode(65 + yer)})</span>
                 <div className="bar" aria-hidden="true"><div style={{ width: `${pct}%` }} /></div>
                 <span>%{pct}{secilen === j ? " · senin seçimin" : ""}</span>
               </li>

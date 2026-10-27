@@ -35,12 +35,12 @@ end z;`,
     soru: "Hafta 5_2'deki çözümde son satır koşullu bırakılmış:\n\n~~~vhdl\nO <= IN_1 when S = \"00\" else\n     IN_2 when S = \"01\" else\n     IN_3 when S = \"10\" else\n     IN_4 when S = \"11\";\n~~~\n\nBu yazımla ilgili hangisi doğrudur?",
     secenekler: [
       "Kod derlenmez, ~when~ ile bitemez",
-      "S '0' ve '1' dışında bir değer içerdiğinde (ör. \"X1\") hiçbir koşul sağlanmaz ve O eski değerini korur; bu davranış bir kilitleme (latch) anlamına gelir. Son satırı koşulsuz ~else IN_4~ yapmak daha doğrudur.",
+      "S tanımsızken (ör. \"X1\") O eski değerini korur, kilitleme oluşur",
       "S = \"11\" iken O, IN_1'i alır",
       "with/select ile tamamen aynı devreyi üretir, hiçbir fark yoktur",
     ],
     dogru: 1,
-    aciklama: "VHDL-93 son koşullu dalı kabul eder, kod derlenir. Ama hiçbir koşul doğru olmadığında atama yapılmaz ve sinyal değerini saklar. Bu, kombinasyonel bir mux'ta istenmeyen bir bellek davranışıdır. Benzetimde S başlangıçta \"UU\" iken O de 'U' olarak kalır.",
+    aciklama: "VHDL-93 son koşullu dalı kabul eder, kod derlenir. Son satırı koşulsuz ~else IN_4~ yapmak daha doğrudur. Ama hiçbir koşul doğru olmadığında atama yapılmaz ve sinyal değerini saklar. Bu, kombinasyonel bir mux'ta istenmeyen bir bellek davranışıdır. Benzetimde S başlangıçta \"UU\" iken O de 'U' olarak kalır.",
     dogrulama: {
       calismali: IEEE + `
 entity tb is end tb;
@@ -71,7 +71,7 @@ end z;`,
     id: "h5-oncelikli-mux-or", konu: "esz-atamalar", hafta: 5, kaynak: "original", zorluk: 3,
     ref: "Hafta 5, priority_mux örneği", tip: "mcq",
     soru: "Sunumdaki ~priority_mux~ örneği:\n\n~~~vhdl\noutput <= i3 when i3 = '1' else\n          i2 when i2 = '1' else\n          i1 when i1 = '1' else\n          i0 when i0 = '1' else\n          '0';\n~~~\n\nGirişler sadece '0' ya da '1' aldığında bu devre aslında hangi kapıya eşdeğerdir?",
-    secenekler: ["4 girişli AND", "4 girişli OR", "4 girişli XOR", "i3'ü seçen bir tampon (buffer)"],
+    secenekler: ["4 girişli AND", "4 girişli OR", "4 girişli XOR", "i3'ü seçen bir tampon"],
     dogru: 1,
     aciklama: "Her dal, seçtiği giriş '1' iken o girişi yani '1'i verir. Hiçbiri '1' değilse '0' verilir. Sonuç, girişlerden en az biri '1' ise '1' olur, yani bir OR kapısıdır. Öncelik yapısını gerçekten kullanmak için seçim sinyalleri ile veri girişleri ayrı olmalıdır (sonraki soru).",
     dogrulama: {
@@ -147,7 +147,7 @@ end z;`,
     soru: "with/select ile when/else arasındaki fark için hangisi doğrudur?",
     secenekler: [
       "with/select'te seçeneklerin sırası önemlidir, when/else'te önemli değildir",
-      "with/select'te seçeneklerin sırası önemli değildir; when/else'te koşullar yukarıdan aşağı öncelik sırasıyla denetlenir",
+      "with/select'te sıra önemsizdir; when/else'te koşullar yukarıdan aşağı öncelikle denetlenir",
       "İkisinde de sadece tek bir sinyal sorgulanabilir",
       "when/else sadece process içinde kullanılabilir",
     ],

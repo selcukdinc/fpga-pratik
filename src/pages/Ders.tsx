@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { href } from "../lib/router";
-import { Markdown } from "../components/Markdown";
+import { Markdown, inline } from "../components/Markdown";
 import { MiniSim } from "../components/MiniSim";
 import { QuestionCard } from "./Questions";
 import { DERSLER, dersBul } from "../dersler";
@@ -95,8 +95,8 @@ function DersSayfasi({ ders }: { ders: DersVerisi }) {
 
       {ders.bolumler.map((b, i) => (
         <section key={b.baslik} id={bolumId(i)} className="ders-bolum">
-          <h3>{b.baslik}</h3>
-          <Markdown text={b.metin} />
+          <h3>{inline(b.baslik, true)}</h3>
+          <Markdown text={b.metin} terim />
           {b.sim && <MiniSim key={`${ders.hafta}-${i}`} sim={b.sim} />}
         </section>
       ))}

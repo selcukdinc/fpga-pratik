@@ -1,10 +1,18 @@
 // Ders ve kod sorularındaki editör kutusu: alt kenarından sürüklenerek
-// boyutlandırılır, "Tümünü göster" ile kodun tamamı sığacak kadar uzar.
+// boyutlandırılır, en fazla kodun tamamı görünecek kadar uzar. "Tümünü göster"
+// tek tıkla o yüksekliğe getirir.
 
 import { useRef, useState, type KeyboardEvent, type PointerEvent as RPointerEvent, type ReactNode } from "react";
 
 const EN_AZ = 120;
-const EN_COK = 1600;
+
+// Kodun tamamının kaydırmadan sığdığı yükseklik: editörün içeriği + kutunun kenarlığı
+function tamYukseklik(kutu: HTMLElement): number {
+  const kaydirici = kutu.querySelector<HTMLElement>(".cm-scroller");
+  if (!kaydirici) return Infinity;
+  const kenar = kutu.offsetHeight - kutu.clientHeight;
+  return Math.max(EN_AZ, kaydirici.scrollHeight + (kaydirici.offsetHeight - kaydirici.clientHeight) + kenar);
+}
 
 export function BoyutluEditor({ sinif, children }: { sinif?: string; children: ReactNode }) {
   const kutu = useRef<HTMLDivElement>(null);
@@ -19,8 +27,9 @@ export function BoyutluEditor({ sinif, children }: { sinif?: string; children: R
     tutamak.setPointerCapture(e.pointerId);
     const y0 = e.clientY;
     const h0 = kutu.current.getBoundingClientRect().height;
+    const enCok = tamYukseklik(kutu.current);
     setTam(false);
-    const hareket = (m: PointerEvent) => setYukseklik(Math.min(EN_COK, Math.max(EN_AZ, h0 + m.clientY - y0)));
+    const hareket = (m: PointerEvent) => setYukseklik(Math.min(enCok, Math.max(EN_AZ, h0 + m.clientY - y0)));
     const bitir = () => {
       tutamak.removeEventListener("pointermove", hareket);
       tutamak.removeEventListener("pointerup", bitir);
@@ -38,7 +47,7 @@ export function BoyutluEditor({ sinif, children }: { sinif?: string; children: R
     e.preventDefault();
     const h = kutu.current.getBoundingClientRect().height + (e.key === "ArrowDown" ? 40 : -40);
     setTam(false);
-    setYukseklik(Math.min(EN_COK, Math.max(EN_AZ, h)));
+    setYukseklik(Math.min(tamYukseklik(kutu.current), Math.max(EN_AZ, h)));
   };
 
   return (

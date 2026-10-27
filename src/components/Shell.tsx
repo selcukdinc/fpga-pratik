@@ -22,6 +22,7 @@ const IKONLAR = {
   sorular: "M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01",
   topluluk: "M9 11a3 3 0 100-6 3 3 0 000 6zM3 20c0-3.3 2.7-5 6-5s6 1.7 6 5M16 5.5a3 3 0 010 5.5M18 15c2 .6 3 2.2 3 5",
   ilerleme: "M4 20V11M10 20V5M16 20v-6M2 20h20",
+  terimler: "M4 5h7M7.5 5v1.5c0 3-1.8 5.5-4 6.5M5 9c1 1.8 3 3.2 5 3.6M13 20l4-9 4 9M14.3 17h5.4",
   tanitim: "M12 21a9 9 0 100-18 9 9 0 000 18zM15.5 8.5l-2 5-5 2 2-5z",
   sss: "M12 21a9 9 0 100-18 9 9 0 000 18zM9.5 9a2.5 2.5 0 114 2c-1 .6-1.5 1.2-1.5 2.2M12 16.5v.5",
   hakkinda: "M12 21a9 9 0 100-18 9 9 0 000 18zM12 11v6M12 7.5v.5",
@@ -216,6 +217,7 @@ export function Shell({ route, currentWeek, title, status, duyuru, children }: P
           Soru havuzu
         </NavLink>
         <NavLink to={{ page: "ilerleme" }} current={route} ikon="ilerleme">İlerlemem</NavLink>
+        <NavLink to={{ page: "terimler" }} current={route} ikon="terimler">Terimler</NavLink>
 
         <div className="nav-section">TOPLULUK</div>
         <NavLink to={{ page: "topluluk" }} current={route} ikon="topluluk">Testbench'ler</NavLink>
