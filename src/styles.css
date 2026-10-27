@@ -1072,3 +1072,16 @@ body.boyutlaniyor-dikey { cursor: ns-resize; user-select: none; }
 [data-genis] .question.kodlu > .q-kod .md > :first-child, [data-genis] .question.kodlu > .q-kod > :first-child { margin-top: 8px; }
 [data-genis] .question.kod.kodlu > .kod-sorusu { grid-column: 2; grid-row: 2 / -1; margin-top: 8px; }
 [data-genis] .question.kod.kodlu > .q-metin { position: sticky; top: 8px; }
+
+/* ---- Yenilikler ---- */
+.yenilikler { max-width: 760px; padding: 8px 16px 48px; }
+.nav-rozet.yenilik-rozet { background: var(--green); color: #fff; font-weight: 600; }
+.yenilik-listesi { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--border); }
+.yenilik { position: relative; margin: 0 0 18px; padding: 0 0 0 18px; }
+.yenilik::before { content: ""; position: absolute; left: -6px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: var(--panel); border: 2px solid var(--muted); }
+.yenilik.yeni::before { background: var(--green); border-color: var(--green); }
+.yenilik header { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 12px; }
+.yenilik h3 { margin: 2px 0 4px; font-size: 15px; }
+.yenilik ul { margin: 0; padding-left: 18px; line-height: 1.55; }
+.yenilik ul li + li { margin-top: 3px; }
+.yeni-etiket { background: var(--green); color: #fff; }
