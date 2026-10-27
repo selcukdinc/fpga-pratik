@@ -5,15 +5,10 @@
 
 import { cizgi, kutu, mux, nokta, ok, ozelVeya, satirlar, ve, veya, yazi, yol, type Nokta } from "./cizim";
 
-export interface Gorsel {
-  kod: string;
-  baslik: string;
-  // Ekran okuyucular için şeklin anlattığı
-  aciklama: string;
-  en: number;
-  boy: number;
-  icerik: string;
-}
+import type { Gorsel } from "./tip";
+import { HAFTA_1_GORSELLERI } from "./hafta-1";
+
+export type { Gorsel } from "./tip";
 
 function fpgaYapisi(): string {
   const sutunX = [75, 155, 235, 315];
@@ -393,6 +388,7 @@ export const GORSELLER: Gorsel[] = [
     boy: 244,
     icerik: cpuFpga(),
   },
+  ...HAFTA_1_GORSELLERI,
   {
     kod: "G-H2-01",
     baslik: "PROM, PAL ve PLA'da hangi dizi programlanır",
