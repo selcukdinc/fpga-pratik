@@ -22,6 +22,8 @@ y <= a when sec = "00" else
 
 - **with/select:** Bir ifadenin değerine göre seçim yapar. Seçenekler öncelik sırası taşımaz; her değer **tam olarak bir kez** yazılmalı ve kalanlar ~when others~ ile kapatılmalıdır. Paralel bir çoklayıcı olarak sentezlenir.
 
+[[G-H5-01]]
+
 ~std_logic~ seçicilerde ~"00"~, ~"01"~... dışında ~'U'~, ~'X'~ gibi değerler de olduğu için ~when others~ pratikte her zaman gerekir.
 `),
       sim: {
@@ -101,6 +103,8 @@ Listedeki sinyallerden biri değiştiğinde process baştan sona bir kez çalı�
 - **case:** Bir ifadenin değerine göre dallanır; tüm olası değerler kapsanmalıdır, bu yüzden genellikle ~when others =>~ ile biter. Seçenekler arasında öncelik yoktur.
 
 Kombinasyonel bir process'te bir çıkışa **her yolda** değer atanmazsa, sentez aracı eski değeri hatırlamak için bir **latch** (kilitleme elemanı) üretir. Bu çoğunlukla istenmeyen bir durumdur. Önlemek için ya her dalda atama yap ya da process'in başında varsayılan bir değer ver.
+
+[[G-H5-02]]
 
 Aşağıdaki öncelikli kodlayıcı, en yüksek anlamlı '1' bitinin konumunu verir. Başta ~gecerli <= '0'~ varsayılanı olduğu için latch oluşmaz.
 `),

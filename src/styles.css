@@ -715,6 +715,60 @@ textarea.mono { font-family: var(--mono); font-size: 12.5px; }
 .ders-bolum { margin: 22px 0; scroll-margin-top: 12px; }
 .ders-bolum h3 { font-size: 16px; margin: 0 0 6px; padding-bottom: 4px; border-bottom: 1px solid var(--border-soft); }
 .ders-bolum > p, .ders-bolum li { line-height: 1.6; }
+/* Ders şekilleri (src/gorseller): renkler temadan gelir */
+.sekil { margin: 14px 0; scroll-margin-top: 12px; }
+.sekil:target .sekil-kutu { outline: 2px solid var(--link); outline-offset: 2px; }
+.sekil-kutu { background: var(--panel); border: 1px solid var(--border); border-radius: 4px; padding: 10px; overflow-x: auto; }
+.sekil svg { display: block; width: 100%; min-width: 480px; max-width: 680px; height: auto; margin: 0 auto; font-family: inherit; }
+.sekil figcaption { margin-top: 4px; font-size: 12px; color: var(--muted); }
+@media (max-width: 600px) { .sekil figcaption::after { content: " · şekil yana kaydırılabilir"; } }
+.sekil-kod { font-family: var(--mono); font-size: 11px; padding: 0 4px; border-radius: 3px; background: var(--tag-bg); color: var(--text); }
+.gorsel-satir { margin: 18px 0 26px; padding-top: 10px; border-top: 1px solid var(--border-soft); }
+.gorsel-satir header { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.gorsel-satir .hint { margin: 4px 0; }
+.gorsel-kopyala { border: 1px solid var(--border); cursor: pointer; font-size: 12px; padding: 2px 6px; min-width: 76px; }
+.gorsel-ara input { width: 220px; max-width: 100%; }
+.g-metin { fill: var(--text); font-size: 14px; }
+.g-kucuk { font-size: 12.5px; }
+.g-mini { font-size: 11px; }
+.g-kalin { font-weight: 600; }
+.g-kod { font-family: var(--mono); white-space: pre; }
+.g-soluk { fill: var(--muted); }
+.g-renk-a { fill: var(--link); }
+.g-renk-b { fill: var(--error); }
+.g-renk-c { fill: var(--green); }
+.g-renk-d { fill: var(--warning); }
+.g-cizgi { fill: none; stroke: var(--text); stroke-width: 1.5; stroke-linejoin: round; }
+.g-renk-a-cizgi { stroke: var(--link); }
+.g-renk-b-cizgi { stroke: var(--error); }
+.g-renk-c-cizgi { stroke: var(--green); }
+.g-uc { fill: var(--text); stroke: none; }
+polygon.g-renk-b { fill: var(--error); }
+.g-kesik { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 5 4; }
+.g-kutu { fill: var(--panel); stroke: var(--text); stroke-width: 1.5; }
+.g-dolu { fill: var(--section-header); stroke: var(--section-text); stroke-width: 1.2; }
+.g-secili { stroke: var(--link); stroke-width: 2.2; }
+.g-cerceve { fill: none; stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 6 4; }
+.g-yonga { fill: var(--pre-bg); }
+.g-io { fill: var(--tag-original-bg); stroke: var(--tag-original-text); stroke-width: 1.2; }
+.g-bag { fill: none; stroke: var(--muted); stroke-width: 1; }
+.g-anahtar { fill: var(--panel); stroke: var(--muted); stroke-width: 1; }
+.g-yol { fill: none; stroke: var(--link); stroke-width: 3; stroke-linejoin: round; }
+.g-pin { fill: var(--text); stroke: none; }
+.g-prog { fill: var(--section-header); stroke: var(--link); stroke-width: 2; }
+.g-sabit { fill: var(--tag-bg); stroke: var(--muted); stroke-width: 1.2; }
+.g-hata { fill: var(--mark-error); stroke: var(--error); stroke-width: 1.2; }
+.g-uyari { fill: var(--mark-warning); stroke: var(--warning); stroke-width: 1.8; }
+.g-bolge-a { fill: var(--section-header); opacity: .45; stroke: none; }
+.g-bolge-b { fill: var(--tag-original-bg); opacity: .6; stroke: none; }
+.g-seri-a { fill: none; stroke: var(--link); stroke-width: 2.5; }
+.g-seri-b { fill: none; stroke: var(--error); stroke-width: 2.5; }
+.g-ton0 { fill: var(--section-header); }
+.g-ton1 { fill: var(--tag-original-bg); stroke: var(--tag-original-text); }
+.g-ton2 { fill: var(--mark-warning); stroke: var(--warning); }
+.g-bant-1 { fill: var(--tag-bg); stroke: var(--muted); stroke-width: 1; }
+.g-bant-2 { fill: var(--section-header); stroke: var(--section-text); stroke-width: 1; }
+.g-bant-3 { fill: var(--tag-original-bg); stroke: var(--tag-original-text); stroke-width: 1; }
 .mini-sim { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; padding: 10px; background: var(--panel); border: 1px solid var(--border); border-radius: 4px; }
 .mini-editor { height: 300px; }
 .mini-gorev { margin: 0; padding: 6px 10px; border-left: 3px solid var(--link); background: var(--msg-hover); }

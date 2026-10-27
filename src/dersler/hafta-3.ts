@@ -14,12 +14,16 @@ Her VHDL tasarımı üç parçadan oluşur:
 - **entity:** Devrenin dışarıdan görünüşü, yani portlarıdır. Bir kutunun bacaklarını tanımlar.
 - **architecture:** Kutunun içinde ne olduğunu anlatır. ~architecture rtl of yarim_toplayici is~ satırı bu mimarinin hangi entity'ye ait olduğunu söyler.
 
+[[G-H3-01]]
+
 Port modları:
 
 - ~in~: yalnızca okunur.
 - ~out~: yalnızca yazılır; VHDL-93'te devrenin içinden okunamaz.
 - ~inout~: iki yönlüdür; hem dışarıdan hem içeriden sürülebilir.
 - ~buffer~: yazılır ve içeriden geri okunabilir, ama yalnızca tek bir kaynaktan sürülür.
+
+[[G-H3-02]]
 
 Aşağıda bir yarım toplayıcı ve onu deneyen testbench var. Benzetimi çalıştır, sonra dalga ekranında ~s~ ve ~c~'ye bak.
 `),
