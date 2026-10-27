@@ -147,8 +147,10 @@ function tiklama(e: MouseEvent) {
   if (!a || a.target || a.hasAttribute("download") || a.hasAttribute("data-tam-sayfa")) return;
   const url = new URL(a.href, location.href);
   if (url.origin !== location.origin || url.pathname.startsWith("/api/") || /\.\w+$/.test(url.pathname)) return;
+  // Aynı sayfadaki #bölüm bağlantıları tarayıcıya bırakılır: kaydırmayı ve adresi o yapar
+  if (url.hash && url.pathname + url.search === location.pathname + location.search) return;
   e.preventDefault();
-  if (url.pathname + url.search !== location.pathname + location.search) navigate(url.pathname + url.search);
+  if (url.pathname + url.search !== location.pathname + location.search) navigate(url.pathname + url.search + url.hash);
 }
 
 function mevcut(): Route {

@@ -71,6 +71,10 @@ function KonuSonuTesti({ ders }: { ders: DersVerisi }) {
 }
 
 function DersSayfasi({ ders }: { ders: DersVerisi }) {
+  // /ders/3#bolum-2 gibi bir adresle gelindiyse sayfa çizildikten sonra o bölüme kaydırılır
+  useEffect(() => {
+    if (location.hash) document.getElementById(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView();
+  }, []);
   const onceki = dersBul(ders.hafta - 1);
   const sonraki = dersBul(ders.hafta + 1);
   return (

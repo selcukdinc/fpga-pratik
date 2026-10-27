@@ -4,6 +4,7 @@ import { uye, useOturum } from "../lib/oturum";
 import { Markdown, inline } from "../components/Markdown";
 import { KodSorusu } from "../components/KodSorusu";
 import { href } from "../lib/router";
+import { boslukEtiketi, bosluklariAyir } from "../lib/bosluk";
 import type { AnswerResult, Question, SoruDurumlari, SoruIstatistigi, Topic } from "../../shared/api";
 import type { Answer } from "../../shared/grade";
 
@@ -71,10 +72,12 @@ function KapaliKart({ q, n }: { q: Question; n: number }) {
     setBlanks(Array(q.payload.blanks ?? 0).fill(""));
   };
 
+  const bosluk = q.type === "fill" ? bosluklariAyir(q.prompt, blanks.length) : null;
+
   return (
     <article className={`question${result ? (result.correct ? " correct" : " wrong") : ""}`} data-soru={q.id} id={`soru-${q.id}`}>
       <Baslik q={q} n={n} />
-      <Markdown text={q.prompt} />
+      <Markdown text={bosluk ? bosluk.metin : q.prompt} />
 
       {q.type === "tf" && (
         <div className="choices">
@@ -101,8 +104,11 @@ function KapaliKart({ q, n }: { q: Question; n: number }) {
       {q.type === "fill" && (
         <div className="choices">
           {blanks.map((b, i) => (
-            <label key={i}>
-              Boşluk {i + 1}
+            <label key={i} className="bosluk">
+              <span className="bosluk-etiket">
+                {boslukEtiketi(i, blanks.length)}
+                {bosluk?.adlar[i] && <>: {inline(bosluk.adlar[i]!)}</>}
+              </span>
               <input
                 className="mono"
                 value={b}

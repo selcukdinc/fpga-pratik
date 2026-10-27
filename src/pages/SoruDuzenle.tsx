@@ -232,7 +232,9 @@ export function SoruDuzenle({ id }: { id: string }) {
             {blanks.length < 6 && (
               <button type="button" onClick={() => ayarla({ answer: { blanks: [...blanks, [""]] } })}>+ Boşluk ekle</button>
             )}
-            <p className="hint">Puanlamada büyük/küçük harf ve boşluklar önemsenmez.</p>
+            <p className="hint">
+              Puanlamada büyük/küçük harf ve boşluklar önemsenmez. Birden çok boşlukta metnin sonuna "Boşluk 1: S, Boşluk 2: CO" yazılırsa adlar kutuların üstünde görünür.
+            </p>
           </fieldset>
         )}
 

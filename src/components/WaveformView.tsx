@@ -216,6 +216,31 @@ export function WaveformView({ vcd }: Props) {
     }
   }, [signals, view, width, cursorNs, radix, analog, totalH, endNs]);
 
+  // Sinyallerin değiştiği anlar (ns), imlecin yapışması ve klavyeyle gezinmesi için
+  const degisimler = useMemo(() => {
+    const t = new Set<number>();
+    for (const sig of signals) for (const [fs] of sig.changes) t.add(fs / FS_PER_NS);
+    return [...t].sort((a, b) => a - b);
+  }, [signals]);
+
+  // Fare konumunu zamana çevirir; 6 pikselden yakın bir değişim varsa ona yapışır
+  const zamanOf = (clientX: number, el: HTMLElement) => {
+    const r = el.getBoundingClientRect();
+    const ns = Math.min(Math.max(view.start + ((clientX - r.left) / r.width) * view.span, 0), endNs);
+    const esik = (6 / r.width) * view.span;
+    let enYakin: number | null = null;
+    for (const d of degisimler) if (Math.abs(d - ns) < esik && (enYakin === null || Math.abs(d - ns) < Math.abs(enYakin - ns))) enYakin = d;
+    return enYakin ?? ns;
+  };
+
+  const sonrakiDegisim = (yon: 1 | -1) => {
+    const d = yon > 0 ? degisimler.find((x) => x > cursorNs + 1e-9) : [...degisimler].reverse().find((x) => x < cursorNs - 1e-9);
+    if (d === undefined) return;
+    setCursorNs(d);
+    // İmleç görünür alanın dışına çıkarsa görünüm kaydırılır
+    setView((v) => (d < v.start || d > v.start + v.span ? { ...v, start: Math.min(Math.max(d - v.span / 2, 0), Math.max(endNs - v.span, 0)) } : v));
+  };
+
   const zoom = (factor: number) =>
     setView((v) => {
       const span = Math.min(Math.max(v.span * factor, 1), endNs);
@@ -269,9 +294,23 @@ export function WaveformView({ vcd }: Props) {
         <div className="wave-canvas" ref={wrapRef}>
           <canvas
             ref={canvasRef}
-            onClick={(e) => {
-              const r = e.currentTarget.getBoundingClientRect();
-              setCursorNs(view.start + ((e.clientX - r.left) / r.width) * view.span);
+            tabIndex={0}
+            aria-label="Dalga ekranı. İmleci taşımak için tıkla ya da sürükle; ← ve → tuşları bir önceki ya da sonraki değişime atlar."
+            onPointerDown={(e) => {
+              if (e.button !== 0) return;
+              const el = e.currentTarget;
+              el.setPointerCapture(e.pointerId);
+              el.focus({ preventScroll: true });
+              setCursorNs(zamanOf(e.clientX, el));
+            }}
+            onPointerMove={(e) => {
+              if (e.currentTarget.hasPointerCapture(e.pointerId)) setCursorNs(zamanOf(e.clientX, e.currentTarget));
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+                e.preventDefault();
+                sonrakiDegisim(e.key === "ArrowRight" ? 1 : -1);
+              }
             }}
           />
         </div>

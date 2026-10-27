@@ -163,6 +163,9 @@ export function Oner() {
               </div>
             ))}
             {blanks.length < 6 && <button type="button" onClick={() => ayarla({ answer: { blanks: [...blanks, [""]] } })}>+ Boşluk ekle</button>}
+            {blanks.length > 1 && (
+              <p className="hint">Hangi kutunun neyi sorduğunu metnin sonunda "Boşluk 1: S, Boşluk 2: CO" diye yaz; öğrenci bu adları kutuların üstünde görür.</p>
+            )}
           </fieldset>
         )}
 
