@@ -9,6 +9,8 @@ import { AvatarSecici } from "../components/AvatarSecici";
 import { Alan, FormHatasi, KodAlani, ParolaGucuCubugu } from "../components/Form";
 import type { Me } from "../../shared/api";
 import { ALEV, HEDEF_SECENEKLERI } from "../../shared/motivasyon";
+import { OLCEK_SECENEKLERI, VARSAYILAN_OLCEK } from "../../shared/gorunum";
+import { useYaziOlcek } from "../lib/olcek";
 
 function Bolum({ baslik, children }: { baslik: string; children: ReactNode }) {
   return (
@@ -131,6 +133,27 @@ function GunlukHedefAyari({ me }: { me: Me }) {
         {g.mesaj}
         <button className="primary" type="submit" disabled={hedef === me.gunlukHedef || g.mesgul}>Kaydet</button>
       </form>
+    </Bolum>
+  );
+}
+
+function GorunumAyari() {
+  const [olcek, sec] = useYaziOlcek();
+  return (
+    <Bolum baslik="Metin boyutu">
+      <label>
+        Sayfalardaki yazılar{" "}
+        <select value={olcek} onChange={(e) => sec(Number(e.target.value))}>
+          {OLCEK_SECENEKLERI.map((o) => (
+            <option key={o} value={o}>%{o}{o === VARSAYILAN_OLCEK ? " (varsayılan)" : ""}</option>
+          ))}
+        </select>
+      </label>
+      <p className="hint">
+        Seçim hemen uygulanır ve hesabına kaydedilir; başka bir cihazda giriş yaptığında da aynı boyut gelir. Üst çubuktaki
+        A− ve A+ düğmeleri de aynı ayarı değiştirir. Simülasyon alanında editör ve mesaj yazıları büyür, panel düzeni
+        olduğu gibi kalır.
+      </p>
     </Bolum>
   );
 }
@@ -345,6 +368,7 @@ export function Ayarlar({ sekme = "profil" }: { sekme?: AyarSekmesi }) {
           </p>
           <ProfilAyari me={me} />
           <GunlukHedefAyari me={me} />
+          <GorunumAyari />
           <KullaniciAdiAyari key={me.username} me={me} />
         </>
       )}

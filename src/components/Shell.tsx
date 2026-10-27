@@ -6,6 +6,7 @@ import { uye, useOturum } from "../lib/oturum";
 import { Avatar } from "./Avatar";
 import { inline } from "./Markdown";
 import { KutlamaBildirimi } from "./Kutlama";
+import { OlcekDugmeleri } from "./Olcek";
 
 interface Props {
   route: Route;
@@ -84,7 +85,7 @@ function TemaDugmesi() {
       title={`Tema: ${TEMA_ADI[tema]}. Tıkla: ${TEMA_ADI[sonraki]}`}
       aria-label={`Tema: ${TEMA_ADI[tema]}. ${TEMA_ADI[sonraki]} temaya geç`}
     >
-      <span aria-hidden="true">{TEMA_ISARETI[tema]}</span> {TEMA_ADI[tema]}
+      <span aria-hidden="true">{TEMA_ISARETI[tema]}</span> <span className="tema-adi">{TEMA_ADI[tema]}</span>
     </button>
   );
 }
@@ -215,6 +216,7 @@ export function Shell({ route, currentWeek, title, status, duyuru, children }: P
           FPGA Pratik
         </a>
         <span className="topbar-status">{status}</span>
+        <OlcekDugmeleri />
         <TemaDugmesi />
         <HesapAlani route={route} />
       </header>
