@@ -12,6 +12,15 @@ describe("pencere düzeni", () => {
     expect(sira(tasi(VARSAYILAN_DUZEN, "bottom", "ust", 1))).toEqual(["sources,bottom,editor,waves", ""]);
   });
 
+  it("taşımadan sonra satırın payları toplam 1 kalır (satır pencereyi doldurur)", () => {
+    const toplam = (d: typeof VARSAYILAN_DUZEN) => d.ust.reduce((t, p) => t + p.oran, 0);
+    const ortada = tasi(VARSAYILAN_DUZEN, "waves", "ust", 1);
+    expect(toplam(ortada)).toBeCloseTo(1);
+    const geri = tasi(tasi(ortada, "waves", "ust", 3), "editor", "ust", 1);
+    expect(sira(geri)).toEqual(["sources,editor,waves", "bottom"]);
+    expect(toplam(geri)).toBeCloseTo(1);
+  });
+
   it("ayırıcı iki komşunun toplamını korur ve en az payın altına inmez", () => {
     const d = komsuBoyutla(VARSAYILAN_DUZEN, "ust", 1, 0.1);
     expect(d.ust[1].oran + d.ust[2].oran).toBeCloseTo(0.82);

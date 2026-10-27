@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { href, navigate, type Route } from "../lib/router";
 import { api } from "../lib/api";
 import { TEMA_ADI, TEMA_SIRASI, useTema } from "../lib/tema";
@@ -183,6 +183,18 @@ export function Shell({ route, currentWeek, title, status, duyuru, children }: P
   // Mobilde sayfa değişince menü kapanır
   useEffect(() => setMenuAcik(false), [route]);
 
+  // Açık tutulan sayfalara (soru havuzu, simülasyon alanı) dönüldüğünde kaldığın
+  // kaydırma yerine gidilir
+  const govde = useRef<HTMLDivElement>(null);
+  const kaydirmalar = useRef(new Map<string, number>());
+  const anahtar = route.page === "sorular" ? `sorular:${route.topic ?? ""}:${route.hafta ?? ""}` : route.page === "pratik" ? "pratik" : null;
+  const anahtarRef = useRef(anahtar);
+  useLayoutEffect(() => {
+    anahtarRef.current = anahtar;
+    const y = anahtar ? kaydirmalar.current.get(anahtar) : undefined;
+    if (y !== undefined && govde.current) govde.current.scrollTop = y;
+  }, [anahtar]);
+
   const darDegistir = (d: boolean) => {
     setDar(d);
     try {
@@ -250,7 +262,13 @@ export function Shell({ route, currentWeek, title, status, duyuru, children }: P
         )}
         <TanitimSeridi route={route} />
         <div className="section-header">{title}</div>
-        <div className="workspace-body">{children}</div>
+        <div
+          className="workspace-body"
+          ref={govde}
+          onScroll={(e) => anahtarRef.current && kaydirmalar.current.set(anahtarRef.current, e.currentTarget.scrollTop)}
+        >
+          {children}
+        </div>
       </main>
       <KutlamaBildirimi />
     </div>
