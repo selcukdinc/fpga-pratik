@@ -14,6 +14,18 @@ export interface Yenilik {
 
 export const YENILIKLER: Yenilik[] = [
   {
+    pr: 29,
+    tarih: "2026-10-27",
+    baslik: "5. hafta dersi derinleşti",
+    maddeler: [
+      "Ders 6 bölüme ayrıldı; durum makineleri kendi bölümünü aldı.",
+      "Son else'i olmayan when/else'in geri beslemesi, std_logic seçicinin 81 değeri, process'in yaşam döngüsü, eksik hassasiyetin dalgası, açılan for döngüsü, next ve exit, flip-flop, iki reset türü, sayaç ve kaydırmalı kayıtçı gibi 14 yeni şekil eklendi.",
+      "**Durum makinesi adımlayıcı:** \"101\" dedektörüne bit bit giriş ver; etkin durum ve son geçiş diyagramda vurgulanır.",
+      "İki yeni benzetim: eksik hassasiyet listesi ve \"101\" dizi dedektörü.",
+      "Her bölümde çözümlü örnek, sık hatalar ve **Kendini dene** soruları var.",
+    ],
+  },
+  {
     pr: 28,
     tarih: "2026-10-27",
     baslik: "4. hafta dersi derinleşti",
