@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../lib/api";
 import { uye, useOturum } from "../lib/oturum";
 import { Markdown, inline } from "../components/Markdown";
@@ -48,6 +48,15 @@ function KapaliKart({ q, n }: { q: Question; n: number }) {
   const [result, setResult] = useState<AnswerResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const girdiler = useRef<(HTMLInputElement | null)[]>([]);
+  // "Tekrar dene"den sonra imlecin gideceği ilk yanlış boşluk
+  const [odak, setOdak] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (odak === null) return;
+    girdiler.current[odak]?.focus();
+    setOdak(null);
+  }, [odak]);
 
   const answer: Answer | null =
     q.type === "tf" ? (tf === null ? null : { value: tf })
@@ -68,13 +77,22 @@ function KapaliKart({ q, n }: { q: Question; n: number }) {
     }
   };
 
+  // Boşluk doldurmada doğru boşluklar yerinde kalır, yalnızca yanlışlar
+  // temizlenir ve imleç ilk yanlış boşluğa gider
+  const bosSonuc = result?.bosluklar;
   const reset = () => {
     setResult(null);
     setTf(null);
     setChoice(null);
     setSira(karistir(q.payload.choices?.length ?? 0));
-    setBlanks(Array(q.payload.blanks ?? 0).fill(""));
+    if (bosSonuc && !result?.correct && bosSonuc.length === blanks.length) {
+      setBlanks(blanks.map((b, i) => (bosSonuc[i] ? b : "")));
+      setOdak(Math.max(0, bosSonuc.indexOf(false)));
+    } else {
+      setBlanks(Array(q.payload.blanks ?? 0).fill(""));
+    }
   };
+  const dogruBosluk = bosSonuc?.filter(Boolean).length ?? 0;
 
   const bosluk = q.type === "fill" ? bosluklariAyir(q.prompt, blanks.length) : null;
 
@@ -108,14 +126,17 @@ function KapaliKart({ q, n }: { q: Question; n: number }) {
       {q.type === "fill" && (
         <div className="choices">
           {blanks.map((b, i) => (
-            <label key={i} className="bosluk">
+            <label key={i} className={`bosluk${bosSonuc ? (bosSonuc[i] ? " bosluk-dogru" : " bosluk-yanlis") : ""}`}>
               <span className="bosluk-etiket">
                 {boslukEtiketi(i, blanks.length)}
                 {bosluk?.adlar[i] && <>: {inline(bosluk.adlar[i]!, true)}</>}
+                {bosSonuc && bosSonuc.length > 1 && <span className={bosSonuc[i] ? "ok" : "bad"}> {bosSonuc[i] ? "✓ doğru" : "✗ yanlış"}</span>}
               </span>
               <input
+                ref={(el) => { girdiler.current[i] = el; }}
                 className="mono"
                 value={b}
+                aria-invalid={bosSonuc ? !bosSonuc[i] : undefined}
                 disabled={!!result}
                 onChange={(e) => setBlanks(blanks.map((x, j) => (j === i ? e.target.value : x)))}
                 onKeyDown={(e) => e.key === "Enter" && submit()}
@@ -130,10 +151,12 @@ function KapaliKart({ q, n }: { q: Question; n: number }) {
       <footer>
         {result ? (
           <>
-            <strong className={result.correct ? "ok" : "bad"}>{result.correct ? "Doğru" : "Yanlış"}</strong>
+            <strong className={result.correct ? "ok" : "bad"}>
+              {result.correct ? "Doğru" : bosSonuc && bosSonuc.length > 1 && dogruBosluk > 0 ? `Kısmen doğru: ${bosSonuc.length} boşluktan ${dogruBosluk} tanesi doğru` : "Yanlış"}
+            </strong>
             {result.explanation && <Markdown text={result.explanation} terim />}
             {result.istatistik && <Istatistik i={result.istatistik} secilen={choice} sira={sira} />}
-            <button onClick={reset}>Tekrar dene</button>
+            <button onClick={reset}>{!result.correct && dogruBosluk > 0 ? "Yanlış boşlukları düzelt" : "Tekrar dene"}</button>
           </>
         ) : (
           <button className="primary" onClick={submit} disabled={!answer || sending}>

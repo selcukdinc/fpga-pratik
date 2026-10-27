@@ -57,6 +57,8 @@ export interface SoruIstatistigi {
 export interface AnswerResult {
   correct: boolean;
   explanation: string | null;
+  // Boşluk doldurmada her boşluğun doğru olup olmadığı, sırasıyla
+  bosluklar?: boolean[];
   istatistik?: SoruIstatistigi;
   // Doğru cevaptan sonra bugünkü doğru sayısı ve hedef
   gunluk?: GunlukDurum;

@@ -46,7 +46,8 @@
   --cm-comment: #940;
   --cm-gutter: #f5f5f5;
   --cm-gutter-text: #999;
-  --cm-active-line: #f2f6fc;
+  /* Yarı saydam: altındaki seçim katmanı etkin satırda da görünsün */
+  --cm-active-line: rgb(30 80 200 / 6%);
   --cm-cursor: #000;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   color-scheme: light;
@@ -97,7 +98,7 @@
   --cm-comment: #808080;
   --cm-gutter: #26272a;
   --cm-gutter-text: #6e6e6e;
-  --cm-active-line: #26282c;
+  --cm-active-line: rgb(255 255 255 / 5%);
   --cm-cursor: #ddd;
   color-scheme: dark;
 }
@@ -997,6 +998,8 @@ body.boyutlaniyor-dikey { cursor: ns-resize; user-select: none; }
 .choices label.bosluk { flex-direction: column; align-items: flex-start; gap: 3px; }
 .bosluk-etiket { font-size: 13px; }
 .choices label.bosluk input { width: min(320px, 100%); }
+.choices label.bosluk-dogru input { border-color: var(--green); }
+.choices label.bosluk-yanlis input { border-color: var(--error); box-shadow: 0 0 0 1px var(--error); }
 
 /* B2: terimler */
 .terim-en { color: var(--muted); font-size: 0.92em; }

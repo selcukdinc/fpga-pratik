@@ -12,12 +12,20 @@ VHDL'de değer tutan üç tür nesne vardır:
 
 - **constant:** Bir kez değer alır, sonra değişmez. ~constant GENISLIK : integer := 8;~
 - **signal:** Donanımdaki bir teli ya da yazmacı temsil eder. ~<=~ ile atanır. Mimarinin bildirim bölümünde (ya da port olarak) tanımlanır.
-- **variable:** Yalnızca bir ~process~ (ya da alt program) içinde tanımlanır ve kullanılır. ~:=~ ile atanır.
+- **variable:** Yalnızca bir ~process~ (ya da function, procedure) içinde, ~process~ ile ~begin~ arasındaki bildirim bölümünde tanımlanır ve kullanılır. ~:=~ ile atanır. Başka bir process onu göremez; değeri dışarı taşımak için process içinde bir sinyale atanır.
 
 En önemli fark, değerin **ne zaman** güncellendiğidir:
 
 - Değişkene atanan değer **hemen** geçerli olur; bir sonraki satır yeni değeri görür.
 - Sinyale atanan değer process **beklemeye geçtiğinde** (sonuna ulaştığında ya da ~wait~'te) güncellenir. Aynı process içinde aynı sinyale birden çok atama yapılırsa **sonuncusu** geçerli olur.
+
+Bu yüzden aynı process'te ~a <= b; b <= a;~ yazmak iki sinyalin değerini **takas eder**: iki satır da eski değerleri okur. Değişkenlerle aynı şey olmaz; ~v1 := v2; v2 := v1;~ sonrası ikisi de aynı değeri taşır, takas için üçüncü bir değişken gerekir. Sinyal ataması bir sonraki **delta döngüsünde** etkili olur: delta döngüsü, benzetim zamanı ilerlemeden atılan sıfır süreli adımdır. Atamadan hemen sonra ~x := s;~ yazarsan hâlâ eski değeri okursun.
+
+Bir process'in değişkenleri benzetim başında bir kez ilklenir ve process her uyandığında **kaldıkları değerden devam eder**; değerlerini process çalışmaları arasında korurlar.
+
+~s <= a after 5 ns;~ gibi gecikmeler yalnızca benzetimde anlamlıdır. Sentez aracı ~after~'ı yok sayar; gerçek gecikmeyi kullanılan donanım belirler.
+
+Bir ~out~ portu mimarinin içinden okunamadığı için, değeri hem çıkışa vermek hem içeride kullanmak gerektiğinde bir **iç sinyal** tanımlanır: hesap iç sinyalle yapılır, port da ~y <= ic;~ ile bu sinyalden sürülür. ~buffer~ da çalışır ama iç sinyal daha temiz bir yoldur.
 
 [[G-H4-01]]
 
@@ -78,13 +86,24 @@ VHDL büyük/küçük harf ayırmaz: ~Sayac~ ve ~SAYAC~ aynı isimdir. Bir isim:
       metin: md(`
 ~bit~ tipinin yalnızca ~'0'~ ve ~'1'~ değerleri vardır. Gerçek devrelerde bundan fazlasına ihtiyaç duyulur, bu yüzden ~std_ulogic~ dokuz değer tanımlar:
 
-- ~'U'~ başlangıç değeri verilmemiş (atanmamış)
+- ~'U'~ başlangıç değeri verilmemiş (atanmamış). Yalnızca benzetimde görülür; donanımda karşılığı yoktur.
 - ~'X'~ güçlü bilinmeyen (çakışma), ~'0'~ ve ~'1'~ güçlü değerler
-- ~'Z'~ yüksek empedans (hat bırakılmış)
-- ~'W'~, ~'L'~, ~'H'~ zayıf bilinmeyen, zayıf 0, zayıf 1
-- ~'-'~ önemsiz (don't care)
+- ~'Z'~ yüksek empedans: hattı hiçbir kaynak sürmüyor. Üç durumlu (tri-state) çıkışlarla donanımda gerçeklenebilir.
+- ~'W'~, ~'L'~, ~'H'~ zayıf bilinmeyen, zayıf 0, zayıf 1. Çekme dirençleri (pull-up, pull-down) ~'H'~ ve ~'L'~ ile modellenir.
+- ~'-'~ önemsiz (don't care): sentez aracına sadeleştirme serbestliği verir.
 
-~std_logic~, ~std_ulogic~'in **çözümlenmiş** halidir: aynı sinyali birden çok kaynak sürerse bir çözümleme fonksiyonu sonucu belirler. Örneğin bir kaynak ~'0'~, diğeri ~'1'~ sürerse sonuç ~'X'~; biri ~'Z'~ bırakırsa diğerinin değeri geçerli olur. ~std_ulogic~'te birden çok sürücü derleme hatasıdır.
+Değerlerin tanımlı sırası 'U', 'X', '0', '1', 'Z', 'W', 'L', 'H', '-' şeklindedir. Bu sıra alt tip aralıklarında önemlidir: ~subtype s3 is std_ulogic range '0' to 'Z';~ yalnızca '0', '1' ve 'Z' değerlerini içerir.
+
+~bit~ yalnızca bir mantık tipidir; onun için aritmetik tanımlı değildir. Toplama için ~integer~, ~unsigned~ ya da ~signed~ kullanılır.
+
+~std_logic~, ~std_ulogic~'in **çözümlenmiş** alt tipidir: aynı sinyali birden çok kaynak sürerse bir çözümleme fonksiyonu sonucu belirler. Kurallar:
+
+- İki güçlü değer çelişirse güçlü bilinmeyen: ~'0'~ ile ~'1'~ → ~'X'~.
+- ~'Z'~ hattı sürmez, sonucu diğer kaynak belirler: ~'Z'~ ile ~'1'~ → ~'1'~.
+- Güçlü değer zayıfı yener: ~'0'~ ile ~'H'~ → ~'0'~.
+- İki zayıf değer çelişirse zayıf bilinmeyen: ~'L'~ ile ~'H'~ → ~'W'~.
+
+~std_ulogic~ (ve ~bit~ gibi çözümlenmemiş tipler) için birden çok sürücü hatadır. Bu, iki çıkışı yanlışlıkla birbirine bağlamayı yakalar. Dikkat: mimarideki **her eşzamanlı atama ayrı bir sürücüdür**. ~bit_vector~ tipindeki E için ~E <= not H;~ ve ardından ~E(2) <= '0';~ yazarsan E(2)'nin iki sürücüsü olur ve "multiple driven" hatası alırsın. Çözüm tek atamada birleştirmektir: ~E <= '0' & not H(1 downto 0);~
 
 [[G-H4-03]]
 
@@ -137,9 +156,28 @@ VHDL tiplere çok sıkı bakar; farklı tipler arasında açık dönüşüm gere
 - ~to_integer(u)~: ~unsigned~ ya da ~signed~'ı tamsayıya çevirir.
 - ~to_unsigned(n, genislik)~ / ~to_signed(n, genislik)~: tamsayıyı verilen genişlikte vektöre çevirir.
 
+~to_integer~ yalnızca ~signed~ ve ~unsigned~ alır, ~std_logic_vector~ almaz: önce ~to_integer(unsigned(v))~ yazılır. Tamsayıyı vektöre çevirmek için de önce ~to_unsigned(n, 8)~ ile genişlik verilir, sonra ~std_logic_vector(...)~ ile çevrilir. Tek bir ~std_logic~ bitini sayıya çevirmek için onu boş dizgiyle birleştirip 1 elemanlı bir vektör yaparsın: ~to_integer(unsigned'(b & ""))~ 0 ya da 1 döndürür. Bu dönüşümler donanımda hiçbir şey eklemez; kablolar aynı kalır, yalnızca bitlerin yorumu değişir.
+
+**İkiye tümleyen:** ~signed~ değerler ikiye tümleyendir. n bitlik signed aralığı -2^(n-1) ile 2^(n-1) - 1 arasıdır; 4 bitte -8..7, 8 bitte -128..127. En soldaki bit -2^(n-1) ağırlığındadır:
+
+- ~"1000"~ signed olarak -8, unsigned olarak 8'dir.
+- ~"1110"~ = -8 + 4 + 2 = -2. ~"1010"~: tersi 0101, +1 = 0110 = 6, yani -6.
+- ~to_signed(-3, 4)~: 3 = 0011, tersi 1100, +1 = ~"1101"~.
+
+~resize(x, n)~ genişliği değiştirir: ~signed~ için işaret bitini çoğaltır (-6 = ~"1010"~ → ~"11111010"~), ~unsigned~ için sola sıfır ekler. numeric_std, ~signed~ ve ~unsigned~ için ~and~, ~or~ gibi mantıksal operatörleri de tanımlar.
+
 Aynı bitler farklı tiplerde farklı sayılar demektir: ~"1111"~, ~unsigned~ olarak 15, ~signed~ olarak -1'dir.
 
 [[G-H4-02]]
+
+**Tip uyumu:** VHDL güçlü tiplidir ve örtük dönüşüm yapmaz. ~bit~ ile ~std_logic~, ~bit_vector~ ile ~std_logic_vector~, ~integer~ ile ~std_logic_vector~ birbirine doğrudan atanamaz; ~unsigned~ bir sinyal de ~std_logic_vector~'e ancak ~std_logic_vector(u)~ ile atanır.
+
+**Bit dizgileri ve sayı tabanları:**
+
+- ~B"1010"~ ikilik, ~O"17"~ sekizlik (her basamak 3 bit), ~X"A5"~ onaltılık (her basamak 4 bit) yazımdır. ~X"A5"~ 8 bittir; ~X"3C"~ = ~"00111100"~; ~O"17"~ = ~"001111"~.
+- Taban belirtilen dizgilerde okunabilirlik için alt çizgi kullanılabilir: ~X"FF_00"~, ~B"1010_0101"~. Tabansız ~"1010_0101"~ yazımında alt çizgi kullanılamaz.
+- Farklı tabanlar aynı bitleri verebilir: ~X"333"~ = 0011 0011 0011 = üçerli gruplanınca 001 100 110 011 = ~O"1463"~.
+- Tamsayılar da tabanla yazılabilir: ~16#FF#~ = 255, ~2#1010#~ = 10.
 `),
       sim: {
         top: "tb",
@@ -180,9 +218,30 @@ type bellek_t is array (0 to 15) of std_logic_vector(7 downto 0);
 signal ram : bellek_t;
 ~~~
 
-~ram(3)~ dördüncü kelimeyi, ~ram(3)(0)~ o kelimenin en düşük bitini verir.
+~ram(3)~ dördüncü kelimeyi, ~ram(3)(0)~ o kelimenin en düşük bitini verir. Dizi tipinde önce indeks aralığı (kelime sayısı), sonra eleman tipi (kelime genişliği) yazılır. ~ram'length~ kelime sayısıdır (16), kelime genişliği bunu etkilemez. VHDL'de hazır bir bellek tipi yoktur; önce böyle bir tip tanımlanır.
 
-**Alt tip** (subtype), var olan bir tipin değer aralığını daraltır ama tipi değiştirmez: ~subtype rakam is integer range 0 to 9;~ ile tanımlı bir nesne ~integer~ ile serbestçe karışır, fakat aralık dışı bir değer benzetimde hata verir. Tamsayılara aralık vermek sentezde bit sayısını da belirler: ~integer range 0 to 255~ 8 bitle gerçeklenir.
+Bu bir **dizinin dizisidir** (1Dx1D) ve elemanlara iki ayrı parantezle erişilir: ~y(1)(2)~. Gerçek **2 boyutlu** dizide ise tek parantez ve virgül kullanılır, tek indeksle bir satır alınamaz:
+
+~~~
+type matris_t is array (0 to 3, 0 to 3) of std_logic;
+signal w : matris_t;   -- w(2, 1) bir bittir
+~~~
+
+Yapısı aynı olan iki dizi tipi yine de **farklı tiplerdir**: ~type row is array (7 downto 0) of std_logic;~ ile tanımlı bir sinyal, aynı genişlikteki ~std_logic_vector~'e atanamaz.
+
+Bir port kendi tanımladığın bir dizi tipinde olacaksa, tip port listesinden **önce** görünür olmalıdır. Architecture'da tanımlanan tip entity'den sonra geldiği için yetmez; tip bir **package** içinde tanımlanır ve ~use work.paket_adi.all;~ ile tasarıma açılır.
+
+**Vektör indisleri ve dilimler:** Bir dizgi değeri soldan sağa **indis sırasıyla** yerleşir. ~downto~ ile bildirilen vektörde soldaki bit en büyük indistir; ~to~ ile bildirilen vektörde en küçük indis (ör. ~b(0)~) soldadır. Dilimin yönü vektörün bildirildiği yönle aynı olmalıdır: ~a : std_logic_vector(7 downto 0)~ için ~a(7 downto 4)~ soldaki dört bittir, ~a(4 to 7)~ ise hatadır. Dilimler birleştirilebilir: ~a(1 downto 0) & a(3 downto 2)~ alt iki biti sola, üst iki biti sağa yazar.
+
+**Alt tip** (subtype), var olan bir tipin değer aralığını daraltır ama tipi değiştirmez: ~subtype rakam is integer range 0 to 9;~ ile tanımlı bir nesne ~integer~ ile serbestçe karışır. ~type~ ile bildirilen bir tamsayı tipi ise ~type r_t is range 0 to 9;~ gibi **yeni ve bağımsız** bir tiptir; ~integer~'a atamak için ~integer(r)~ dönüşümü gerekir.
+
+**Aralık ve bit sayısı:** Tamsayılara aralık vermek sentezde bit sayısını belirler:
+
+- ~integer range 0 to 15~ 4 bit (2^4 = 16 değer), ~0 to 100~ 7 bit (6 bit en çok 63'ü gösterir), ~0 to 255~ 8 bit.
+- Negatif değer varsa ikiye tümleyen kullanılır: ~-8 to 7~ 4 bit, ~-63 to 63~ 6 değer biti ve 1 işaret biti, yani 7 bit.
+- Aralık verilmezse ~integer~ 32 bit olarak sentezlenir.
+
+Aralık dışı bir değer **benzetimde** hata verip benzetimi durdurur; 0 to 15 aralıklı bir sayaç 15'ten sonra 16 olursa benzetim durur. Sentezlenmiş devrede ise denetim yoktur, değer yalnızca bitlerin taşıyabildiği kadardır. Bu yüzden aralığı en büyük sonuca göre seç: 0..15 ve 0..31 aralıklı iki sayının çarpımı en çok 15 · 31 = 465'tir, ~range 0 to 511~ (9 bit) yeterlidir.
 `),
     },
   ],

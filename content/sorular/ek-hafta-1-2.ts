@@ -92,10 +92,10 @@ export const ekHafta12: Soru[] = [
   ...turet(1, "fpga-giris", "entegre-olcek", [
     {
       id: "t1-vlsi", zorluk: 1, tip: "mcq",
-      soru: "Yüz binlerce ve daha fazla kapı içeren günümüz işlemcileri ve FPGA'lar hangi ölçekte sınıflanır?",
+      soru: "Derste verilen sınıflandırmaya göre 5000 ve daha fazla kapı içeren günümüz işlemcileri ve FPGA'lar hangi ölçekte sınıflanır?",
       secenekler: ["SSI", "MSI", "LSI", "VLSI"],
       dogru: 3,
-      aciklama: "VLSI (çok büyük ölçekli tümleşik devre) yüz binlerce ve daha fazla kapıyı kapsar.",
+      aciklama: "Derste verilen aralıklar: SSI 1-20, MSI 20-100, LSI 100-5000, VLSI 5000 ve üzeri kapı. Günümüz işlemcileri ve FPGA'lar bu sınırın çok üstündedir.",
     },
     {
       id: "t1-msi-ornek", zorluk: 2, tip: "mcq", yedek: true,
@@ -271,19 +271,19 @@ export const ekHafta12: Soru[] = [
     {
       id: "t2-akis-sonraki", zorluk: 2, tip: "mcq",
       soru: "Tasarım akışında sentezden hemen sonra gelen adım hangisidir?",
-      secenekler: ["Tasarım girişi", "Benzetim", "Yerleştirme ve yönlendirme", "Testbench yazma"],
+      secenekler: ["Tasarım girişi", "Benzetim", "Eşleme", "Testbench yazma"],
       dogru: 2,
-      aciklama: "Sıra: tasarım girişi, benzetim, sentez, uygulama, bitstream üretimi ve yükleme.",
+      aciklama: "Sıra: tasarım girişi, benzetim, sentez, eşleme, yerleştirme, yönlendirme, bitstream üretimi ve yükleme. Eşleme, netlist'teki elemanları yonganın LUT ve flip-floplarına dağıtır.",
     },
   ]),
 
   ...turet(2, "tasarim-akisi", "modelleme", [
     {
       id: "t2-davranissal-kod", zorluk: 2, tip: "mcq",
-      soru: "~s <= a + b;~ satırı hangi modelleme yaklaşımına örnektir?",
-      secenekler: ["Yapısal", "Şematik", "Davranışsal", "Fiziksel yerleşim"],
+      soru: "Devrenin ne yapacağını bir process içinde if ve case gibi sıralı komutlarla anlatmak hangi modelleme yaklaşımıdır?",
+      secenekler: ["Yapısal", "Veri akışı", "Davranışsal", "Fiziksel yerleşim"],
       dogru: 2,
-      aciklama: "Devrenin ne yapacağı anlatılıyor, nasıl kurulacağı sentez aracına bırakılıyor: davranışsal modelleme.",
+      aciklama: "Process içindeki sıralı kodla devrenin davranışı anlatılır, nasıl kurulacağı sentez aracına bırakılır: davranışsal modelleme. Process dışındaki eşzamanlı atamalar ise veri akışıdır.",
     },
     {
       id: "t2-yapisal-ornek", zorluk: 2, tip: "mcq", yedek: true,
