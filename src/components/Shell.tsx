@@ -23,6 +23,7 @@ const IKONLAR = {
   sorular: "M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01",
   topluluk: "M9 11a3 3 0 100-6 3 3 0 000 6zM3 20c0-3.3 2.7-5 6-5s6 1.7 6 5M16 5.5a3 3 0 010 5.5M18 15c2 .6 3 2.2 3 5",
   ilerleme: "M4 20V11M10 20V5M16 20v-6M2 20h20",
+  tekrar: "M20 11a8 8 0 00-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0014.3 4.9L20 16M20 20v-4h-4",
   terimler: "M4 5h7M7.5 5v1.5c0 3-1.8 5.5-4 6.5M5 9c1 1.8 3 3.2 5 3.6M13 20l4-9 4 9M14.3 17h5.4",
   tanitim: "M12 21a9 9 0 100-18 9 9 0 000 18zM15.5 8.5l-2 5-5 2 2-5z",
   sss: "M12 21a9 9 0 100-18 9 9 0 000 18zM9.5 9a2.5 2.5 0 114 2c-1 .6-1.5 1.2-1.5 2.2M12 16.5v.5",
@@ -171,6 +172,13 @@ function TanitimSeridi({ route }: { route: Route }) {
 export function Shell({ route, currentWeek, title, status, duyuru, children }: Props) {
   const [dar, setDar] = useState(darOku);
   const [menuAcik, setMenuAcik] = useState(false);
+  const { me } = useOturum();
+  const [tekrarSayisi, setTekrarSayisi] = useState(0);
+
+  // Bugün tekrar edilecek soru sayısı; sayfa değiştikçe tazelenir
+  useEffect(() => {
+    if (me) api.tekrarSayisi().then((r) => setTekrarSayisi(r.n), () => {});
+  }, [route, me?.id]);
 
   // Mobilde sayfa değişince menü kapanır
   useEffect(() => setMenuAcik(false), [route]);
@@ -216,6 +224,10 @@ export function Shell({ route, currentWeek, title, status, duyuru, children }: P
         <NavLink to={{ page: "sorular" }} current={route} ikon="sorular"
           ek={currentWeek !== null && <span className="nav-rozet" title={`Sorular ${currentWeek}. haftaya kadar açık`}>H{currentWeek}</span>}>
           Soru havuzu
+        </NavLink>
+        <NavLink to={{ page: "tekrar" }} current={route} ikon="tekrar"
+          ek={tekrarSayisi > 0 && <span className="nav-rozet tekrar-rozet" title={`Bugün tekrar edilecek ${tekrarSayisi} soru`}>{tekrarSayisi}</span>}>
+          Tekrar
         </NavLink>
         <NavLink to={{ page: "ilerleme" }} current={route} ikon="ilerleme">İlerlemem</NavLink>
         <NavLink to={{ page: "terimler" }} current={route} ikon="terimler">Terimler</NavLink>

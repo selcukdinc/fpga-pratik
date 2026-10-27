@@ -4,6 +4,7 @@
 // Yönetim panelinde değiştirilmiş sorulara (updated_at dolu) dokunulmaz.
 import { writeFileSync } from "node:fs";
 import { konular, sorular } from "../content/sorular/index.ts";
+import { kavramOf } from "../shared/kavramlar.ts";
 import type { Soru } from "../content/sorular/tipler.ts";
 import { MODELLER } from "../worker/modeller.ts";
 
@@ -42,6 +43,7 @@ for (const s of sorular) {
   if (s.tip === "mcq" && !(s.dogru >= 0 && s.dogru < s.secenekler.length)) throw new Error(`${s.id}: geçersiz doğru şık`);
   if (s.tip === "fill" && s.bosluklar.some((b) => b.length === 0)) throw new Error(`${s.id}: boş cevap listesi`);
   if (s.tip === "code" && !MODELLER[s.id]) throw new Error(`${s.id}: worker/modeller.ts içinde referans modeli yok`);
+  if (!kavramOf(s.id)) throw new Error(`${s.id}: content/sorular/kavramlar.ts içinde kavramı yok`);
 }
 
 const satirlar: string[] = [
@@ -66,6 +68,10 @@ for (const s of sorular) {
       "  WHERE questions.updated_at IS NULL;",
   );
 }
+
+// Kavram panelden düzenlenmez; panelde değiştirilmiş sorularda da güncellenir
+satirlar.push("");
+for (const s of sorular) satirlar.push(`UPDATE questions SET kavram = ${q(kavramOf(s.id)!)} WHERE id = ${q(s.id)};`);
 
 writeFileSync(hedef, satirlar.join("\n") + "\n");
 const say = (f: (s: Soru) => boolean) => sorular.filter(f).length;

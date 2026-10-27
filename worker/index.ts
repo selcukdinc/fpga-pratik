@@ -9,7 +9,9 @@ import { epostaAcik } from "./eposta";
 import { yonetim } from "./yonetim";
 import { sosyal } from "./sosyal";
 import { topluluk } from "./topluluk";
+import { tekrar, tekrarIsle } from "./tekrar";
 import { DAKIKA, SAAT, sinirAsildi } from "./sinir";
+import { GUN_MS, SORU_SUTUNLARI, TR_FARK, bugunBasi, currentWeek, gorunurKosul, setting, showOriginal, soruyaCevir, type SoruListeSatiri } from "./ortak";
 import { ALEV, VARSAYILAN_HEDEF, seriler, type GunlukDurum } from "../shared/motivasyon";
 import { MODELLER, degerlendir, vektorUret } from "./modeller";
 import { IZ_SINIRI, TB_ADI, testbenchUret, type KodBilgisi, type KodSonucu, type Sinama, type Vektor } from "../shared/kod";
@@ -35,20 +37,7 @@ app.route("/hesap", hesap);
 app.route("/yonetim", yonetim);
 app.route("/uye", sosyal);
 app.route("/topluluk", topluluk);
-
-async function setting(db: D1Database, key: string): Promise<string | null> {
-  const row = await db.prepare("SELECT value FROM settings WHERE key = ?").bind(key).first<{ value: string }>();
-  return row?.value ?? null;
-}
-
-async function currentWeek(db: D1Database): Promise<number> {
-  return Number((await setting(db, "current_week")) ?? 1);
-}
-
-// show_original = '0' iken sunumlardan gelen sorular hiçbir yerde gösterilmez
-async function showOriginal(db: D1Database): Promise<boolean> {
-  return (await setting(db, "show_original")) !== "0";
-}
+app.route("/tekrar", tekrar);
 
 app.get("/me", (c) => {
   const me = c.get("me");
@@ -70,30 +59,13 @@ app.get("/questions", async (c) => {
   const original = await showOriginal(c.env.DB);
   const topic = c.req.query("topic");
   // answer sütunu bilinçli olarak seçilmiyor
-  const sql = `SELECT q.id, q.topic_id, q.week, q.type, q.source, q.prompt, q.payload, q.difficulty, q.source_ref,
-                      u.username AS oneren
+  const sql = `SELECT ${SORU_SUTUNLARI}
                FROM questions q JOIN topics t ON t.id = q.topic_id LEFT JOIN users u ON u.id = q.suggested_by
                WHERE q.active = 1 AND q.status = 'published' AND q.week <= ?${original ? "" : " AND q.source = 'derived'"}${topic ? " AND q.topic_id = ?" : ""}
                ORDER BY q.week, t.sort, q.difficulty, q.rowid`;
   const stmt = c.env.DB.prepare(sql);
-  const { results } = await (topic ? stmt.bind(week, topic) : stmt.bind(week)).all<{
-    id: string; topic_id: string; week: number; type: QuestionType;
-    source: "original" | "derived"; prompt: string; payload: string;
-    difficulty: number; source_ref: string | null; oneren: string | null;
-  }>();
-  const questions: Question[] = results.map((r) => ({
-    id: r.id,
-    topicId: r.topic_id,
-    week: r.week,
-    type: r.type,
-    source: r.source,
-    prompt: r.prompt,
-    payload: JSON.parse(r.payload),
-    difficulty: r.difficulty,
-    sourceRef: r.source_ref,
-    ...(r.oneren ? { oneren: r.oneren } : {}),
-  }));
-  return c.json(questions);
+  const { results } = await (topic ? stmt.bind(week, topic) : stmt.bind(week)).all<SoruListeSatiri>();
+  return c.json<Question[]>(results.map(soruyaCevir));
 });
 
 type SoruSatiri = { type: QuestionType; source: string; payload: string; answer: string; explanation: string | null };
@@ -108,11 +80,6 @@ async function yayindakiSoru(c: Context<Env>, id: string): Promise<SoruSatiri | 
   if (!q || (q.source === "original" && !(await showOriginal(c.env.DB)))) return null;
   return q;
 }
-
-const GUN_MS = 86_400_000;
-const TR_FARK = 3 * 3_600_000;
-// Türkiye saatine göre bugünün başlangıcı (ms)
-const bugunBasi = () => Math.floor((Date.now() + TR_FARK) / GUN_MS) * GUN_MS - TR_FARK;
 
 // Doğru bir cevaptan sonra bugünkü doğru sayısı; istemci hedefe ulaşıldıysa kutlar
 async function gunlukDurum(db: D1Database, userId: string, hedef: number): Promise<GunlukDurum> {
@@ -141,6 +108,7 @@ app.post("/questions/:id/answer", async (c) => {
   const correct = grade(q.type, JSON.parse(q.answer), body.answer);
   const me = await ensureGuest(c);
   await denemeKaydet(c, me.id, c.req.param("id"), correct, body.answer);
+  await tekrarIsle(c.env.DB, me.id, c.req.param("id"), correct);
 
   const result: AnswerResult = { correct, explanation: q.explanation, istatistik: await soruIstatistigi(c.env.DB, c.req.param("id"), q) };
   if (correct) result.gunluk = await gunlukDurum(c.env.DB, me.id, me.gunlukHedef);
@@ -230,6 +198,7 @@ app.post("/sinama/:id", async (c) => {
       "INSERT INTO attempts (user_id, question_id, correct, answer, created_at) VALUES (?, ?, ?, ?, ?)",
     ).bind(me.id, s.question_id, correct ? 1 : 0, JSON.stringify({ gecen: d.gecen, toplam: d.toplam, ilkHata: d.ilkHata }), Date.now()),
   ]);
+  await tekrarIsle(c.env.DB, me.id, s.question_id, correct);
   return c.json<KodSonucu>({
     correct, gecen: d.gecen, toplam: d.toplam, rapor: d.rapor, ipucu: d.ipucu,
     explanation: correct ? q.explanation : null,
@@ -260,11 +229,6 @@ async function konuIlerlemesi(db: D1Database, userId: string): Promise<TopicProg
 app.get("/progress", async (c) => c.json(await konuIlerlemesi(c.env.DB, c.get("me")?.id ?? "")));
 
 // Sitede görünen sorularla sınırlayan koşul (q tablosu için)
-async function gorunurKosul(db: D1Database): Promise<string> {
-  const original = await showOriginal(db);
-  return `q.active = 1 AND q.status = 'published' AND q.week <= ${await currentWeek(db)}${original ? "" : " AND q.source = 'derived'"}`;
-}
-
 app.get("/questions/durum", async (c) => {
   const me = c.get("me");
   if (!me) return c.json<SoruDurumlari>({});

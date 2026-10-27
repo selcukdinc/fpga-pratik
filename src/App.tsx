@@ -9,6 +9,7 @@ import { Terimler } from "./pages/Terimler";
 import { Sss, Tanitim } from "./pages/Tanitim";
 import { Questions } from "./pages/Questions";
 import { Progress } from "./pages/Progress";
+import { Tekrar } from "./pages/Tekrar";
 import { About } from "./pages/About";
 import { Gizlilik } from "./pages/Gizlilik";
 import { Giris } from "./pages/Giris";
@@ -28,6 +29,7 @@ function baslik(route: Route, topicTitle?: string): string {
     case "sorular": return `SORU HAVUZU - ${topicTitle ?? (route.hafta ? `${route.hafta}. hafta` : "Tüm sorular")}`;
     case "ders": return route.hafta ? `DERS - ${route.hafta}. hafta` : "DERSLER";
     case "ilerleme": return "İLERLEME - Konu bazlı durum";
+    case "tekrar": return "TEKRAR - Aralıklı tekrar";
     case "hakkinda": return "HAKKINDA";
     case "tanitim": return "NASIL KULLANILIR";
     case "sss": return "SIK SORULAN SORULAR";
@@ -80,6 +82,7 @@ export function App() {
         {route.page === "sorular" && <Questions topic={route.topic} hafta={route.hafta} topics={topics} />}
         {route.page === "ders" && <Ders hafta={route.hafta} />}
         {route.page === "ilerleme" && <Progress />}
+        {route.page === "tekrar" && <Tekrar />}
         {route.page === "hakkinda" && <About />}
         {route.page === "tanitim" && <Tanitim />}
         {route.page === "sss" && <Sss />}

@@ -846,6 +846,25 @@ p.bugun { display: block; }
 .rozetler li.kazanildi .rozet-ikon { filter: none; }
 @media (max-width: 700px) { .bugun { grid-template-columns: 1fr; } .takvim-suslar { margin-left: 0; padding-left: 6px; } .takvim-lejant { flex-wrap: wrap; } }
 
+/* B5: aralıklı tekrar */
+.nav-rozet.tekrar-rozet { background: var(--link); color: #fff; font-weight: 600; }
+.tekrar-ozet { margin: 0 0 16px; padding: 10px 12px; background: var(--panel); border: 1px solid var(--border); border-radius: 4px; }
+.tekrar-ozet > p:first-child { margin-top: 0; }
+.tekrar-kutular { list-style: none; margin: 10px 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+.tekrar-kutular li { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 6px 4px; border: 1px dashed var(--border); border-radius: 4px; font-size: 12px; text-align: center; }
+.tekrar-kutular li strong { font-size: 18px; }
+.tekrar-kutular li.dolu { border-style: solid; border-color: var(--btn-primary-border); background: var(--msg-hover); }
+.tekrar-kutular li.ogrenildi.dolu { border-color: var(--green); }
+.tekrar-kutular .hint { font-size: 11px; }
+.tekrar-takvim { margin: 4px 0; }
+.tekrar-nasil summary { cursor: pointer; color: var(--link); font-size: 12px; }
+.tekrar-nasil p { font-size: 13px; line-height: 1.55; }
+.tekrar-kart { margin-bottom: 12px; }
+.tekrar-etiket { margin: 0 0 4px; font-size: 12px; color: var(--muted); }
+.tag.tekrar-yeni { background: var(--tag-original-bg); color: var(--tag-original-text); }
+.tekrar-alt { margin-top: 12px; }
+@media (max-width: 700px) { .tekrar-kutular { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
 /* B4: hedef ve alev kutlaması */
 .kutlama-alani { position: fixed; left: 0; right: 0; bottom: 18px; display: flex; justify-content: center; pointer-events: none; z-index: 50; padding: 0 12px; }
 .kutlama { position: relative; display: flex; align-items: center; gap: 10px; max-width: 520px; padding: 10px 12px 10px 14px; background: var(--panel); color: var(--text);

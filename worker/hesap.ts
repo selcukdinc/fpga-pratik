@@ -219,6 +219,9 @@ hesap.post("/giris", async (c) => {
       ? [
           c.env.DB.prepare("UPDATE attempts SET user_id = ? WHERE user_id = ?").bind(u.id, me.id),
           c.env.DB.prepare("UPDATE sinamalar SET user_id = ? WHERE user_id = ?").bind(u.id, me.id),
+          // Hesapta zaten olan sorular hesaptaki haliyle kalır
+          c.env.DB.prepare("UPDATE OR IGNORE tekrarlar SET user_id = ? WHERE user_id = ?").bind(u.id, me.id),
+          c.env.DB.prepare("DELETE FROM tekrarlar WHERE user_id = ?").bind(me.id),
           c.env.DB.prepare("DELETE FROM users WHERE id = ? AND kind = 'guest'").bind(me.id),
         ]
       : [];
@@ -435,6 +438,7 @@ ayarlar.post("/hesabi-sil", async (c) => {
   if (!(await parolaKontrol(c, metin(b.parola)))) return hata(c, 400, "Parola hatalı.", { alan: "parola" });
   await c.env.DB.batch([
     c.env.DB.prepare("DELETE FROM attempts WHERE user_id = ?").bind(me.id),
+    c.env.DB.prepare("DELETE FROM tekrarlar WHERE user_id = ?").bind(me.id),
     c.env.DB.prepare("DELETE FROM sinamalar WHERE user_id = ?").bind(me.id),
     c.env.DB.prepare("DELETE FROM thread_messages WHERE thread_id IN (SELECT id FROM threads WHERE user_id = ?)").bind(me.id),
     c.env.DB.prepare("DELETE FROM threads WHERE user_id = ?").bind(me.id),
