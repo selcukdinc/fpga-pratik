@@ -14,6 +14,18 @@ export interface Yenilik {
 
 export const YENILIKLER: Yenilik[] = [
   {
+    pr: 28,
+    tarih: "2026-10-27",
+    baslik: "4. hafta dersi derinleşti",
+    maddeler: [
+      "Ders 7 bölüme ayrıldı; delta döngüsü ile bit dizgileri ve sayı tabanları kendi bölümlerini aldı.",
+      "Kapsam haritası, sinyal ve değişkenle takas, hatalı birler sayacının adım adım tablosu, std_logic güç merdiveni, çözümleme tablosunun tamamı, çekme direnci, tip dönüşüm haritası gibi 17 yeni şekil eklendi.",
+      "**Delta adımlayıcı:** bir process'i satır satır ilerlet; değişkenin hemen, sinyalin bir delta sonra değiştiğini gör.",
+      "Üç yeni benzetim: delta adımları, bit dizgileri ve diziler.",
+      "Her bölümde çözümlü örnek, sık hatalar ve **Kendini dene** soruları var.",
+    ],
+  },
+  {
     pr: 27,
     tarih: "2026-10-27",
     baslik: "3. hafta dersi derinleşti",
