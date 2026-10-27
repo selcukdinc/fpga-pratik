@@ -29,8 +29,8 @@ export type Route =
 export type AyarSekmesi = "profil" | "hesap" | "bildirimler" | "sil";
 const AYAR_SEKMELERI: AyarSekmesi[] = ["profil", "hesap", "bildirimler", "sil"];
 
-export type YonetimBolumu = "genel" | "sorular" | "oneriler" | "mesajlar" | "bildirimler" | "kullanicilar" | "kayit";
-const YONETIM_BOLUMLERI: YonetimBolumu[] = ["genel", "sorular", "oneriler", "mesajlar", "bildirimler", "kullanicilar", "kayit"];
+export type YonetimBolumu = "genel" | "sorular" | "oneriler" | "mesajlar" | "bildirimler" | "kullanicilar" | "gorseller" | "kayit";
+const YONETIM_BOLUMLERI: YonetimBolumu[] = ["genel", "sorular", "oneriler", "mesajlar", "bildirimler", "kullanicilar", "gorseller", "kayit"];
 
 function parca(s: string | undefined): string | undefined {
   if (!s) return undefined;

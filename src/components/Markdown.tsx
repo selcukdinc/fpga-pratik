@@ -1,5 +1,7 @@
 import { Fragment, type ReactNode } from "react";
 import { terimleriAyir } from "../lib/terimler";
+import { SEKIL_DESENI } from "../gorseller";
+import { Sekil } from "./Sekil";
 
 // Düz metindeki terimlerin ardına İngilizce karşılıklarını ekler: "VE (AND)"
 function terimli(metin: string): ReactNode {
@@ -17,9 +19,10 @@ function terimli(metin: string): ReactNode {
   );
 }
 
-// Soru metinleri için çok küçük bir alt küme: ``` kod blokları, `satır içi kod`, **kalın**
-// ve satırları "- " ile başlayan paragraflardan madde listesi. terim: ders ve soru
-// metinlerinde terimlerin İngilizcesi gösterilir; kod parçalarına dokunulmaz.
+// Soru metinleri için çok küçük bir alt küme: ``` kod blokları, `satır içi kod`, **kalın**,
+// satırları "- " ile başlayan paragraflardan madde listesi ve tek başına [[G-H1-01]]
+// yazılan paragraflardan şekil. terim: ders ve soru metinlerinde terimlerin
+// İngilizcesi gösterilir; kod parçalarına dokunulmaz.
 export function inline(text: string, terim = false): ReactNode[] {
   const duz = (s: string) => (terim ? terimli(s) : s);
   return text.split(/(`[^`]+`|\*\*[^*]+\*\*)/g).map((part, i) => {
@@ -41,6 +44,8 @@ export function Markdown({ text, terim = false }: { text: string; terim?: boolea
             .split(/\n{2,}/)
             .filter((p) => p.trim())
             .map((p, j) => {
+              const sekil = SEKIL_DESENI.exec(p.trim());
+              if (sekil) return <Sekil key={`${i}-${j}`} kod={sekil[1]!} />;
               const satirlar = p.trim().split("\n");
               return satirlar.every((l) => l.startsWith("- ")) ? (
                 <ul key={`${i}-${j}`}>

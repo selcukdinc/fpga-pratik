@@ -10,6 +10,8 @@ export const HAFTA_1: Ders = {
       metin: md(`
 **FPGA** (Field Programmable Gate Array), üretildikten sonra kullanıcının içindeki bağlantıları yeniden kurabildiği bir entegre devredir. Yonganın içinde binlerce küçük mantık bloğu, bunları birbirine bağlayan programlanabilir yollar ve dış dünyayla konuşan giriş/çıkış blokları vardır.
 
+[[G-H1-01]]
+
 Bir FPGA'ya "program" yüklediğimizde aslında bir yazılım çalıştırmayız; hangi mantık bloğunun hangi işlevi göreceğini ve blokların nasıl bağlanacağını belirleyen bir yapılandırma dosyası (**bitstream**) yükleriz. Yani FPGA, istediğimiz sayısal devreye dönüşen boş bir devre kartı gibi düşünülebilir.
 
 - Yapılandırma değiştirilerek aynı yonga başka bir devreye dönüştürülebilir.
@@ -27,6 +29,8 @@ Bir FPGA'ya "program" yüklediğimizde aslında bir yazılım çalıştırmayız
 - **Esneklik:** FPGA sahada güncellenebilir. ASIC'te bir hata, yeni bir üretim turu demektir.
 - **Analog devreler:** ASIC'e analog bloklar da konabilir; FPGA'nın programlanabilir kısmı sayısaldır.
 
+[[G-H1-02]]
+
 Bu yüzden FPGA'lar sık sık **prototip** olarak da kullanılır: bir ASIC tasarımı silikona gönderilmeden önce FPGA üzerinde çalıştırılıp doğrulanır.
 `),
     },
@@ -36,6 +40,8 @@ Bu yüzden FPGA'lar sık sık **prototip** olarak da kullanılır: bir ASIC tasa
 Bir işlemci, belleğindeki komutları **sırayla** okuyup yürütür. Aynı donanım her komutta farklı bir iş yapar.
 
 FPGA'da ise yazdığın her parça kendi donanımına dönüşür ve hepsi **aynı anda** çalışır. Bir toplayıcı, bir karşılaştırıcı ve bir sayaç tasarladıysan üçü her saat çevriminde birlikte çalışır.
+
+[[G-H1-03]]
 
 - Paralel işlerde (görüntü işleme, sinyal işleme, haberleşme) FPGA, aynı saat hızındaki işlemciden çok daha fazla iş çıkarabilir.
 - Zamanlaması kesin olmalı olan arayüzlerde FPGA öngörülebilir davranır; araya bir işletim sistemi girmez.
@@ -77,6 +83,8 @@ Her mantık fonksiyonu **çarpımların toplamı** biçiminde yazılabilir: önc
 - **PAL:** VE dizisi programlanır, VEYA dizisi sabittir. Her çıkış kendine ayrılmış birkaç terimi toplar; terimler çıkışlar arasında paylaşılamaz.
 - **PLA:** Her iki dizi de programlanır. Bir çarpım terimi birden çok çıkışta kullanılabilir, bu yüzden en esnek olanıdır ama daha yavaş ve pahalıdır.
 
+[[G-H2-01]]
+
 **CPLD**, birkaç PAL benzeri bloğun ortak bir bağlantı matrisiyle birleştirilmiş halidir.
 `),
     },
@@ -90,7 +98,11 @@ FPGA dizi yapısı yerine çok sayıda küçük blok kullanır:
 - **IOB:** Yonganın bacaklarıyla iç mantık arasındaki giriş/çıkış blokları.
 - **Programlanabilir bağlantılar:** Blokları birbirine bağlayan anahtarlı yollar.
 
+[[G-H2-02]]
+
 Modern FPGA'larda bunlara ek olarak blok RAM, DSP (çarpıcı) dilimleri ve saat üreteçleri (PLL) de bulunur.
+
+[[G-H2-03]]
 
 Aşağıdaki örnekte 2 girişli bir LUT'u VHDL'de sabit bir tabloyla kuruyoruz. ~TABLO~ sabitini değiştirip aynı donanımı başka bir kapıya dönüştürebilirsin.
 `),
@@ -146,6 +158,8 @@ Bir FPGA tasarımı şu adımlardan geçer:
 - **Uygulama (implementation):** Netlist yonganın gerçek kaynaklarına **yerleştirilir** ve aralarındaki bağlantılar **yönlendirilir**. Zamanlama burada kontrol edilir.
 - **Bitstream üretimi ve yükleme:** Ortaya çıkan yapılandırma dosyası yongaya yüklenir.
 
+[[G-H2-04]]
+
 Vivado bu adımların hepsini tek bir arayüzde toplar: sentezden sonra RTL şemasına bakabilir, hedef yonga (part) seçimini proje ayarlarından yapabilirsin. Bu sitedeki simülasyon alanı ise ilk iki adımı tarayıcında yapar.
 `),
     },
@@ -156,6 +170,8 @@ Bir devreyi tanımlamanın iki temel yolu vardır:
 
 - **Yapısal modelleme:** Devreyi daha küçük bileşenlerin birbirine bağlanmasıyla kurarsın, tıpkı bir şema çizer gibi. Örneğin iki yarım toplayıcı ve bir VEYA kapısından tam toplayıcı.
 - **Davranışsal modelleme:** Devrenin ne yapacağını anlatırsın, nasıl kurulacağını sentez aracına bırakırsın. Örneğin ~s <= a + b;~
+
+[[G-H2-05]]
 
 Gerçek tasarımlarda ikisi birlikte kullanılır: üst seviyede bileşenler yapısal olarak bağlanır, her bileşenin içi davranışsal yazılır.
 `),

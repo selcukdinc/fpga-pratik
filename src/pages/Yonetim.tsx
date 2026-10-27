@@ -1,4 +1,4 @@
-// /yonetim: genel ayarlar, soru listesi, öneriler, mesajlar, kullanıcılar ve işlem kaydı
+// /yonetim: genel ayarlar, soru listesi, öneriler, mesajlar, kullanıcılar, ders şekilleri ve işlem kaydı
 
 import { useEffect, useState, type FormEvent } from "react";
 import { api } from "../lib/api";
@@ -8,6 +8,7 @@ import { FormHatasi } from "../components/Form";
 import { Markdown, inline } from "../components/Markdown";
 import { YazismaGorunumu, YazismaListesi } from "../components/Yazisma";
 import { SoruDuzenle } from "./SoruDuzenle";
+import { GorselListesi } from "./GorselListesi";
 import { SoruPanosu } from "../components/SoruPanosu";
 import type { Topic } from "../../shared/api";
 import type { PanelKayit, PanelKullanici, PanelOzet, PanelSoru } from "../../shared/yonetim";
@@ -21,6 +22,7 @@ const BOLUMLER: [YonetimBolumu, string][] = [
   ["mesajlar", "Mesajlar"],
   ["bildirimler", "Bildirimler"],
   ["kullanicilar", "Kullanıcılar"],
+  ["gorseller", "Görseller"],
   ["kayit", "İşlem kaydı"],
 ];
 
@@ -642,6 +644,7 @@ export function Yonetim({ bolum, soru, alt }: { bolum: YonetimBolumu; soru?: str
       {bolum === "mesajlar" && <PanelMesajlar id={alt} />}
       {bolum === "bildirimler" && <Bildirimler />}
       {bolum === "kullanicilar" && <Kullanicilar />}
+      {bolum === "gorseller" && <GorselListesi />}
       {bolum === "kayit" && <IslemKaydi />}
     </div>
   );

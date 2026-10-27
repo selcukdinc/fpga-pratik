@@ -19,6 +19,8 @@ En önemli fark, değerin **ne zaman** güncellendiğidir:
 - Değişkene atanan değer **hemen** geçerli olur; bir sonraki satır yeni değeri görür.
 - Sinyale atanan değer process **beklemeye geçtiğinde** (sonuna ulaştığında ya da ~wait~'te) güncellenir. Aynı process içinde aynı sinyale birden çok atama yapılırsa **sonuncusu** geçerli olur.
 
+[[G-H4-01]]
+
 Aşağıdaki örnekte aynı hesap bir kez değişkenle, bir kez sinyalle yapılıyor. Mesaj panelindeki farkı incele.
 `),
       sim: {
@@ -84,6 +86,8 @@ VHDL büyük/küçük harf ayırmaz: ~Sayac~ ve ~SAYAC~ aynı isimdir. Bir isim:
 
 ~std_logic~, ~std_ulogic~'in **çözümlenmiş** halidir: aynı sinyali birden çok kaynak sürerse bir çözümleme fonksiyonu sonucu belirler. Örneğin bir kaynak ~'0'~, diğeri ~'1'~ sürerse sonuç ~'X'~; biri ~'Z'~ bırakırsa diğerinin değeri geçerli olur. ~std_ulogic~'te birden çok sürücü derleme hatasıdır.
 
+[[G-H4-03]]
+
 Aşağıda iki üç durumlu tamponun çıkışları (~s1~ ve ~s2~) aynı hatta bağlanıyor. Hattın değerini, std_logic_1164 paketinin kullandığı çözümleme fonksiyonu ~resolved~ ile hesaplıyoruz; iki sürücü aynı sinyale atandığında benzetici de arka planda tam olarak bunu yapar. ~en1~ ve ~en2~'nin birlikte '1' olduğu anda hattın ~'X'~ olduğunu gör.
 `),
       sim: {
@@ -134,6 +138,8 @@ VHDL tiplere çok sıkı bakar; farklı tipler arasında açık dönüşüm gere
 - ~to_unsigned(n, genislik)~ / ~to_signed(n, genislik)~: tamsayıyı verilen genişlikte vektöre çevirir.
 
 Aynı bitler farklı tiplerde farklı sayılar demektir: ~"1111"~, ~unsigned~ olarak 15, ~signed~ olarak -1'dir.
+
+[[G-H4-02]]
 `),
       sim: {
         top: "tb",
