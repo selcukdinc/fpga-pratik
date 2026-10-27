@@ -7,6 +7,7 @@ import { OturumSaglayici } from "./lib/oturum";
 import { Sandbox } from "./pages/Sandbox";
 import { Ders } from "./pages/Ders";
 import { Terimler } from "./pages/Terimler";
+import { Yenilikler } from "./pages/Yenilikler";
 import { Sss, Tanitim } from "./pages/Tanitim";
 import { Questions } from "./pages/Questions";
 import { Progress } from "./pages/Progress";
@@ -34,6 +35,7 @@ function baslik(route: Route, topicTitle?: string): string {
     case "hakkinda": return "HAKKINDA";
     case "tanitim": return "NASIL KULLANILIR";
     case "sss": return "SIK SORULAN SORULAR";
+    case "yenilikler": return "YENİLİKLER";
     case "terimler": return "TERİMLER - Türkçe ve İngilizce";
     case "gizlilik": return "GİZLİLİK";
     case "giris": return "HESAP - Giriş";
@@ -106,6 +108,7 @@ export function App() {
           {route.page === "hakkinda" && <About />}
           {route.page === "tanitim" && <Tanitim />}
           {route.page === "sss" && <Sss />}
+          {route.page === "yenilikler" && <Yenilikler />}
           {route.page === "terimler" && <Terimler />}
           {route.page === "gizlilik" && <Gizlilik />}
           {route.page === "giris" && <Giris sonra={route.sonra} />}

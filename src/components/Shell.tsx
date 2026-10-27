@@ -7,6 +7,7 @@ import { Avatar } from "./Avatar";
 import { inline } from "./Markdown";
 import { KutlamaBildirimi } from "./Kutlama";
 import { OlcekDugmeleri } from "./Olcek";
+import { gorulmemisSayisi, useSonGorulen } from "../lib/yenilik";
 
 interface Props {
   route: Route;
@@ -27,6 +28,7 @@ const IKONLAR = {
   tekrar: "M20 11a8 8 0 00-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0014.3 4.9L20 16M20 20v-4h-4",
   terimler: "M4 5h7M7.5 5v1.5c0 3-1.8 5.5-4 6.5M5 9c1 1.8 3 3.2 5 3.6M13 20l4-9 4 9M14.3 17h5.4",
   tanitim: "M12 21a9 9 0 100-18 9 9 0 000 18zM15.5 8.5l-2 5-5 2 2-5z",
+  yenilikler: "M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8zM18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z",
   sss: "M12 21a9 9 0 100-18 9 9 0 000 18zM9.5 9a2.5 2.5 0 114 2c-1 .6-1.5 1.2-1.5 2.2M12 16.5v.5",
   hakkinda: "M12 21a9 9 0 100-18 9 9 0 000 18zM12 11v6M12 7.5v.5",
   gizlilik: "M12 3l8 3v6c0 4.6-3.4 7.8-8 9-4.6-1.2-8-4.4-8-9V6z",
@@ -175,6 +177,7 @@ export function Shell({ route, currentWeek, title, status, duyuru, children }: P
   const [menuAcik, setMenuAcik] = useState(false);
   const { me } = useOturum();
   const [tekrarSayisi, setTekrarSayisi] = useState(0);
+  const yeniSayisi = gorulmemisSayisi(useSonGorulen());
 
   // Bugün tekrar edilecek soru sayısı; sayfa değiştikçe tazelenir
   useEffect(() => {
@@ -252,6 +255,10 @@ export function Shell({ route, currentWeek, title, status, duyuru, children }: P
         <div className="nav-section">PROJE</div>
         <NavLink to={{ page: "tanitim" }} current={route} ikon="tanitim">Nasıl kullanılır</NavLink>
         <NavLink to={{ page: "sss" }} current={route} ikon="sss">S.S.S.</NavLink>
+        <NavLink to={{ page: "yenilikler" }} current={route} ikon="yenilikler"
+          ek={yeniSayisi > 0 && <span className="nav-rozet yenilik-rozet" title={`${yeniSayisi} yenilik`}>{yeniSayisi}</span>}>
+          Yenilikler
+        </NavLink>
         <NavLink to={{ page: "hakkinda" }} current={route} ikon="hakkinda">Hakkında</NavLink>
         <NavLink to={{ page: "gizlilik" }} current={route} ikon="gizlilik">Gizlilik</NavLink>
       </aside>
