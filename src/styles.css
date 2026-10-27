@@ -745,6 +745,8 @@ textarea.mono { font-family: var(--mono); font-size: 12.5px; }
 .sekil figcaption .tag { margin-left: 6px; }
 .etkilesim-denetim { max-width: 680px; margin: 8px auto 0; font-size: 13.5px; }
 .etkilesim-denetim p { margin: 8px 0 0; line-height: 1.5; }
+.etkilesim-denetim button.cip { cursor: pointer; font: inherit; font-size: 12px; }
+.etkilesim-denetim button.cip:disabled { opacity: .45; cursor: default; }
 .etkilesim-kaydirici { display: flex; flex-direction: column; gap: 4px; }
 .etkilesim-kaydirici input { width: 100%; }
 .etkilesim-alanlar { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: flex-end; margin-top: 8px; }
