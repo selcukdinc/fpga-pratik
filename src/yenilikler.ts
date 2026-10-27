@@ -14,6 +14,14 @@ export interface Yenilik {
 
 export const YENILIKLER: Yenilik[] = [
   {
+    pr: 25,
+    tarih: "2026-10-27",
+    baslik: "Yenilikler üst çubukta da görünüyor",
+    maddeler: [
+      "Son ziyaretinden sonra yeni bir şey eklendiyse üst çubukta **Yeni** yazısı ve sayısı çıkar; telefonda menüyü açmadan da görürsün. Tıklayınca Yenilikler sayfasına gidersin.",
+    ],
+  },
+  {
     pr: 24,
     tarih: "2026-10-27",
     baslik: "Yenilikler sayfası",
