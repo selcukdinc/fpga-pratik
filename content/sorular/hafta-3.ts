@@ -110,7 +110,7 @@ architecture t of tb is begin end t;`,
       "~Cout <= (A and B) or (Cin and (A xor B));~",
     ],
     dogru: 3,
-    aciklama: "Sunumdaki formül Cout = AB + Cin(A ⊕ B). ~A xor B xor Cin~ toplam bitidir, elde değil. ~(A or B) and Cin~, A=B=1 ve Cin=0'da 0 verir (yanlış). ~(A and B) xor Cin~ ise A=B=Cin=1'de 0 verir (yanlış).",
+    aciklama: "Formül Cout = AB + Cin(A ⊕ B). ~A xor B xor Cin~ toplam bitidir, elde değil. ~(A or B) and Cin~, A=B=1 ve Cin=0'da 0 verir (yanlış). ~(A and B) xor Cin~ ise A=B=Cin=1'de 0 verir (yanlış).",
     dogrulama: {
       calismali: IEEE + `
 entity tb is end tb;
@@ -239,7 +239,7 @@ end t;`,
   {
     id: "h3-mod-rem-negatif-bolen", konu: "operatorler", hafta: 3, kaynak: "derived", zorluk: 3,
     ref: "Hafta 3, Örnek 4 ve 5 (mod ve rem)", tip: "fill",
-    soru: "Aynı kodda ~in_giris_2 = \"1100\"~ olursa (~signed~ olarak -4) çıkışlar kaç olur?\n\nBoşluk 1: ~19 / (-4)~, Boşluk 2: ~19 mod (-4)~, Boşluk 3: ~19 rem (-4)~",
+    soru: "~in_giris_3 = 19~ ve ~in_giris_2 = \"1100\"~ (~signed~ olarak -4) iken aşağıdaki çıkışlar kaç olur?\n\n~~~vhdl\nout_cikis_bolme <= in_giris_3 / to_integer(signed(in_giris_2));\nout_cikis_mod   <= in_giris_3 mod to_integer(signed(in_giris_2));\nout_cikis_rem   <= in_giris_3 rem to_integer(signed(in_giris_2));\n~~~\n\nBoşluk 1: ~19 / (-4)~, Boşluk 2: ~19 mod (-4)~, Boşluk 3: ~19 rem (-4)~",
     bosluklar: [["-4"], ["-1"], ["3"]],
     aciklama: "Bölme sıfıra doğru keser: 19 / -4 = -4,75 → -4. ~rem~ sonucu bölünenin (19) işaretini alır: 19 - (-4)(-4) = 3. ~mod~ sonucu bölenin (-4) işaretini alır: 19 = (-4)(-5) + (-1), yani -1.",
     dogrulama: {
@@ -333,15 +333,15 @@ end t;`,
   {
     id: "h3-ornek3-tasma", konu: "operatorler", hafta: 3, kaynak: "derived", zorluk: 3,
     ref: "Hafta 3, Örnek 3", tip: "fill",
-    soru: "Aynı kodda ~a = \"1001\"~ ve ~b = \"0110\"~ olursa e, f ve g ne olur?\n\nBoşluk 1: e, Boşluk 2: f, Boşluk 3: g (4 bitlik ikilik)",
-    bosluklar: [vektor("1111"), vektor("0011"), vektor("0101")],
-    aciklama: "e: işaretsiz 9 + 6 = 15 = ~1111~. f: işaretli olarak a = -7, b = 6, fark -13. Bu 4 bite sığmaz (aralık -8..7), sonuç 16'ya göre sarar: -13 + 16 = 3 = ~0011~. Taşma uyarı vermez, sessizce olur. g = ~01~ & ~01~ = ~0101~.",
+    soru: "~a~ ve ~b~ 4 bitlik ~std_logic_vector~'dür. ~a = \"1010\"~ ve ~b = \"0011\"~ iken e, f ve g ne olur?\n\n~~~vhdl\ne <= std_logic_vector(unsigned(a) + unsigned(b));\nf <= std_logic_vector(signed(a) - signed(b));\ng <= a(1 downto 0) & b(3 downto 2);\n~~~\n\nBoşluk 1: e, Boşluk 2: f, Boşluk 3: g (4 bitlik ikilik)",
+    bosluklar: [vektor("1101"), vektor("0111"), vektor("1000")],
+    aciklama: "e: işaretsiz 10 + 3 = 13 = ~1101~. f: işaretli olarak a = -6, b = 3, fark -9. Bu 4 bite sığmaz (aralık -8..7), sonuç 16'ya göre sarar: -9 + 16 = 7 = ~0111~. Taşma uyarı vermez, sessizce olur. g = ~10~ & ~00~ = ~1000~.",
     dogrulama: {
       calismali: IEEE + `
 entity tb is end tb;
 architecture t of tb is
-  signal a : std_logic_vector(3 downto 0) := "1001";
-  signal b : std_logic_vector(3 downto 0) := "0110";
+  signal a : std_logic_vector(3 downto 0) := "1010";
+  signal b : std_logic_vector(3 downto 0) := "0011";
   signal e, f, g : std_logic_vector(3 downto 0);
 begin
   e <= std_logic_vector(unsigned(a) + unsigned(b));
@@ -349,7 +349,7 @@ begin
   g <= a(1 downto 0) & b(3 downto 2);
   process begin
     wait for 1 ns;
-    assert e = "1111" and f = "0011" and g = "0101" severity failure;
+    assert e = "1101" and f = "0111" and g = "1000" severity failure;
     wait;
   end process;
 end t;`,
@@ -472,7 +472,7 @@ end t;`,
       "~for i in 0 to x'LENGTH - 1 loop~",
     ],
     dogru: 2,
-    aciklama: "~x'REVERSE_RANGE~ = ~7 downto 0~ olduğu için döngü 7'den 0'a iner. Diğer üçü 0'dan 7'ye çıkar. Sunumdaki dört eşdeğer döngü örneği de bu fikre dayanır.",
+    aciklama: "~x'REVERSE_RANGE~ = ~7 downto 0~ olduğu için döngü 7'den 0'a iner. Diğer üçü 0'dan 7'ye çıkar.",
   },
   {
     id: "h3-kenar-algilama", konu: "nitelikler", hafta: 3, kaynak: "original", zorluk: 2,
@@ -485,7 +485,7 @@ end t;`,
       "~if rising_edge(clk) then~",
     ],
     dogru: 2,
-    aciklama: "~clk'EVENT~ tek başına her değişimde, yani hem yükselen hem düşen kenarda doğrudur. Diğer üçü sunumdaki eşdeğer yükselen kenar yazımlarıdır.",
+    aciklama: "~clk'EVENT~ tek başına her değişimde, yani hem yükselen hem düşen kenarda doğrudur. Diğer üçü eşdeğer yükselen kenar yazımlarıdır.",
   },
   {
     id: "h3-sentezlenebilir-nitelik", konu: "nitelikler", hafta: 3, kaynak: "original", zorluk: 2,
@@ -595,7 +595,7 @@ end t;`,
     ref: "Hafta 3, Operatör aşırı yükleme", tip: "tf",
     soru: "VHDL'de ~+~ gibi bir operatör yeni tip kombinasyonları için aşırı yüklenebilir. Bunun için adı tırnak içinde yazılmış bir fonksiyon tanımlanır: ~function \"+\" (a : integer; b : bit) return integer~.",
     dogru: true,
-    aciklama: "Sunumdaki örnek, INTEGER ile BIT toplamayı tanımlayan böyle bir fonksiyondur. Derleyici hangi ~+~'nın çağrılacağını operand tiplerine bakarak seçer.",
+    aciklama: "Bilinen bir örnek, INTEGER ile BIT toplamayı tanımlayan böyle bir fonksiyondur. Derleyici hangi ~+~'nın çağrılacağını operand tiplerine bakarak seçer.",
     dogrulama: {
       calismali: IEEE + `
 entity tb is end tb;

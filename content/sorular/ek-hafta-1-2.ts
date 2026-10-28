@@ -223,7 +223,7 @@ export const ekHafta12: Soru[] = [
     },
     {
       id: "t2-lut-nand", zorluk: 3, tip: "fill",
-      soru: "Aynı 2 girişli LUT'ta (sıra: ba = 11, 10, 01, 00) NAND kapısı için TABLO sabiti ne olmalıdır?",
+      soru: "Ders örneğindeki 2 girişli LUT'ta tablo sırası (b,a) = 11, 10, 01, 00 biçiminde yazılıyor ve \"1000\" bir AND kapısı veriyor. NAND kapısı için TABLO sabiti ne olmalıdır?",
       bosluklar: [vektor("0111")],
       aciklama: "NAND yalnızca iki giriş 1 iken 0'dır: ba = 11 → 0, diğerleri 1. Bu sırayla \"0111\".",
     },

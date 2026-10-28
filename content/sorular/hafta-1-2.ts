@@ -79,7 +79,7 @@ export const hafta12: Soru[] = [
       "İşlevin donanım olarak kurulması",
     ],
     dogru: 2,
-    aciklama: "Sunumdaki karşılaştırmaya göre CPU kayan nokta gibi işlemleri ve veri tiplerini doğrudan tanır. FPGA'de bunlar için ayrıca donanım tasarlamak gerekir.",
+    aciklama: "Karşılaştırmaya göre CPU kayan nokta gibi işlemleri ve veri tiplerini doğrudan tanır. FPGA'de bunlar için ayrıca donanım tasarlamak gerekir.",
   },
   {
     id: "h1-entegre-olcek", konu: "fpga-giris", hafta: 1, kaynak: "original", zorluk: 2,
@@ -136,7 +136,7 @@ export const hafta12: Soru[] = [
     soru: "3 girişli bir PROM'un sabit AND dizisinde kaç çarpım terimi (AND kapısı) bulunur?",
     secenekler: ["3", "6", "8", "9"],
     dogru: 2,
-    aciklama: "PROM'un AND dizisi girişlerin tüm mintermlerini üretir: 2³ = 8. Sunumdaki PROM şemasında da 3 giriş için 8 AND kapısı vardır.",
+    aciklama: "PROM'un AND dizisi girişlerin tüm mintermlerini üretir: 2³ = 8.",
   },
   {
     id: "h2-pla-fonksiyon", konu: "pld", hafta: 2, kaynak: "derived", zorluk: 3,
@@ -159,7 +159,7 @@ export const hafta12: Soru[] = [
     soru: "Derste verilen tarihçeye göre programlanabilir mantık cihazlarının ortaya çıkış sırası hangisidir?",
     secenekler: ["PAL → PROM → PLA → FPGA → CPLD", "PROM → PLA → PAL → CPLD → FPGA", "PLA → PROM → CPLD → PAL → FPGA", "PROM → PAL → FPGA → PLA → CPLD"],
     dogru: 1,
-    aciklama: "Sunumdaki sıra: PROM (1966), PLA (1975), PAL (1980), CPLD (1982), FPGA (1985).",
+    aciklama: "Tarih sırası: PROM (1966), PLA (1975), PAL (1980), CPLD (1982), FPGA (1985).",
   },
   {
     id: "h2-cpld", konu: "pld", hafta: 2, kaynak: "original", zorluk: 2,

@@ -59,7 +59,7 @@ export const ekHafta5: Soru[] = [
     },
     {
       id: "t5-ws-dekoder", zorluk: 2, tip: "fill", yedek: true,
-      soru: `Aynı 2'den 4'e kod çözücüde ~s = "11"~ iken ~y~ nedir?\n\n~~~\n${WITH_4}\n~~~`,
+      soru: `Aşağıdaki 2'den 4'e kod çözücüde ~s = "11"~ iken ~y~ nedir?\n\n~~~\n${WITH_4}\n~~~`,
       bosluklar: [vektor("1000")],
       aciklama: "\"11\" açıkça yazılmamıştır ve ~others~ koluna düşer: 1000.",
       dogrulama: esz(
@@ -112,7 +112,7 @@ export const ekHafta5: Soru[] = [
     },
     {
       id: "t5-oncelik-kodlayici2", zorluk: 2, tip: "fill", yedek: true,
-      soru: `Aynı öncelik kodlayıcıda ~d = "0011"~ iken ~y~ nedir?\n\n~~~\n${ONCELIK}\n~~~`,
+      soru: `Aşağıdaki öncelik kodlayıcıda ~d = "0011"~ iken ~y~ nedir?\n\n~~~\n${ONCELIK}\n~~~`,
       bosluklar: [vektor("01")],
       aciklama: "~d(3)~ ve ~d(2)~ sıfırdır; ilk bir ~d(1)~'dedir. ~d(0)~'ın kodu yazılmadığından o da \"00\" verirdi.",
       dogrulama: esz(
@@ -182,7 +182,7 @@ export const ekHafta5: Soru[] = [
     },
     {
       id: "t5-if-sonuc2", zorluk: 1, tip: "fill", yedek: true,
-      soru: "Aynı ~if~ deyiminde (~x > 10~ ise 2, ~x > 5~ ise 1, değilse 0) ~x = 7~ iken ~y~ kaçtır?",
+      soru: "~if x > 10 then y := 2; elsif x > 5 then y := 1; else y := 0; end if;~ deyiminde ~x = 7~ iken ~y~ kaçtır?",
       bosluklar: [["1"]],
       aciklama: "~7 > 10~ yanlış, ~7 > 5~ doğrudur; ikinci kol çalışır.",
       dogrulama: esz(

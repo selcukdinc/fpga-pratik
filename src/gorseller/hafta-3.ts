@@ -347,7 +347,7 @@ function diziYonu(): string {
 }
 
 // ---- Etkileşimli öznitelik gezgini ----
-export const OZ_ARALIKLARI = ["7 downto 0", "0 to 7", "7 downto 2", "3 to 10"] as const;
+export const OZ_ARALIKLARI = ["7 downto 0", "0 to 7", "6 downto 1", "5 to 12"] as const;
 export const OZ_OZNITELIKLER = ["left", "right", "high", "low", "length", "range", "reverse_range"] as const;
 export type OzAralik = (typeof OZ_ARALIKLARI)[number];
 export type OzAd = (typeof OZ_OZNITELIKLER)[number];
@@ -682,7 +682,7 @@ export const HAFTA_3_GORSELLERI: Gorsel[] = [
     kod: "G-H3-13",
     baslik: "Öznitelik gezgini",
     aciklama:
-      "signal d : std_logic_vector(7 downto 0) kutuları soldan sağa d(7)'den d(0)'a. d'left seçili: soldaki d(7) kutusu vurgulu, sonuç d'left = 7. Etkileşimli sürümde aralık (7 downto 0, 0 to 7, 7 downto 2, 3 to 10) ve öznitelik (left, right, high, low, length, range, reverse_range) seçilir.",
+      "signal d : std_logic_vector(7 downto 0) kutuları soldan sağa d(7)'den d(0)'a. d'left seçili: soldaki d(7) kutusu vurgulu, sonuç d'left = 7. Etkileşimli sürümde aralık (7 downto 0, 0 to 7, 6 downto 1, 5 to 12) ve öznitelik (left, right, high, low, length, range, reverse_range) seçilir.",
     en: 640,
     boy: 184,
     icerik: oznitelikGezgini("7 downto 0", "left"),

@@ -376,11 +376,11 @@ Döngülerde ~for i in d'range loop~ yazmak, dizinin genişliği değişse bile 
 - ~std_logic_vector(3 downto 0)~ için soldan sağa v(3), v(2), v(1), v(0): v(1) sağdan ikinci kutudur, sonuç ~"0010"~.
 - ~std_logic_vector(0 to 3)~ için en soldaki v(0)'dır: v(1) soldan ikinci kutudur, sonuç ~"0100"~.
 
-> **Çözümlü örnek:** ~signal x : std_logic_vector(3 to 10);~ için ~x'left~, ~x'high~ ve ~x'length~ kaçtır?
+> **Çözümlü örnek:** ~signal y : std_logic_vector(5 to 12);~ için ~y'left~, ~y'high~ ve ~y'length~ kaçtır?
 >
-> 1. Yazılışta soldaki sınır 3: ~x'left~ = 3.
-> 2. En büyük indis 10: ~x'high~ = 10.
-> 3. Eleman sayısı 10 - 3 + 1 = 8: ~x'length~ = 8.
+> 1. Yazılışta soldaki sınır 5: ~y'left~ = 5.
+> 2. En büyük indis 12: ~y'high~ = 12.
+> 3. Eleman sayısı 12 - 5 + 1 = 8: ~y'length~ = 8.
 
 > **Sık hata:** ~'left~'in her zaman büyük indis olduğunu sanmak. Bu yalnızca ~downto~ için doğrudur. Yönden bağımsız büyük indis istiyorsan ~'high~ kullan.
 
@@ -389,14 +389,14 @@ Aşağıdaki kod öznitelikleri ve iki ~others~ atamasının sonucunu yazar. ~bi
       sim: {
         top: "tb",
         sure: "2ns",
-        gorev: "x'in aralığını 7 downto 2 yap ve sonuçları önce gezginden tahmin et.",
+        gorev: "x'in aralığını 6 downto 1 yap ve sonuçları önce gezginden tahmin et.",
         kod: `${UST}
 entity tb is
 end entity;
 
 architecture sim of tb is
   signal d : std_logic_vector(7 downto 0);
-  signal x : std_logic_vector(3 to 10);
+  signal x : std_logic_vector(5 to 12);
   signal v : std_logic_vector(3 downto 0);
   signal w : std_logic_vector(0 to 3);
 
@@ -608,12 +608,12 @@ Aynı parite kodundan iki farklı donanım çıkar:
 
 N = 4 iken port ~std_logic_vector(3 downto 0)~ olur ve ~for i in d'range loop~ döngüsü dört adıma açılır: üç XOR kapısı. N = 8 iken aynı döngü sekiz adıma açılır: yedi XOR kapısı. Döngü donanımda tekrar eden bir işlem değil, **kopyalanan** kapılardır; her adım ayrı bir kapı olur.
 
-> **Çözümlü örnek:** ~generic (N : integer := 8); port (x : in std_logic_vector(N-1 downto 0));~ olan bir entity ~generic map (N => 12)~ ile örnekleniyor. ~x'high~ ve ~x'length~ kaçtır?
+> **Çözümlü örnek:** ~generic (N : integer := 8); port (x : in std_logic_vector(N-1 downto 0));~ olan bir entity ~generic map (N => 6)~ ile örnekleniyor. ~x'high~ ve ~x'length~ kaçtır?
 >
-> 1. N = 12 olduğu için port ~std_logic_vector(11 downto 0)~ olur. Varsayılan 8 kullanılmaz.
-> 2. ~x'high~ = 11, ~x'length~ = 12.
+> 1. N = 6 olduğu için port ~std_logic_vector(5 downto 0)~ olur. Varsayılan 8 kullanılmaz.
+> 2. ~x'high~ = 5, ~x'length~ = 6.
 
-> **Sık hata:** Generic değerini ~port map~ içinde vermek ya da mimari içinde ~N := 6;~ diye değiştirmeye çalışmak. Generic yalnızca ~generic map~ ile verilir ve mimaride sabittir.
+> **Sık hata:** Generic değerini ~port map~ içinde vermek ya da mimari içinde ~N := 10;~ diye değiştirmeye çalışmak. Generic yalnızca ~generic map~ ile verilir ve mimaride sabittir.
 
 Aşağıdaki örnekte parite üretecinde ~N~ ve ~'range~ birlikte kullanılıyor. Testbench'teki ~N => 4~ değerini değiştir ve ~d~'nin genişliğini buna uydur.
 `),
