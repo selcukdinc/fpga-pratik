@@ -9,3 +9,11 @@ export function koduAyir(metin: string): { once: string; kod: string; sonra: str
   const kodlar = parcalar.filter((_, i) => i % 2 === 1).map((k) => "```\n" + k + "```");
   return { once: parcalar[0]!, kod: kodlar.join("\n\n"), sonra: parcalar[parcalar.length - 1]! };
 }
+
+// İki sütunlu düzende sağ sütuna kaydırmadan sığan en uzun kod satırı (karakter).
+// Daha uzun satırı olan kod soru metninin altına, tam genişliğe yerleşir.
+export const SUTUNA_SIGAN = 62;
+
+export function enUzunSatir(kod: string): number {
+  return Math.max(0, ...kod.split("\n").filter((l) => !l.startsWith("```")).map((l) => l.length));
+}

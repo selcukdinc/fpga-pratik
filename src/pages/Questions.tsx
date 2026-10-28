@@ -5,7 +5,8 @@ import { Markdown, inline } from "../components/Markdown";
 import { KodSorusu } from "../components/KodSorusu";
 import { href } from "../lib/router";
 import { boslukEtiketi, bosluklariAyir } from "../lib/bosluk";
-import { koduAyir } from "../lib/kodAyir";
+import { enUzunSatir, koduAyir, SUTUNA_SIGAN } from "../lib/kodAyir";
+import { sonucCumlesi } from "../lib/sonuc";
 import type { AnswerResult, Question, SoruDurumlari, SoruIstatistigi, Topic } from "../../shared/api";
 import type { Answer } from "../../shared/grade";
 
@@ -111,7 +112,9 @@ function KapaliKart({ q, n }: { q: Question; n: number }) {
 
   const bosluk = q.type === "fill" ? bosluklariAyir(q.prompt, blanks.length) : null;
   const metin = bosluk ? bosluk.metin : q.prompt;
-  const kodlu = koduAyir(metin) !== null;
+  const parca = koduAyir(metin);
+  // Kod sağ sütuna sığmıyorsa soru metninin altında tam genişlikte durur
+  const kodlu = parca !== null && enUzunSatir(parca.kod) <= SUTUNA_SIGAN;
 
   return (
     <article className={`question${kodlu ? " kodlu" : ""}${result ? (result.correct ? " correct" : " wrong") : ""}`} data-soru={q.id} id={`soru-${q.id}`}>
@@ -168,9 +171,7 @@ function KapaliKart({ q, n }: { q: Question; n: number }) {
       <footer>
         {result ? (
           <>
-            <strong className={result.correct ? "ok" : "bad"}>
-              {result.correct ? "Doğru" : bosSonuc && bosSonuc.length > 1 && dogruBosluk > 0 ? `Kısmen doğru: ${bosSonuc.length} boşluktan ${dogruBosluk} tanesi doğru` : "Yanlış"}
-            </strong>
+            <strong className={result.correct ? "ok" : "bad"}>{sonucCumlesi(q.type, result.correct, tf, bosSonuc, dogruBosluk)}</strong>
             {result.explanation && <Markdown text={result.explanation} terim />}
             {result.istatistik && <Istatistik i={result.istatistik} secilen={choice} sira={sira} />}
             <button onClick={reset}>{!result.correct && dogruBosluk > 0 ? "Yanlış boşlukları düzelt" : "Tekrar dene"}</button>

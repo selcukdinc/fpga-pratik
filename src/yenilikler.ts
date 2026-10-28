@@ -14,6 +14,18 @@ export interface Yenilik {
 
 export const YENILIKLER: Yenilik[] = [
   {
+    pr: 30,
+    tarih: "2026-10-28",
+    baslik: "Soru kartları ve ders benzetimleri düzenlendi",
+    maddeler: [
+      "Soru havuzunda ve tekrarda bütün soru kartları aynı genişlikte; kodlu ve kodsuz sorular artık düzensiz durmuyor.",
+      "Sağ sütuna sığmayan kod yana kaydırılmak yerine sorunun altında tam genişlikte gösteriliyor.",
+      "Doğru/yanlış sorularında sonuç artık açık: \"Cevabın doğru: bu ifade yanlış.\" gibi.",
+      "Hata mesajlarındaki kod alıntılarında Türkçe karakterler (ç, ş, ğ, ı) bozulmuyor.",
+      "Derslerdeki benzetimlerde mesaj alanı sürüklenerek büyütülebiliyor. Geniş ekranda **Yan yana** seçilirse mesajlar ve dalga ekranı kodun sağına geçiyor; tercih hatırlanıyor.",
+    ],
+  },
+  {
     pr: 29,
     tarih: "2026-10-27",
     baslik: "5. hafta dersi derinleşti",
