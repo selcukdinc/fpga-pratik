@@ -5,7 +5,7 @@ export const hafta5: Soru[] = [
   {
     id: "h5-with-select-mux", konu: "esz-atamalar", hafta: 5, kaynak: "original", zorluk: 1,
     ref: "Hafta 5, Hafta 5_1 (with/select ile mux)", tip: "fill",
-    soru: "Hafta 5_1'deki 4'e 1 multiplexer:\n\n~~~vhdl\nwith S select\n  O <= IN_1 when \"00\",\n       IN_2 when \"01\",\n       IN_3 when \"10\",\n       IN_4 when others;\n~~~\n\n~IN_1 = \"0001\"~, ~IN_2 = \"0010\"~, ~IN_3 = \"0100\"~, ~IN_4 = \"1000\"~ ve ~S = \"10\"~ iken O nedir?",
+    soru: "Bir 4'e 1 çoklayıcı (multiplexer):\n\n~~~vhdl\nwith S select\n  O <= IN_1 when \"00\",\n       IN_2 when \"01\",\n       IN_3 when \"10\",\n       IN_4 when others;\n~~~\n\n~IN_1 = \"0001\"~, ~IN_2 = \"0010\"~, ~IN_3 = \"0100\"~, ~IN_4 = \"1000\"~ ve ~S = \"10\"~ iken O nedir?",
     bosluklar: [vektor("0100")],
     aciklama: "S = \"10\" seçeneği IN_3'ü seçer.",
     dogrulama: {
@@ -32,7 +32,7 @@ end z;`,
   {
     id: "h5-when-else-latch", konu: "esz-atamalar", hafta: 5, kaynak: "original", zorluk: 3,
     ref: "Hafta 5, Hafta 5_2 (when/else ile mux)", tip: "mcq",
-    soru: "Hafta 5_2'deki çözümde son satır koşullu bırakılmış:\n\n~~~vhdl\nO <= IN_1 when S = \"00\" else\n     IN_2 when S = \"01\" else\n     IN_3 when S = \"10\" else\n     IN_4 when S = \"11\";\n~~~\n\nBu yazımla ilgili hangisi doğrudur?",
+    soru: "when/else ile yazılmış bir 4'e 1 çoklayıcıda son satır da koşullu bırakılmış:\n\n~~~vhdl\nO <= IN_1 when S = \"00\" else\n     IN_2 when S = \"01\" else\n     IN_3 when S = \"10\" else\n     IN_4 when S = \"11\";\n~~~\n\nBu yazımla ilgili hangisi doğrudur?",
     secenekler: [
       "Kod derlenmez, ~when~ ile bitemez",
       "S tanımsızken (ör. \"X1\") O eski değerini korur, kilitleme oluşur",
@@ -70,7 +70,7 @@ end z;`,
   {
     id: "h5-oncelikli-mux-or", konu: "esz-atamalar", hafta: 5, kaynak: "original", zorluk: 3,
     ref: "Hafta 5, priority_mux örneği", tip: "mcq",
-    soru: "Sunumdaki ~priority_mux~ örneği:\n\n~~~vhdl\noutput <= i3 when i3 = '1' else\n          i2 when i2 = '1' else\n          i1 when i1 = '1' else\n          i0 when i0 = '1' else\n          '0';\n~~~\n\nGirişler sadece '0' ya da '1' aldığında bu devre aslında hangi kapıya eşdeğerdir?",
+    soru: "Bir ~priority_mux~ örneği:\n\n~~~vhdl\noutput <= i3 when i3 = '1' else\n          i2 when i2 = '1' else\n          i1 when i1 = '1' else\n          i0 when i0 = '1' else\n          '0';\n~~~\n\nGirişler sadece '0' ya da '1' aldığında bu devre aslında hangi kapıya eşdeğerdir?",
     secenekler: ["4 girişli AND", "4 girişli OR", "4 girişli XOR", "i3'ü seçen bir tampon"],
     dogru: 1,
     aciklama: "Her dal, seçtiği giriş '1' iken o girişi yani '1'i verir. Hiçbiri '1' değilse '0' verilir. Sonuç, girişlerden en az biri '1' ise '1' olur, yani bir OR kapısıdır. Öncelik yapısını gerçekten kullanmak için seçim sinyalleri ile veri girişleri ayrı olmalıdır (sonraki soru).",
@@ -203,7 +203,7 @@ end z;`,
   {
     id: "h5-kosullu-z", konu: "esz-atamalar", hafta: 5, kaynak: "original", zorluk: 2,
     ref: "Hafta 5, Şartlı sinyal atamaları", tip: "fill",
-    soru: "Sunumdaki şartlı atama:\n\n~~~vhdl\nsinyal_cikis <= sinyal_1 when sinyal_secme = '0'\n           else sinyal_2 when sinyal_secme = '1'\n           else '0';\n~~~\n\n~sinyal_1 = '1'~, ~sinyal_2 = '1'~ ve ~sinyal_secme = 'Z'~ iken sinyal_cikis nedir?",
+    soru: "Şu şartlı atama verilmiş:\n\n~~~vhdl\nsinyal_cikis <= sinyal_1 when sinyal_secme = '0'\n           else sinyal_2 when sinyal_secme = '1'\n           else '0';\n~~~\n\n~sinyal_1 = '1'~, ~sinyal_2 = '1'~ ve ~sinyal_secme = 'Z'~ iken sinyal_cikis nedir?",
     bosluklar: [bit("0")],
     aciklama: "'Z' ne '0' ne de '1''e eşittir, bu yüzden iki koşul da yanlıştır ve son ~else~ dalı '0' verir.",
     dogrulama: {
@@ -228,7 +228,7 @@ end z;`,
   {
     id: "h5-secilmis-x", konu: "esz-atamalar", hafta: 5, kaynak: "derived", zorluk: 2,
     ref: "Hafta 5, Seçilmiş sinyal atama", tip: "fill",
-    soru: "Sunumdaki seçilmiş atama:\n\n~~~vhdl\nwith sinyal_secme select\n  sinyal_sonuc <= sinyal_1 when '0',\n                  sinyal_2 when others;\n~~~\n\n~sinyal_1 = '1'~, ~sinyal_2 = '0'~ ve ~sinyal_secme = 'X'~ iken sinyal_sonuc nedir?",
+    soru: "Şu seçilmiş atama verilmiş:\n\n~~~vhdl\nwith sinyal_secme select\n  sinyal_sonuc <= sinyal_1 when '0',\n                  sinyal_2 when others;\n~~~\n\n~sinyal_1 = '1'~, ~sinyal_2 = '0'~ ve ~sinyal_secme = 'X'~ iken sinyal_sonuc nedir?",
     bosluklar: [bit("0")],
     aciklama: "'X' değeri '0' seçeneğine uymaz, ~others~ dalına düşer ve sinyal_2 = '0' seçilir.",
     dogrulama: {

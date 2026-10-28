@@ -7,15 +7,26 @@ import { href } from "../lib/router";
 import { boslukEtiketi, bosluklariAyir } from "../lib/bosluk";
 import { enUzunSatir, koduAyir, SUTUNA_SIGAN } from "../lib/kodAyir";
 import { sonucCumlesi } from "../lib/sonuc";
+import { bolumId, soruBolumu } from "../dersler/bolumBul";
+import { benzerleriAyikla } from "../../shared/benzerler";
 import type { AnswerResult, Question, SoruDurumlari, SoruIstatistigi, Topic } from "../../shared/api";
 import type { Answer } from "../../shared/grade";
 
-export function QuestionCard({ q, n }: { q: Question; n: number }) {
-  if (q.type === "code" && q.payload.kod) return <KodKarti q={q} n={n} />;
-  return <KapaliKart q={q} n={n} />;
+// dersBagi: kartın başlığında sorunun anlatıldığı ders bölümüne bağlantı
+// (ders sayfasının kendisinde gereksiz olduğu için kapatılır)
+export function QuestionCard({ q, n, dersBagi = true }: { q: Question; n: number; dersBagi?: boolean }) {
+  if (q.type === "code" && q.payload.kod) return <KodKarti q={q} n={n} dersBagi={dersBagi} />;
+  return <KapaliKart q={q} n={n} dersBagi={dersBagi} />;
 }
 
-function Baslik({ q, n }: { q: Question; n: number }) {
+function DersBagi({ q }: { q: Question }) {
+  const b = soruBolumu(q);
+  if (!b) return null;
+  const adres = href({ page: "ders", hafta: b.hafta }) + (b.bolum === null ? "" : `#${bolumId(b.bolum)}`);
+  return <a className="q-ref" href={adres} title="Bu sorunun konusunu derste oku">Derste oku: {b.baslik}</a>;
+}
+
+function Baslik({ q, n, dersBagi }: { q: Question; n: number; dersBagi: boolean }) {
   return (
     <header>
       <span className="q-num">Soru {n}</span>
@@ -23,7 +34,7 @@ function Baslik({ q, n }: { q: Question; n: number }) {
       <span className="tag">H{q.week}</span>
       {q.type === "code" && <span className="tag">Kod</span>}
       <span className="tag" title={`Zorluk ${q.difficulty}/3`}>{"★".repeat(q.difficulty)}{"☆".repeat(3 - q.difficulty)}</span>
-      {q.sourceRef && <span className="q-ref">{q.sourceRef}</span>}
+      {dersBagi && <DersBagi q={q} />}
       {q.oneren && <span className="q-ref">Öneren: <a href={`/profil/${encodeURIComponent(q.oneren)}`}>@{q.oneren}</a></span>}
     </header>
   );
@@ -43,18 +54,18 @@ function SoruMetni({ metin }: { metin: string }) {
   );
 }
 
-function KodKarti({ q, n }: { q: Question; n: number }) {
+function KodKarti({ q, n, dersBagi }: { q: Question; n: number; dersBagi: boolean }) {
   const [dogru, setDogru] = useState<boolean | null>(null);
   return (
     <article className={`question kod kodlu${dogru === null ? "" : dogru ? " correct" : " wrong"}`} data-soru={q.id} id={`soru-${q.id}`}>
-      <Baslik q={q} n={n} />
+      <Baslik q={q} n={n} dersBagi={dersBagi} />
       <div className="q-metin"><Markdown text={q.prompt} terim /></div>
       <KodSorusu id={q.id} bilgi={q.payload.kod!} onSonuc={setDogru} />
     </article>
   );
 }
 
-function KapaliKart({ q, n }: { q: Question; n: number }) {
+function KapaliKart({ q, n, dersBagi }: { q: Question; n: number; dersBagi: boolean }) {
   const [tf, setTf] = useState<boolean | null>(null);
   // choice: şıkkın asıl sırası (sunucuya giden). sira: ekranda gösterilen sıra,
   // soru her açıldığında ve "Tekrar dene"de karışır; şıkkın yeri ezberlenmesin
@@ -118,7 +129,7 @@ function KapaliKart({ q, n }: { q: Question; n: number }) {
 
   return (
     <article className={`question${kodlu ? " kodlu" : ""}${result ? (result.correct ? " correct" : " wrong") : ""}`} data-soru={q.id} id={`soru-${q.id}`}>
-      <Baslik q={q} n={n} />
+      <Baslik q={q} n={n} dersBagi={dersBagi} />
       <SoruMetni metin={metin} />
 
       {q.type === "tf" && (
@@ -316,10 +327,13 @@ export function Questions({ topic, hafta, topics }: { topic?: string; hafta?: nu
     suzgecYaz(s);
   };
 
+  // Aynı bilgiyi soran ikizlerden yalnızca biri listelenir (shared/benzerler.ts)
+  const tekil = useMemo(() => questions && benzerleriAyikla(questions, (id) => durumlar?.[id] !== undefined), [questions, durumlar]);
+
   const gorunen = useMemo(() => {
-    if (!questions) return null;
+    if (!tekil) return null;
     const ara = sade(suzgec.ara.trim());
-    return questions.filter((q) => {
+    return tekil.filter((q) => {
       const d = durumlar?.[q.id];
       if (suzgec.durum === "cozulmemis" && d === "dogru") return false;
       if (suzgec.durum === "yanlis" && d !== "yanlis") return false;
@@ -328,7 +342,7 @@ export function Questions({ topic, hafta, topics }: { topic?: string; hafta?: nu
       if (suzgec.zorluk && q.difficulty !== suzgec.zorluk) return false;
       return !ara || sade(q.id).includes(ara) || sade(q.prompt).includes(ara);
     });
-  }, [questions, durumlar, suzgec]);
+  }, [tekil, durumlar, suzgec]);
 
   // Yanlışlar listesinden gelen #soru-<id> bağlantısı, sorular yüklenince o soruya kaydırır
   useEffect(() => {
@@ -336,7 +350,7 @@ export function Questions({ topic, hafta, topics }: { topic?: string; hafta?: nu
   }, [gorunen !== null]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const suzuluyor = suzgec.durum !== "tumu" || !!suzgec.tur || !!suzgec.zorluk || !!suzgec.ara.trim();
-  const cozulen = questions && durumlar ? questions.filter((q) => durumlar[q.id] === "dogru").length : 0;
+  const cozulen = tekil && durumlar ? tekil.filter((q) => durumlar[q.id] === "dogru").length : 0;
 
   return (
     <div className="questions">
@@ -372,7 +386,7 @@ export function Questions({ topic, hafta, topics }: { topic?: string; hafta?: nu
       ) : (
         <>
           <p className="hint">
-            {suzuluyor ? `${questions.length} sorudan ${gorunen.length} tanesi gösteriliyor. ` : `${questions.length} soru, ${cozulen} tanesini çözdün. `}
+            {suzuluyor ? `${tekil!.length} sorudan ${gorunen.length} tanesi gösteriliyor. ` : `${tekil!.length} soru, ${cozulen} tanesini çözdün. `}
             Cevaplar sunucuda kontrol edilir; kod sorularının benzetimi tarayıcında yapılır.{" "}
             {uye(me) ? (
               "İlerlemen hesabına kaydedilir."

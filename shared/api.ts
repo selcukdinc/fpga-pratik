@@ -44,6 +44,8 @@ export interface Question {
   payload: { choices?: string[]; blanks?: number; kod?: KodBilgisi };
   difficulty: number;
   sourceRef: string | null;
+  // shared/kavramlar.ts'deki kavram; soru kartındaki ders bölümü bağlantısı buna göre bulunur
+  kavram?: string | null;
   // Üye önerisinden gelen ve adı görünsün denmiş sorularda
   oneren?: string;
 }

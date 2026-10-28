@@ -31,12 +31,12 @@ export async function gorunurKosul(db: D1Database): Promise<string> {
 // Soru listelerinde istemciye giden sütunlar; answer bilinçli olarak seçilmez.
 // Sorguda questions q, önerenin users satırı u diye anılmalı.
 export const SORU_SUTUNLARI = `q.id, q.topic_id, q.week, q.type, q.source, q.prompt, q.payload, q.difficulty, q.source_ref,
-                      u.username AS oneren`;
+                      q.kavram, u.username AS oneren`;
 
 export type SoruListeSatiri = {
   id: string; topic_id: string; week: number; type: QuestionType;
   source: "original" | "derived"; prompt: string; payload: string;
-  difficulty: number; source_ref: string | null; oneren: string | null;
+  difficulty: number; source_ref: string | null; kavram: string | null; oneren: string | null;
 };
 
 export const soruyaCevir = (r: SoruListeSatiri): Question => ({
@@ -49,5 +49,6 @@ export const soruyaCevir = (r: SoruListeSatiri): Question => ({
   payload: JSON.parse(r.payload),
   difficulty: r.difficulty,
   sourceRef: r.source_ref,
+  kavram: r.kavram,
   ...(r.oneren ? { oneren: r.oneren } : {}),
 });

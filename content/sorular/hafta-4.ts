@@ -63,7 +63,7 @@ end x;`,
   {
     id: "h4-birler-signal", konu: "veri-nesneleri", hafta: 4, kaynak: "original", zorluk: 3,
     ref: "Hafta 4, SIGNAL vs VARIABLE (count_ones, not_ok)", tip: "mcq",
-    soru: "Sunumdaki hatalı birler sayacında ~temp~ bir sinyaldir ve başta 0'dır:\n\n~~~vhdl\nPROCESS (din)\nBEGIN\n  temp <= 0;\n  FOR i IN 0 TO 7 LOOP\n    IF (din(i) = '1') THEN\n      temp <= temp + 1;\n    END IF;\n  END LOOP;\n  ones <= temp;\nEND PROCESS;\n~~~\n\n~din~ \"10110001\" olduğunda process bir kez çalıştıktan hemen sonra ~temp~ kaç olur?",
+    soru: "Hatalı yazılmış şu birler sayacında ~temp~ bir sinyaldir ve başta 0'dır:\n\n~~~vhdl\nPROCESS (din)\nBEGIN\n  temp <= 0;\n  FOR i IN 0 TO 7 LOOP\n    IF (din(i) = '1') THEN\n      temp <= temp + 1;\n    END IF;\n  END LOOP;\n  ones <= temp;\nEND PROCESS;\n~~~\n\n~din~ \"10110001\" olduğunda process bir kez çalıştıktan hemen sonra ~temp~ kaç olur?",
     secenekler: ["4", "1", "0", "8"],
     dogru: 1,
     aciklama: "Döngüdeki her ~temp <= temp + 1~ temp'in eski değerini (0) okur, yani hepsi ~temp <= 1~ olur. Son yapılan atama geçerlidir: temp = 1, doğru cevap 4 olmasına rağmen. ~ones~ ise temp'in o anki eski değerini (0) alır. Çözüm temp'i variable yapmaktır.",
@@ -95,7 +95,7 @@ end x;`,
   {
     id: "h4-birler-variable", konu: "veri-nesneleri", hafta: 4, kaynak: "original", zorluk: 2,
     ref: "Hafta 4, Hafta 4_2 (birler sayacı)", tip: "fill",
-    soru: "8 bitlik girişteki '1' sayısını variable ile sayan doğru bir devrede (Hafta 4_2) aşağıdaki girişler için çıkış kaç olur?\n\nBoşluk 1: ~\"01011111\"~, Boşluk 2: ~\"10100101\"~",
+    soru: "Aşağıdaki process 8 bitlik ~in_giris~ girdisindeki '1' sayısını bir variable ile sayıyor:\n\n~~~vhdl\nprocess (in_giris)\n  variable artis : integer range 0 to 8;\nbegin\n  artis := 0;\n  for n_i in 0 to 7 loop\n    artis := artis + to_integer(unsigned'(in_giris(n_i) & \"\"));\n  end loop;\n  out_cikis <= artis;\nend process;\n~~~\n\nAşağıdaki girişler için ~out_cikis~ kaç olur?\n\nBoşluk 1: ~\"01011111\"~, Boşluk 2: ~\"10100101\"~",
     bosluklar: [["6"], ["4"]],
     aciklama: "Variable her adımda güncellendiği için döngü gerçekten sayar. ~01011111~ altı, ~10100101~ dört adet 1 içerir.",
     dogrulama: {
@@ -121,9 +121,9 @@ end x;`,
   {
     id: "h4-nand-variable", konu: "veri-nesneleri", hafta: 4, kaynak: "original", zorluk: 2,
     ref: "Hafta 4, Hafta 4_1 (NAND zinciri)", tip: "fill",
-    soru: "Hafta 4_1'deki process'te ~in_giris~ = \"11001110\" iken döngü bittiğinde ~v_nand_sonuc~ kaç olur?\n\n~~~vhdl\nv_nand_sonuc := in_giris(0);\nfor n_i in 1 to 7 loop\n  v_nand_sonuc := not (v_nand_sonuc and in_giris(n_i));\nend loop;\n~~~",
+    soru: "Aşağıdaki process'te ~v_nand_sonuc~ bir variable'dır ve ~in_giris~ 8 bitlik bir girdidir. ~in_giris~ = \"11001110\" iken döngü bittiğinde ~v_nand_sonuc~ kaç olur?\n\n~~~vhdl\nprocess (in_giris)\n  variable v_nand_sonuc : std_logic;\nbegin\n  v_nand_sonuc := in_giris(0);\n  for n_i in 1 to 7 loop\n    v_nand_sonuc := not (v_nand_sonuc and in_giris(n_i));\n  end loop;\n  out_cikis <= v_nand_sonuc;\nend process;\n~~~",
     bosluklar: [bit("1")],
-    aciklama: "Başlangıç in_giris(0) = 0. Adım adım: n=1 → 1, n=2 → 0, n=3 → 1, n=4 → 1, n=5 → 1, n=6 → 0, n=7 → 1. Sunumdaki tablonun son satırı da 1'dir.",
+    aciklama: "Başlangıç in_giris(0) = 0. Adım adım: n=1 → 1, n=2 → 0, n=3 → 1, n=4 → 1, n=5 → 1, n=6 → 0, n=7 → 1.",
     dogrulama: {
       calismali: IEEE + `
 entity tb is end tb;
@@ -143,7 +143,7 @@ end x;`,
   {
     id: "h4-nand-variable-2", konu: "veri-nesneleri", hafta: 4, kaynak: "derived", zorluk: 3,
     ref: "Hafta 4, Hafta 4_1 (NAND zinciri)", tip: "fill",
-    soru: "Aynı process'te ~in_giris~ = \"10110011\" olursa döngü bittiğinde ~v_nand_sonuc~ kaç olur?",
+    soru: "Aşağıdaki process'te ~v_nand_sonuc~ bir variable'dır. ~in_giris~ = \"10110011\" iken döngü bittiğinde ~v_nand_sonuc~ kaç olur?\n\n~~~vhdl\nprocess (in_giris)\n  variable v_nand_sonuc : std_logic;\nbegin\n  v_nand_sonuc := in_giris(0);\n  for n_i in 1 to 7 loop\n    v_nand_sonuc := not (v_nand_sonuc and in_giris(n_i));\n  end loop;\n  out_cikis <= v_nand_sonuc;\nend process;\n~~~",
     bosluklar: [bit("0")],
     aciklama: "Başlangıç in_giris(0) = 1. n=1: not(1·1) = 0; n=2: not(0·0) = 1; n=3: not(1·0) = 1; n=4: not(1·1) = 0; n=5: not(0·1) = 1; n=6: not(1·0) = 1; n=7: not(1·1) = 0.",
     dogrulama: {
@@ -165,9 +165,9 @@ end x;`,
   {
     id: "h4-nand-signal-sabit", konu: "veri-nesneleri", hafta: 4, kaynak: "original", zorluk: 2,
     ref: "Hafta 4, Hafta 4_1 (NAND zinciri)", tip: "tf",
-    soru: "Hafta 4_1'de benzetim process içinde adım adım ilerletildiğinde ~s_nand_sonuc~ sinyalinin okunan değeri döngü boyunca değişmez.",
+    soru: "Aşağıdaki process'te ~s_nand_sonuc~ bir **sinyaldir**. Benzetim process içinde adım adım ilerletildiğinde, döngü boyunca okunan ~s_nand_sonuc~ değeri değişmez.\n\n~~~vhdl\nprocess (in_giris)\nbegin\n  s_nand_sonuc <= in_giris(0);\n  for n_i in 1 to 7 loop\n    s_nand_sonuc <= not (s_nand_sonuc and in_giris(n_i));\n  end loop;\nend process;\n~~~",
     dogru: true,
-    aciklama: "Döngüdeki her ~s_nand_sonuc <= ...~ ataması sadece planlanır; process askıya alınana kadar sinyal eski değerinde kalır. Sunumdaki tabloda s_nand_sonuc sütununun hep aynı kalmasının nedeni budur.",
+    aciklama: "Döngüdeki her ~s_nand_sonuc <= ...~ ataması sadece planlanır; process askıya alınana kadar sinyal eski değerinde kalır. Bu yüzden döngünün her adımı aynı eski değeri okur; aynı işi variable ile yazmak gerekir.",
   },
   {
     id: "h4-variable-disarida", konu: "veri-nesneleri", hafta: 4, kaynak: "original", zorluk: 2,
@@ -345,17 +345,17 @@ end x;`,
   {
     id: "h4-hex-oktal", konu: "veri-tipleri", hafta: 4, kaynak: "original", zorluk: 2,
     ref: "Hafta 4, Çoklu veri nesnesine değer atanması", tip: "mcq",
-    soru: "12 bitlik bir sinyale yapılan ~kelime <= X\"333\";~ ataması aşağıdakilerden hangisiyle aynıdır?",
-    secenekler: ["~kelime <= O\"333\";~", "~kelime <= O\"1463\";~", "~kelime <= \"333\";~", "~kelime <= B\"0011_0011\";~"],
+    soru: "12 bitlik bir sinyale yapılan ~kelime <= X\"2C5\";~ ataması aşağıdakilerden hangisiyle aynıdır?",
+    secenekler: ["~kelime <= O\"2C5\";~", "~kelime <= O\"1305\";~", "~kelime <= \"2C5\";~", "~kelime <= B\"0010_1100\";~"],
     dogru: 1,
-    aciklama: "X\"333\" = 0011 0011 0011. Bunu üçerli gruplarsak 001 100 110 011 = O\"1463\". B\"0011_0011\" sadece 8 bittir.",
+    aciklama: "X\"2C5\" = 0010 1100 0101. Bunu üçerli gruplarsak 001 011 000 101 = O\"1305\". O\"2C5\" geçersizdir (sekizlikte C yok), B\"0010_1100\" ise sadece 8 bittir.",
     dogrulama: {
       calismali: IEEE + `
 entity tb is end tb;
 architecture x of tb is
-  constant k1 : bit_vector(11 downto 0) := X"333";
-  constant k2 : bit_vector(11 downto 0) := O"1463";
-  constant k3 : bit_vector(11 downto 0) := "001100110011";
+  constant k1 : bit_vector(11 downto 0) := X"2C5";
+  constant k2 : bit_vector(11 downto 0) := O"1305";
+  constant k3 : bit_vector(11 downto 0) := "001011000101";
 begin
   process begin
     assert k1 = k2 and k2 = k3 severity failure;
@@ -367,16 +367,16 @@ end x;`,
   {
     id: "h4-sayi-tabani", konu: "veri-tipleri", hafta: 4, kaynak: "original", zorluk: 2,
     ref: "Hafta 4, Sayı gösterimleri", tip: "fill",
-    soru: "Aşağıdaki değerlerin onluk karşılığı nedir?\n\nBoşluk 1: ~X\"2F\"~, Boşluk 2: ~O\"57\"~",
-    bosluklar: [["47"], ["47"]],
-    aciklama: "X\"2F\" = 2·16 + 15 = 47. O\"57\" = 5·8 + 7 = 47. İkisi de ikilik olarak 101111'dir.",
+    soru: "Aşağıdaki değerlerin onluk karşılığı nedir?\n\nBoşluk 1: ~X\"3A\"~, Boşluk 2: ~O\"72\"~",
+    bosluklar: [["58"], ["58"]],
+    aciklama: "X\"3A\" = 3·16 + 10 = 58. O\"72\" = 7·8 + 2 = 58. İkisi de ikilik olarak 111010'dur.",
     dogrulama: {
       calismali: IEEE + `
 entity tb is end tb;
 architecture x of tb is begin
   process begin
-    assert to_integer(unsigned(std_logic_vector'(X"2F"))) = 47 severity failure;
-    assert to_integer(unsigned(std_logic_vector'(O"57"))) = 47 severity failure;
+    assert to_integer(unsigned(std_logic_vector'(X"3A"))) = 58 severity failure;
+    assert to_integer(unsigned(std_logic_vector'(O"72"))) = 58 severity failure;
     wait;
   end process;
 end x;`,
@@ -385,17 +385,17 @@ end x;`,
   {
     id: "h4-alt-cizgi", konu: "veri-tipleri", hafta: 4, kaynak: "derived", zorluk: 2,
     ref: "Hafta 4, Sayı gösterimleri", tip: "tf",
-    soru: "~B\"1010_0101\"~ ile ~\"10100101\"~ aynı değerdir; alt çizgi sadece okunabilirlik içindir.",
+    soru: "~B\"1100_0011\"~ ile ~\"11000011\"~ aynı değerdir; alt çizgi sadece okunabilirlik içindir.",
     dogru: true,
-    aciklama: "Taban belirtilen bit dizgilerinde (B, O, X) alt çizgi okunabilirlik için kullanılabilir ve değeri etkilemez. Tabansız ~\"1010_0101\"~ yazımında ise alt çizgi kullanılamaz.",
+    aciklama: "Taban belirtilen bit dizgilerinde (B, O, X) alt çizgi okunabilirlik için kullanılabilir ve değeri etkilemez. Tabansız ~\"1100_0011\"~ yazımında ise alt çizgi kullanılamaz.",
     dogrulama: {
       calismali: IEEE + `
 entity tb is end tb;
 architecture x of tb is
-  constant a : bit_vector(7 downto 0) := B"1010_0101";
+  constant a : bit_vector(7 downto 0) := B"1100_0011";
 begin
   process begin
-    assert a = "10100101" severity failure;
+    assert a = "11000011" severity failure;
     wait;
   end process;
 end x;`,
@@ -406,7 +406,7 @@ end x;`,
     ref: "Hafta 4, SIGNED ve UNSIGNED", tip: "fill",
     soru: "4 bitlik değerlerin onluk karşılığı nedir?\n\nBoşluk 1: ~signed(\"1010\")~, Boşluk 2: ~unsigned(\"1010\")~, Boşluk 3: ~signed(\"1101\")~",
     bosluklar: [["-6"], ["10"], ["-3"]],
-    aciklama: "Signed değerler ikiye tümleyendir. 1010 → tersi 0101, +1 = 0110 = 6, yani -6. 1101 → tersi 0010, +1 = 0011 = 3, yani -3. Dikkat: sunumdaki bir slaytta \"1101\" için 3 yazıyor; doğrusu -3'tür.",
+    aciklama: "Signed değerler ikiye tümleyendir. 1010 → tersi 0101, +1 = 0110 = 6, yani -6. 1101 → tersi 0010, +1 = 0011 = 3, yani -3. Dikkat: ~signed~ olarak \"1101\" 13 ya da 3 değil, -3'tür.",
     dogrulama: {
       calismali: IEEE + `
 entity tb is end tb;
@@ -423,7 +423,7 @@ end x;`,
   {
     id: "h4-signed-karsilastirma", konu: "veri-tipleri", hafta: 4, kaynak: "original", zorluk: 2,
     ref: "Hafta 4, Hafta 4_4", tip: "mcq",
-    soru: "Hafta 4_4'te ~a1~ ve ~b1~ ~signed(3 downto 0)~, ~a2~ ve ~b2~ ~unsigned(3 downto 0)~ tipindedir. ~a1 = a2 = \"1010\"~ ve ~b1 = b2 = \"0101\"~ iken çıkışlar ne olur?\n\n~~~vhdl\nc <= (a1 > b1);\nd <= (a2 > b2);\n~~~",
+    soru: "Bir devrede ~a1~ ve ~b1~ ~signed(3 downto 0)~, ~a2~ ve ~b2~ ~unsigned(3 downto 0)~ tipindedir. ~a1 = a2 = \"1010\"~ ve ~b1 = b2 = \"0101\"~ iken çıkışlar ne olur?\n\n~~~vhdl\nc <= (a1 > b1);\nd <= (a2 > b2);\n~~~",
     secenekler: ["c = true, d = true", "c = false, d = true", "c = true, d = false", "c = false, d = false"],
     dogru: 1,
     aciklama: "Aynı bitler farklı tiplerde farklı sayıdır. Signed: -6 > 5 yanlış, c = false. Unsigned: 10 > 5 doğru, d = true.",
@@ -452,7 +452,7 @@ end x;`,
     ref: "Hafta 4, Signed ve unsigned ile izin verilen işlemler", tip: "tf",
     soru: "~ieee.numeric_std~ paketi kullanıldığında iki ~unsigned~ sinyal arasında ~and~ işlemi yapılabilir.",
     dogru: true,
-    aciklama: "~numeric_std~, ~signed~ ve ~unsigned~ için mantıksal operatörleri de tanımlar. Sunumdaki \"signed/unsigned ile AND yasal değil\" örneği eski ~std_logic_arith~ paketi içindir. Ders ~numeric_std~ kullandığı için bu işlem geçerlidir.",
+    aciklama: "~numeric_std~, ~signed~ ve ~unsigned~ için mantıksal operatörleri de tanımlar. Eski kaynaklardaki \"signed/unsigned ile AND yasal değil\" uyarısı ~std_logic_arith~ paketi içindir. Ders ~numeric_std~ kullandığı için bu işlem geçerlidir.",
     dogrulama: {
       calismali: IEEE + `
 entity tb is end tb;
@@ -526,7 +526,7 @@ end x;`,
   {
     id: "h4-bit-vektor-hilesi", konu: "veri-tipleri", hafta: 4, kaynak: "original", zorluk: 3,
     ref: "Hafta 4, Hafta 4_2", tip: "mcq",
-    soru: "Hafta 4_2'deki ~artis := artis + to_integer(unsigned'(in_giris(n_i) & \"\"));~ satırında ~& \"\"~ ne işe yarar?",
+    soru: "Bir birler sayacındaki ~artis := artis + to_integer(unsigned'(in_giris(n_i) & \"\"));~ satırında ~& \"\"~ ne işe yarar? (~in_giris~ bir ~std_logic_vector~, ~in_giris(n_i)~ ise tek bir ~std_logic~ bitidir.)",
     secenekler: [
       "Bitin değerini tersler",
       "Biti 1 elemanlı bir vektöre çevirir",
@@ -612,7 +612,7 @@ end x;`,
   {
     id: "h4-aralik-disi", konu: "veri-tipleri", hafta: 4, kaynak: "original", zorluk: 2,
     ref: "Hafta 4, Hafta 4_6", tip: "mcq",
-    soru: "Hafta 4_6'da ~in_giris_1 : in integer range 0 to 15~ tanımlı. Davranışsal simülasyonda bu porta 20 değeri verilirse ne olur?",
+    soru: "Bir entity'de ~in_giris_1 : in integer range 0 to 15~ portu tanımlı. Davranışsal simülasyonda bu porta 20 değeri verilirse ne olur?",
     secenekler: [
       "Değer 4 bite kırpılır, 4 olur",
       "Simülasyon \"aralık dışı\" hatasıyla durur",
@@ -640,7 +640,7 @@ end x;`,
     ref: "Hafta 4, Hafta 4_6", tip: "fill",
     soru: "~in_giris_1 : integer range 0 to 15~ ve ~in_giris_2 : integer range 0 to 31~ için ~out_cikis_1 <= in_giris_1 * in_giris_2;~ yazılıyor. Simülasyonun hiçbir girişte aralık hatası vermemesi için ~out_cikis_1~'in aralığının üst sınırı **en az** kaç olmalıdır?",
     bosluklar: [["465"]],
-    aciklama: "En büyük çarpım 15 · 31 = 465'tir. Sunumdaki ~range 0 to 511~ bu yüzden yeterlidir (9 bit). Örneğin ~0 to 255~ olsaydı büyük girişlerde simülasyon hata verirdi.",
+    aciklama: "En büyük çarpım 15 · 31 = 465'tir. ~range 0 to 511~ bu yüzden yeterlidir (9 bit). Örneğin ~0 to 255~ olsaydı büyük girişlerde simülasyon hata verirdi.",
   },
   {
     id: "h4-dizi-atama", konu: "veri-tipleri", hafta: 4, kaynak: "original", zorluk: 3,
@@ -698,7 +698,7 @@ end z;`,
   {
     id: "h4-shift-and-add", konu: "veri-tipleri", hafta: 4, kaynak: "original", zorluk: 3,
     ref: "Hafta 4, Hafta 4_7 (shift_and_add)", tip: "fill",
-    soru: "Hafta 4_7'deki ~shift_and_add~ devresinde ~SHIFT_AMOUNT = 2~ ve ~NEGATIVE_VAL = -5~ alınıyor. Giriş önce 2 bit sağa kaydırılıyor (boşalan yerlere 0), sonra -5 ile işaretli olarak toplanıyor. Çıkışlar 16 bitlik onaltılık olarak nedir?\n\nBoşluk 1: ~input_data = X\"0050\"~, Boşluk 2: ~input_data = X\"0004\"~",
+    soru: "Bir ~shift_and_add~ devresinde ~SHIFT_AMOUNT = 2~ ve ~NEGATIVE_VAL = -5~ sabitleri var. 16 bitlik giriş önce 2 bit sağa kaydırılıyor (boşalan yerlere 0), sonra -5 ile işaretli olarak toplanıyor. Çıkışlar 16 bitlik onaltılık olarak nedir?\n\nBoşluk 1: ~input_data = X\"0050\"~, Boşluk 2: ~input_data = X\"0004\"~",
     bosluklar: [["000F", "x\"000f\""], ["FFFC", "x\"fffc\""]],
     aciklama: "X\"0050\" = 80 → sağa 2 bit = 20 → 20 - 5 = 15 = X\"000F\". X\"0004\" = 4 → 1 → 1 - 5 = -4; 16 bitlik ikiye tümleyende -4 = X\"FFFC\".",
     dogrulama: {
@@ -724,7 +724,7 @@ end z;`,
   {
     id: "h4-hafta4-3-d", konu: "veri-tipleri", hafta: 4, kaynak: "original", zorluk: 2,
     ref: "Hafta 4, Hafta4_3", tip: "fill",
-    soru: "Hafta4_3 devresi:\n\n~~~vhdl\nF <= B(0) and A;\nG <= B(1) or F;\nD <= C(2) & G & C(0);\n~~~\n\nTablodaki şu satırlar için D (3 bit) nedir?\n\nBoşluk 1: A = 1, B = \"10\", C = \"010\"\n\nBoşluk 2: A = 1, B = \"00\", C = \"011\"",
+    soru: "Şu devrede A tek bit, B 2 bit, C ve D 3 bitliktir:\n\n~~~vhdl\nF <= B(0) and A;\nG <= B(1) or F;\nD <= C(2) & G & C(0);\n~~~\n\nŞu girişler için D nedir?\n\nBoşluk 1: A = 1, B = \"10\", C = \"010\"\n\nBoşluk 2: A = 1, B = \"00\", C = \"011\"",
     bosluklar: [vektor("010"), vektor("001")],
     aciklama: "1. satır: F = 0 and 1 = 0, G = 1 or 0 = 1, D = C(2) & G & C(0) = 0 & 1 & 0 = 010. 2. satır: F = 0, G = 0 or 0 = 0, D = 0 & 0 & 1 = 001.",
     dogrulama: {
@@ -752,7 +752,7 @@ end z;`,
   {
     id: "h4-multiple-driven", konu: "veri-tipleri", hafta: 4, kaynak: "original", zorluk: 3,
     ref: "Hafta4_3 (E is multiple driven)", tip: "mcq",
-    soru: "Hafta4_3'te E ~bit_vector(2 downto 0)~ tipinde bir çıkıştır ve şu iki eşzamanlı atama yapılmıştır:\n\n~~~vhdl\nE <= not H;\nE(2) <= '0';\n~~~\n\nAraç \"E is multiple driven\" hatası verir. Neden?",
+    soru: "Bir devrede E ~bit_vector(2 downto 0)~ tipinde bir çıkıştır ve şu iki eşzamanlı atama yapılmıştır:\n\n~~~vhdl\nE <= not H;\nE(2) <= '0';\n~~~\n\nAraç \"E is multiple driven\" hatası verir. Neden?",
     secenekler: [
       "~not~ operatörü ~bit_vector~ için tanımlı değildir",
       "E(2) iki ayrı atamayla sürülüyor, BIT çözümlenmez",

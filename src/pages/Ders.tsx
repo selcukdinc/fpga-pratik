@@ -7,11 +7,11 @@ import { href } from "../lib/router";
 import { Markdown, inline } from "../components/Markdown";
 import { MiniSim } from "../components/MiniSim";
 import { QuestionCard } from "./Questions";
+import { bolumId } from "../dersler/bolumBul";
 import { DERSLER, dersBul } from "../dersler";
 import type { Ders as DersVerisi } from "../dersler/tipler";
 import type { Question } from "../../shared/api";
 
-const bolumId = (i: number) => `bolum-${i + 1}`;
 
 function DersListesi() {
   return (
@@ -64,7 +64,7 @@ function KendiniDene({ ids, sorular }: { ids: string[]; sorular: SoruDurumu }) {
     <div className="kendini-dene">
       <h4>Kendini dene</h4>
       {liste.map((q, i) => (
-        <QuestionCard key={q.id} q={q} n={i + 1} />
+        <QuestionCard key={q.id} q={q} n={i + 1} dersBagi={false} />
       ))}
     </div>
   );
@@ -82,7 +82,7 @@ function KonuSonuTesti({ ders, sorular: hepsi }: { ders: DersVerisi; sorular: So
         <a href={href({ page: "sorular", hafta: ders.hafta })}>{ders.hafta}. haftanın tüm sorularına</a> bak.
       </p>
       {sorular.map((q, i) => (
-        <QuestionCard key={q.id} q={q} n={i + 1} />
+        <QuestionCard key={q.id} q={q} n={i + 1} dersBagi={false} />
       ))}
     </>
   );

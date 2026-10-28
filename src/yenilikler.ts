@@ -14,6 +14,17 @@ export interface Yenilik {
 
 export const YENILIKLER: Yenilik[] = [
   {
+    pr: 32,
+    tarih: "2026-10-28",
+    baslik: "Sorular kendi başına anlaşılır oldu",
+    maddeler: [
+      "\"Aynı kodda\", \"Hafta 4_1'de\" gibi başka bir soruya ya da slayta dayanan sorular artık gereken kodu ve bilgiyi kendi içinde veriyor. NAND zinciri sorularında kod görünüyor, `y`'nin sinyal olduğu yazıyor.",
+      "Soru kartının köşesindeki slayt adı yerine **Derste oku** bağlantısı var: sorunun konusunun anlatıldığı ders bölümüne götürüyor.",
+      "Aynı bilgiyi soran ikiz sorulardan soru havuzunda yalnızca biri görünüyor; daha önce birini çözdüysen o kalıyor.",
+      "Derste çözümlü örnek olarak gösterilen değerler (ör. `7 mod (-3)`, `X\"333\"`) artık sorularda sorulmuyor; sorular başka sayılarla geliyor.",
+    ],
+  },
+  {
     pr: 31,
     tarih: "2026-10-28",
     baslik: "Kod editöründe girinti düzeltildi",
