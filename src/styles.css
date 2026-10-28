@@ -1124,3 +1124,22 @@ body.boyutlaniyor-dikey { cursor: ns-resize; user-select: none; }
 .bagli-dugme { background: none; border: none; padding: 0; color: var(--muted); text-decoration: underline; cursor: pointer; font: inherit; }
 .tag-cozuldu { color: var(--green); border-color: currentColor; }
 .tag-yanlisti { color: var(--error); border-color: currentColor; }
+
+/* F4: tekrar ayarları ve 30 günlük takvim */
+.tekrar-ayarlar { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border-soft); }
+.tekrar-ayarlar .secici-satir { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.tekrar-yanlis { font-size: 13px; display: inline-flex; align-items: center; gap: 4px; }
+.tekrar-etiket p { margin: 0 0 2px; }
+.tekrar-etiket .hint { font-size: 11.5px; }
+.tekrar-takvim h3 { font-size: 13px; margin: 10px 0 6px; }
+.takvim-izgara { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; max-width: 520px; }
+.takvim-baslik { font-size: 11px; color: var(--muted); text-align: center; }
+.takvim-gun { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 40px; padding: 2px; font-size: 11px; border: 1px solid var(--border-soft); border-radius: 4px; background: none; color: var(--muted); }
+.takvim-gun:disabled { cursor: default; opacity: 0.7; }
+.takvim-gun.dolu { border-color: var(--btn-primary-border); background: var(--msg-hover); color: var(--text); cursor: pointer; }
+.takvim-gun strong { font-size: 14px; color: var(--link); }
+.takvim-gun[aria-pressed="true"] { outline: 2px solid var(--link); outline-offset: -1px; }
+.takvim-liste h4 { font-size: 13px; margin: 10px 0 4px; }
+.takvim-liste ul { margin: 0; padding-left: 18px; font-size: 13px; }
+.takvim-liste li { margin: 3px 0; }
+.tekrar-sifirla { margin-top: 24px; font-size: 12px; }

@@ -9,6 +9,7 @@ import {
 import { AVATAR_IDLERI, AVATAR_ZEMINLERI, rastgeleAvatar } from "../shared/avatarlar";
 import { duzenleriDenetle } from "../shared/duzen";
 import { ilerlemeDuzelt } from "../shared/dersIlerleme";
+import { gunlukGecerli } from "../shared/tekrar";
 import { olcekGecerli } from "../shared/gorunum";
 import type { ApiHata } from "../shared/api";
 import { dortHaneliKod, epostaAcik, kodGonder } from "./eposta";
@@ -335,6 +336,14 @@ ayarlar.put("/gorunum", async (c) => {
   if (b.yaziOlcek !== null && !olcekGecerli(b.yaziOlcek)) return hata(c, 400, "Geçersiz metin boyutu.");
   const me = c.get("me")!;
   await c.env.DB.prepare("UPDATE users SET yazi_olcek = ? WHERE id = ?").bind(b.yaziOlcek, me.id).run();
+  return c.json(await loadUser(c.env.DB, me.id));
+});
+
+ayarlar.put("/gunluk-tekrar", async (c) => {
+  const b = await govde<{ gunlukTekrar: number | null }>(c);
+  if (b.gunlukTekrar !== null && !gunlukGecerli(b.gunlukTekrar)) return hata(c, 400, "Geçersiz günlük tekrar sayısı.");
+  const me = c.get("me")!;
+  await c.env.DB.prepare("UPDATE users SET gunluk_tekrar = ? WHERE id = ?").bind(b.gunlukTekrar, me.id).run();
   return c.json(await loadUser(c.env.DB, me.id));
 });
 
