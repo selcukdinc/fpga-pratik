@@ -14,6 +14,17 @@ export interface Yenilik {
 
 export const YENILIKLER: Yenilik[] = [
   {
+    pr: 33,
+    tarih: "2026-10-28",
+    baslik: "Derslerde ilerlemen kaydediliyor",
+    maddeler: [
+      "Her ders bölümünün sonunda **Bu bölümü bitirdim** düğmesi var. Bitirdiğin bölümler içindekiler listesinde işaretleniyor; yanlışlıkla bastıysan **Geri al** ile kaldırabilirsin.",
+      "Dersler sayfasında her haftanın kaç bölümünü bitirdiğin görünüyor ve en son okuduğun bölüm **Kaldığın yer** kutusunda duruyor; **Devam et** ile oraya dönüyorsun. İstediğin bölümü içindekilerden yeniden açabilirsin.",
+      "Giriş yapmadan da çalışır: ilerlemen bu tarayıcıda saklanır, hesabına giriş yapınca hesabına taşınır.",
+      "Soru havuzu artık açılınca çözmediğin soruları gösteriyor. Derste, tekrarda ya da havuzda çözdüğün sorular gizli; **Tümü**'ne basınca \"✓ Çözdün\" işaretiyle görünüyor. Derslerdeki sorularda da aynı işaret var.",
+    ],
+  },
+  {
     pr: 32,
     tarih: "2026-10-28",
     baslik: "Sorular kendi başına anlaşılır oldu",

@@ -1108,3 +1108,19 @@ body.boyutlaniyor-dikey { cursor: ns-resize; user-select: none; }
 .yeni-isareti { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; font-weight: 600; color: var(--green); text-decoration: none; }
 .yeni-isareti:hover { text-decoration: underline; }
 .yeni-isareti .sayi-rozeti { background: var(--green); margin-left: 0; }
+
+/* Ders ilerlemesi (F5) */
+.ders-ilerleme { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); margin-top: 4px; }
+.ders-ilerleme-cubuk { flex: 0 0 120px; height: 6px; border-radius: 3px; background: var(--border-soft); overflow: hidden; }
+.ders-ilerleme-cubuk > span { display: block; height: 100%; background: var(--green); }
+.ders-devam { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 10px 14px; margin-bottom: 10px; border: 1px solid var(--btn-primary-border); border-radius: 4px; background: var(--panel); color: var(--text); text-decoration: none; }
+.ders-devam:hover { background: var(--msg-hover); }
+.ders-devam .ders-hafta { flex-basis: 100%; }
+.ders-devam-ok { margin-left: auto; color: var(--link, inherit); }
+.ders-icindekiler li.bitti > a { color: var(--muted); }
+.bitti-isareti { color: var(--green); font-weight: 700; }
+.bolum-sonu { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: 14px; padding-top: 10px; border-top: 1px dashed var(--border-soft); }
+.bolum-sonu-durum { color: var(--green); font-weight: 600; }
+.bagli-dugme { background: none; border: none; padding: 0; color: var(--muted); text-decoration: underline; cursor: pointer; font: inherit; }
+.tag-cozuldu { color: var(--green); border-color: currentColor; }
+.tag-yanlisti { color: var(--error); border-color: currentColor; }

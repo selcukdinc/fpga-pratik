@@ -8,6 +8,7 @@ import {
 } from "../shared/hesap";
 import { AVATAR_IDLERI, AVATAR_ZEMINLERI, rastgeleAvatar } from "../shared/avatarlar";
 import { duzenleriDenetle } from "../shared/duzen";
+import { ilerlemeDuzelt } from "../shared/dersIlerleme";
 import { olcekGecerli } from "../shared/gorunum";
 import type { ApiHata } from "../shared/api";
 import { dortHaneliKod, epostaAcik, kodGonder } from "./eposta";
@@ -356,6 +357,25 @@ ayarlar.put("/duzenler", async (c) => {
   if ("hata" in d) return hata(c, 400, d.hata);
   await c.env.DB.prepare("UPDATE users SET sim_duzenleri = ? WHERE id = ?").bind(JSON.stringify(d.duzenler), c.get("me")!.id).run();
   return c.json(d.duzenler);
+});
+
+ayarlar.get("/ders-ilerleme", async (c) => {
+  const r = await c.env.DB.prepare("SELECT ders_ilerleme FROM users WHERE id = ?").bind(c.get("me")!.id)
+    .first<{ ders_ilerleme: string | null }>();
+  let kayitli: unknown = null;
+  try {
+    kayitli = JSON.parse(r?.ders_ilerleme ?? "null");
+  } catch {
+    // bozuk kayıt boş sayılır
+  }
+  return c.json(ilerlemeDuzelt(kayitli));
+});
+
+ayarlar.put("/ders-ilerleme", async (c) => {
+  const b = await govde<{ ilerleme: unknown }>(c);
+  const i = ilerlemeDuzelt(b.ilerleme);
+  await c.env.DB.prepare("UPDATE users SET ders_ilerleme = ? WHERE id = ?").bind(JSON.stringify(i), c.get("me")!.id).run();
+  return c.json(i);
 });
 
 ayarlar.post("/parola", async (c) => {

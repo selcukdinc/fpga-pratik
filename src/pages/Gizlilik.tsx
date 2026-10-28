@@ -53,7 +53,8 @@ export function Gizlilik() {
         Sitede reklam, analitik ya da üçüncü taraf takip çerezi yoktur. Kullanılan tek çerez oturum çerezidir ve
         sitenin çalışması için zorunludur. Tema tercihin, simülasyon alanındaki dosyaların ve pencere düzenin yalnızca
         senin tarayıcında (localStorage) durur, sunucuya gönderilmez. Giriş yapmışken adıyla kaydettiğin pencere
-        düzenleri (yalnızca panellerin yeri ve boyutu) hesabında saklanır.
+        düzenleri (yalnızca panellerin yeri ve boyutu) hesabında saklanır. Derslerde bitirdiğin bölümler ve kaldığın
+        yer misafirken tarayıcında, giriş yapmışken hesabında tutulur.
       </p>
 
       <h3>Veriler nerede duruyor, kimlerle paylaşılıyor?</h3>

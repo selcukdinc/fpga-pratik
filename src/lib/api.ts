@@ -1,5 +1,6 @@
 import type { AnswerResult, ApiHata, IlerlemeAyrintisi, Me, Profil, Question, SoruDurumlari, Topic, TopicProgress } from "../../shared/api";
 import type { KayitliDuzen } from "../../shared/duzen";
+import type { DersIlerleme } from "../../shared/dersIlerleme";
 import type { Answer } from "../../shared/grade";
 import type { KodSonucu, Sinama } from "../../shared/kod";
 import type { Okunmamis, Oneri, OneriGirdi, PanelOneri, Yazisma, YazismaOzeti } from "../../shared/sosyal";
@@ -104,6 +105,8 @@ export const api = {
     gorunum: (yaziOlcek: number | null) => post<Me>("/hesap/ayarlar/gorunum", { yaziOlcek }, "PUT"),
     duzenler: () => get<KayitliDuzen[]>("/hesap/ayarlar/duzenler"),
     duzenleriKaydet: (duzenler: KayitliDuzen[]) => post<KayitliDuzen[]>("/hesap/ayarlar/duzenler", { duzenler }, "PUT"),
+    dersIlerleme: () => get<DersIlerleme>("/hesap/ayarlar/ders-ilerleme"),
+    dersIlerlemeKaydet: (ilerleme: DersIlerleme) => post<DersIlerleme>("/hesap/ayarlar/ders-ilerleme", { ilerleme }, "PUT"),
   },
   yonetim: {
     ozet: () => get<PanelOzet>("/yonetim/ozet"),

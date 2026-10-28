@@ -13,10 +13,18 @@ import type { AnswerResult, Question, SoruDurumlari, SoruIstatistigi, Topic } fr
 import type { Answer } from "../../shared/grade";
 
 // dersBagi: kartın başlığında sorunun anlatıldığı ders bölümüne bağlantı
-// (ders sayfasının kendisinde gereksiz olduğu için kapatılır)
-export function QuestionCard({ q, n, dersBagi = true }: { q: Question; n: number; dersBagi?: boolean }) {
-  if (q.type === "code" && q.payload.kod) return <KodKarti q={q} n={n} dersBagi={dersBagi} />;
-  return <KapaliKart q={q} n={n} dersBagi={dersBagi} />;
+// (ders sayfasının kendisinde gereksiz olduğu için kapatılır).
+// durum: kişinin bu soruyu daha önce (havuzda, derste ya da tekrarda) çözüp çözmediği
+interface KartOzellikleri {
+  q: Question;
+  n: number;
+  dersBagi?: boolean;
+  durum?: "dogru" | "yanlis";
+}
+
+export function QuestionCard({ q, n, dersBagi = true, durum }: KartOzellikleri) {
+  if (q.type === "code" && q.payload.kod) return <KodKarti q={q} n={n} dersBagi={dersBagi} durum={durum} />;
+  return <KapaliKart q={q} n={n} dersBagi={dersBagi} durum={durum} />;
 }
 
 function DersBagi({ q }: { q: Question }) {
@@ -26,13 +34,15 @@ function DersBagi({ q }: { q: Question }) {
   return <a className="q-ref" href={adres} title="Bu sorunun konusunu derste oku">Derste oku: {b.baslik}</a>;
 }
 
-function Baslik({ q, n, dersBagi }: { q: Question; n: number; dersBagi: boolean }) {
+function Baslik({ q, n, dersBagi, durum }: Required<Omit<KartOzellikleri, "durum">> & Pick<KartOzellikleri, "durum">) {
   return (
     <header>
       <span className="q-num">Soru {n}</span>
       <span className={`tag tag-${q.source}`}>{q.source === "original" ? "Orijinal" : "Türetilmiş"}</span>
       <span className="tag">H{q.week}</span>
       {q.type === "code" && <span className="tag">Kod</span>}
+      {durum === "dogru" && <span className="tag tag-cozuldu" title="Bu soruyu daha önce doğru çözdün">✓ Çözdün</span>}
+      {durum === "yanlis" && <span className="tag tag-yanlisti" title="Bu soruyu denedin ama henüz doğru çözmedin">Yanlış yapmıştın</span>}
       <span className="tag" title={`Zorluk ${q.difficulty}/3`}>{"★".repeat(q.difficulty)}{"☆".repeat(3 - q.difficulty)}</span>
       {dersBagi && <DersBagi q={q} />}
       {q.oneren && <span className="q-ref">Öneren: <a href={`/profil/${encodeURIComponent(q.oneren)}`}>@{q.oneren}</a></span>}
@@ -54,18 +64,18 @@ function SoruMetni({ metin }: { metin: string }) {
   );
 }
 
-function KodKarti({ q, n, dersBagi }: { q: Question; n: number; dersBagi: boolean }) {
+function KodKarti({ q, n, dersBagi, durum }: Required<Omit<KartOzellikleri, "durum">> & Pick<KartOzellikleri, "durum">) {
   const [dogru, setDogru] = useState<boolean | null>(null);
   return (
     <article className={`question kod kodlu${dogru === null ? "" : dogru ? " correct" : " wrong"}`} data-soru={q.id} id={`soru-${q.id}`}>
-      <Baslik q={q} n={n} dersBagi={dersBagi} />
+      <Baslik q={q} n={n} dersBagi={dersBagi} durum={durum} />
       <div className="q-metin"><Markdown text={q.prompt} terim /></div>
       <KodSorusu id={q.id} bilgi={q.payload.kod!} onSonuc={setDogru} />
     </article>
   );
 }
 
-function KapaliKart({ q, n, dersBagi }: { q: Question; n: number; dersBagi: boolean }) {
+function KapaliKart({ q, n, dersBagi, durum }: Required<Omit<KartOzellikleri, "durum">> & Pick<KartOzellikleri, "durum">) {
   const [tf, setTf] = useState<boolean | null>(null);
   // choice: şıkkın asıl sırası (sunucuya giden). sira: ekranda gösterilen sıra,
   // soru her açıldığında ve "Tekrar dene"de karışır; şıkkın yeri ezberlenmesin
@@ -129,7 +139,7 @@ function KapaliKart({ q, n, dersBagi }: { q: Question; n: number; dersBagi: bool
 
   return (
     <article className={`question${kodlu ? " kodlu" : ""}${result ? (result.correct ? " correct" : " wrong") : ""}`} data-soru={q.id} id={`soru-${q.id}`}>
-      <Baslik q={q} n={n} dersBagi={dersBagi} />
+      <Baslik q={q} n={n} dersBagi={dersBagi} durum={durum} />
       <SoruMetni metin={metin} />
 
       {q.type === "tf" && (
@@ -270,7 +280,9 @@ function KonuSecici({ topics, topic, hafta }: { topics: Topic[]; topic?: string;
 }
 
 type Durum = "tumu" | "cozulmemis" | "yanlis" | "dogru";
-const DURUMLAR: [Durum, string][] = [["tumu", "Tümü"], ["cozulmemis", "Çözmediklerim"], ["yanlis", "Yanlışlarım"], ["dogru", "Doğrularım"]];
+const DURUMLAR: [Durum, string][] = [["cozulmemis", "Çözmediklerim"], ["tumu", "Tümü"], ["yanlis", "Yanlışlarım"], ["dogru", "Doğrularım"]];
+// Havuz açılınca çözülen sorular gizlenir; derste ya da tekrarda çözülenler de sayılır
+const VARSAYILAN_DURUM: Durum = "cozulmemis";
 const TURLER: [string, string][] = [["", "Tüm türler"], ["tf", "Doğru/Yanlış"], ["mcq", "Çoktan seçmeli"], ["fill", "Boşluk doldurma"], ["code", "Kod"]];
 
 interface Suzgec {
@@ -285,7 +297,7 @@ function suzgecOku(): Suzgec {
   const durum = p.get("durum") as Durum;
   const zorluk = Number(p.get("zorluk"));
   return {
-    durum: DURUMLAR.some(([d]) => d === durum) ? durum : "tumu",
+    durum: DURUMLAR.some(([d]) => d === durum) ? durum : VARSAYILAN_DURUM,
     tur: TURLER.some(([t]) => t === p.get("tur")) ? p.get("tur")! : "",
     zorluk: [1, 2, 3].includes(zorluk) ? zorluk : 0,
     ara: p.get("ara") ?? "",
@@ -296,7 +308,7 @@ function suzgecOku(): Suzgec {
 function suzgecYaz(s: Suzgec) {
   const p = new URLSearchParams(location.search);
   for (const k of ["durum", "tur", "zorluk", "ara"]) p.delete(k);
-  if (s.durum !== "tumu") p.set("durum", s.durum);
+  if (s.durum !== VARSAYILAN_DURUM) p.set("durum", s.durum);
   if (s.tur) p.set("tur", s.tur);
   if (s.zorluk) p.set("zorluk", String(s.zorluk));
   if (s.ara.trim()) p.set("ara", s.ara.trim());
@@ -349,7 +361,7 @@ export function Questions({ topic, hafta, topics }: { topic?: string; hafta?: nu
     if (gorunen && location.hash.startsWith("#soru-")) document.getElementById(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView();
   }, [gorunen !== null]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const suzuluyor = suzgec.durum !== "tumu" || !!suzgec.tur || !!suzgec.zorluk || !!suzgec.ara.trim();
+  const suzuluyor = suzgec.durum !== VARSAYILAN_DURUM || !!suzgec.tur || !!suzgec.zorluk || !!suzgec.ara.trim();
   const cozulen = tekil && durumlar ? tekil.filter((q) => durumlar[q.id] === "dogru").length : 0;
 
   return (
@@ -373,7 +385,7 @@ export function Questions({ topic, hafta, topics }: { topic?: string; hafta?: nu
               {[1, 2, 3].map((z) => <option key={z} value={z}>{"★".repeat(z)}{"☆".repeat(3 - z)}</option>)}
             </select>
             <input type="search" aria-label="Sorularda ara" placeholder="Sorularda ara" value={suzgec.ara} onChange={(e) => degistir({ ara: e.target.value })} />
-            {suzuluyor && <button onClick={() => degistir({ durum: "tumu", tur: "", zorluk: 0, ara: "" })}>Temizle</button>}
+            {suzuluyor && <button onClick={() => degistir({ durum: VARSAYILAN_DURUM, tur: "", zorluk: 0, ara: "" })}>Temizle</button>}
           </div>
         </div>
       )}
@@ -386,7 +398,9 @@ export function Questions({ topic, hafta, topics }: { topic?: string; hafta?: nu
       ) : (
         <>
           <p className="hint">
-            {suzuluyor ? `${tekil!.length} sorudan ${gorunen.length} tanesi gösteriliyor. ` : `${tekil!.length} soru, ${cozulen} tanesini çözdün. `}
+            {suzuluyor
+              ? `${tekil!.length} sorudan ${gorunen.length} tanesi gösteriliyor. `
+              : `${tekil!.length} soru, ${cozulen} tanesini çözdün${cozulen ? "; çözdüklerin gizli, görmek için Tümü'ne bas" : ""}. `}
             Cevaplar sunucuda kontrol edilir; kod sorularının benzetimi tarayıcında yapılır.{" "}
             {uye(me) ? (
               "İlerlemen hesabına kaydedilir."
@@ -405,7 +419,7 @@ export function Questions({ topic, hafta, topics }: { topic?: string; hafta?: nu
             </p>
           )}
           {gorunen.map((q, i) => (
-            <QuestionCard key={q.id} q={q} n={i + 1} />
+            <QuestionCard key={q.id} q={q} n={i + 1} durum={durumlar?.[q.id]} />
           ))}
         </>
       )}
