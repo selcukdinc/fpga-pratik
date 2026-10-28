@@ -1,11 +1,12 @@
 import { useEffect, useRef } from "react";
 import { EditorView, keymap, lineNumbers, highlightActiveLine, drawSelection } from "@codemirror/view";
-import { EditorState, StateEffect, StateField, RangeSet } from "@codemirror/state";
+import { EditorState, Prec, StateEffect, StateField, RangeSet } from "@codemirror/state";
 import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
-import { StreamLanguage, indentUnit, syntaxHighlighting, bracketMatching } from "@codemirror/language";
+import { StreamLanguage, getIndentUnit, indentOnInput, indentService, indentUnit, syntaxHighlighting, bracketMatching } from "@codemirror/language";
 import { classHighlighter } from "@lezer/highlight";
 import { vhdl } from "@codemirror/legacy-modes/mode/vhdl";
 import { Decoration, type DecorationSet } from "@codemirror/view";
+import { vhdlGirinti } from "../lib/vhdlGirinti";
 
 export interface EditorMark {
   line: number;
@@ -31,6 +32,27 @@ const marksField = StateField.define<DecorationSet>({
   },
   provide: (f) => EditorView.decorations.from(f),
 });
+
+// Enter'dan sonraki girinti src/lib/vhdlGirinti.ts'teki kurallarla; hazır
+// kipin kuralı "wait for"u döngü sanıyordu. end, else, elsif, when, begin ve ")"
+// satırın başına yazılınca satır kendiliğinden geri gelir.
+const girinti = [
+  Prec.highest(
+    indentService.of((ctx, pos) => {
+      // ctx.lineAt Enter'ın böldüğü satırı iki ayrı satır gibi gösterir
+      const satir = ctx.lineAt(pos);
+      const onceki: string[] = [];
+      for (let p = satir.from; p > 0 && onceki.length < 50; ) {
+        const ust = ctx.lineAt(p - 1, -1);
+        onceki.unshift(ust.text);
+        p = ust.from;
+      }
+      return vhdlGirinti(onceki, satir.text.slice(pos - satir.from), getIndentUnit(ctx.state), ctx.state.tabSize);
+    }),
+  ),
+  EditorState.languageData.of(() => [{ indentOnInput: /^\s*(end|end\s+(case|if|loop|process|generate|block|record|component)|else|elsif|when|begin|\))$/i }]),
+  indentOnInput(),
+];
 
 interface Props {
   value: string;
@@ -60,6 +82,7 @@ export function VhdlEditor({ value, onChange, marks = [], gotoLine, readOnly = f
           bracketMatching(),
           indentUnit.of("  "),
           StreamLanguage.define(vhdl),
+          girinti,
           // Renkler styles.css'teki --cm-* değişkenlerinden gelir, böylece temaya uyar
           syntaxHighlighting(classHighlighter),
           keymap.of([indentWithTab, ...defaultKeymap, ...historyKeymap]),

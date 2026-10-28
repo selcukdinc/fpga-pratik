@@ -14,6 +14,16 @@ export interface Yenilik {
 
 export const YENILIKLER: Yenilik[] = [
   {
+    pr: 31,
+    tarih: "2026-10-28",
+    baslik: "Kod editöründe girinti düzeltildi",
+    maddeler: [
+      "Enter'a basınca yeni satır bir önceki satırın hizasından başlıyor; `wait;` ya da `wait for 0 ns;` sonrasında imleç artık kaymıyor.",
+      "`then`, `begin`, `is`, `loop`, `=>` gibi blok açan satırlardan sonra girinti bir kademe artıyor.",
+      "`end`, `else`, `elsif`, `when` ve `begin` yazınca satır kendiliğinden geri geliyor; `end case;` ve `end if;` açtıkları satırın hizasına oturuyor.",
+    ],
+  },
+  {
     pr: 30,
     tarih: "2026-10-28",
     baslik: "Soru kartları ve ders benzetimleri düzenlendi",
