@@ -24,6 +24,8 @@ export interface Me {
   gunlukHedef: number;
   // Hesaba kaydedilen metin boyutu (yüzde); null ise tarayıcıdaki seçim
   yaziOlcek: number | null;
+  // Hesaba kaydedilen günlük tekrar sayısı (0 sınırsız); null ise varsayılan
+  gunlukTekrar: number | null;
   // Sunucu e-posta gönderebiliyor mu (kayıt ve sıfırlama buna bağlı)
   epostaAcik?: boolean;
 }

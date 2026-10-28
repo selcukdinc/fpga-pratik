@@ -10,6 +10,13 @@ export const SON_KUTU = ARALIKLAR.length;
 // 6. kutu: öğrenildi, bir daha sorulmaz
 export const OGRENILDI = SON_KUTU + 1;
 export const GUNLUK_TEKRAR = 20;
+// Seçilebilen günlük tekrar sayıları; 0 sınırsız
+export const GUNLUK_SECENEKLERI = [10, 20, 30, 50, 0] as const;
+export const gunlukGecerli = (n: unknown): n is number => (GUNLUK_SECENEKLERI as readonly unknown[]).includes(n);
+// "Biraz daha tekrar et" her basışta bu kadar soru ekler
+export const EK_TEKRAR = 10;
+// Takvimde gösterilen gün sayısı (yarından başlayarak)
+export const TAKVIM_GUN = 30;
 // Bir soru yanlış yapılınca aynı kavramdan en çok bu kadar yeni soru eklenir
 export const ILISKILI_SAYISI = 2;
 
@@ -34,8 +41,21 @@ export interface TekrarSorusu {
   kavram: string | null;
 }
 
+// Takvimdeki bir soru: hangi gün, hangi kutudan sorulacak
+export interface TakvimSorusu {
+  id: string;
+  topicId: string;
+  hafta: number;
+  kutu: number;
+  // Yarın 1, öbür gün 2...
+  gun: number;
+  ozet: string;
+}
+
 export interface TekrarCevabi {
-  // Bugün sorulacaklar (en çok GUNLUK_TEKRAR - yapilan)
+  // Bugün için geçerli günlük sınır (0 sınırsız)
+  gunluk: number;
+  // Bugün sorulacaklar (en çok gunluk - yapilan + ek)
   bugun: TekrarSorusu[];
   // Vadesi gelmiş toplam soru (günlük sınırı aşanlar dahil)
   bekleyen: number;
@@ -44,8 +64,12 @@ export interface TekrarCevabi {
   // 1-5. kutulardaki soru sayıları
   kutular: number[];
   ogrenilen: number;
-  // Önümüzdeki 7 günün her birinde vadesi gelecek soru sayısı (yarından başlayarak)
+  // Önümüzdeki TAKVIM_GUN günün her birinde vadesi gelecek soru sayısı (yarından başlayarak)
   takvim: number[];
+  // Aynı günlerin soruları (en çok 500)
+  takvimSorular: TakvimSorusu[];
+  // Vadesi gelmiş soruların haftalara dağılımı (süzgeçten bağımsız)
+  haftalar: { hafta: number; n: number }[];
   // bugun ile aynı sırada soruların kendileri
   sorular: Question[];
 }

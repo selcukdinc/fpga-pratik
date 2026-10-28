@@ -8,6 +8,7 @@ import { inline } from "./Markdown";
 import { KutlamaBildirimi } from "./Kutlama";
 import { OlcekDugmeleri } from "./Olcek";
 import { gorulmemisSayisi, useSonGorulen } from "../lib/yenilik";
+import { GUNLUK_OLAYI, gunlukTekrar } from "../lib/tekrarAyar";
 
 interface Props {
   route: Route;
@@ -180,9 +181,15 @@ export function Shell({ route, currentWeek, title, status, duyuru, children }: P
   const yeniSayisi = gorulmemisSayisi(useSonGorulen());
 
   // Bugün tekrar edilecek soru sayısı; sayfa değiştikçe tazelenir
+  const [gunlukDegisti, setGunlukDegisti] = useState(0);
   useEffect(() => {
-    if (me) api.tekrarSayisi().then((r) => setTekrarSayisi(r.n), () => {});
-  }, [route, me?.id]);
+    const f = () => setGunlukDegisti((n) => n + 1);
+    window.addEventListener(GUNLUK_OLAYI, f);
+    return () => window.removeEventListener(GUNLUK_OLAYI, f);
+  }, []);
+  useEffect(() => {
+    if (me) api.tekrarSayisi(gunlukTekrar(me)).then((r) => setTekrarSayisi(r.n), () => {});
+  }, [route, me?.id, me?.gunlukTekrar, gunlukDegisti]);
 
   // Mobilde sayfa değişince menü kapanır
   useEffect(() => setMenuAcik(false), [route]);

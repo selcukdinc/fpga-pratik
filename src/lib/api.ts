@@ -1,5 +1,6 @@
 import type { AnswerResult, ApiHata, IlerlemeAyrintisi, Me, Profil, Question, SoruDurumlari, Topic, TopicProgress } from "../../shared/api";
 import type { KayitliDuzen } from "../../shared/duzen";
+import type { DersIlerleme } from "../../shared/dersIlerleme";
 import type { Answer } from "../../shared/grade";
 import type { KodSonucu, Sinama } from "../../shared/kod";
 import type { Okunmamis, Oneri, OneriGirdi, PanelOneri, Yazisma, YazismaOzeti } from "../../shared/sosyal";
@@ -42,8 +43,11 @@ export const api = {
   questions: (topic?: string) => get<Question[]>(topic ? `/questions?topic=${encodeURIComponent(topic)}` : "/questions"),
   progress: () => get<TopicProgress[]>("/progress"),
   ilerlemeAyrintisi: () => get<IlerlemeAyrintisi>("/progress/ayrinti"),
-  tekrar: () => get<TekrarCevabi>("/tekrar"),
-  tekrarSayisi: () => get<{ n: number }>("/tekrar/sayi"),
+  tekrar: (s: { gunluk: number; ek: number; hafta: number | null; yanlis: boolean }) =>
+    get<TekrarCevabi>(`/tekrar?gunluk=${s.gunluk}&ek=${s.ek}${s.hafta ? `&hafta=${s.hafta}` : ""}${s.yanlis ? "&yanlis=1" : ""}`),
+  tekrarSayisi: (gunluk: number) => get<{ n: number }>(`/tekrar/sayi?gunluk=${gunluk}`),
+  tekrarBiliyorum: (id: string) => post<{ ok: true }>(`/tekrar/${encodeURIComponent(id)}/biliyorum`),
+  tekrarSifirla: () => post<{ ok: true }>("/tekrar/sifirla"),
   soruDurumlari: () => get<SoruDurumlari>("/questions/durum"),
   profil: (ad: string) => get<Profil>(`/profil/${encodeURIComponent(ad)}`),
   async answer(id: string, answer: Answer): Promise<AnswerResult> {
@@ -104,6 +108,9 @@ export const api = {
     gorunum: (yaziOlcek: number | null) => post<Me>("/hesap/ayarlar/gorunum", { yaziOlcek }, "PUT"),
     duzenler: () => get<KayitliDuzen[]>("/hesap/ayarlar/duzenler"),
     duzenleriKaydet: (duzenler: KayitliDuzen[]) => post<KayitliDuzen[]>("/hesap/ayarlar/duzenler", { duzenler }, "PUT"),
+    gunlukTekrar: (gunlukTekrar: number | null) => post<Me>("/hesap/ayarlar/gunluk-tekrar", { gunlukTekrar }, "PUT"),
+    dersIlerleme: () => get<DersIlerleme>("/hesap/ayarlar/ders-ilerleme"),
+    dersIlerlemeKaydet: (ilerleme: DersIlerleme) => post<DersIlerleme>("/hesap/ayarlar/ders-ilerleme", { ilerleme }, "PUT"),
   },
   yonetim: {
     ozet: () => get<PanelOzet>("/yonetim/ozet"),

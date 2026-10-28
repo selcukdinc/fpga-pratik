@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { OGRENILDI, sonrakiKutu } from "./tekrar";
+import { GUNLUK_SECENEKLERI, GUNLUK_TEKRAR, OGRENILDI, gunlukGecerli, sonrakiKutu } from "./tekrar";
 
 describe("aralıklı tekrar", () => {
   it("doğru cevap bir sonraki kutuya, aralığı o kutunun", () => {
@@ -15,5 +15,11 @@ describe("aralıklı tekrar", () => {
 
   it("yanlış her zaman 1. kutu, ertesi gün", () => {
     for (const k of [1, 3, 5, OGRENILDI]) expect(sonrakiKutu(k, false)).toEqual({ kutu: 1, gun: 1 });
+  });
+
+  it("günlük tekrar seçenekleri varsayılanı içerir, başka değer kabul edilmez", () => {
+    expect(GUNLUK_SECENEKLERI).toContain(GUNLUK_TEKRAR);
+    for (const n of GUNLUK_SECENEKLERI) expect(gunlukGecerli(n)).toBe(true);
+    for (const n of [-1, 15, 1000, "20", null, 20.5]) expect(gunlukGecerli(n)).toBe(false);
   });
 });

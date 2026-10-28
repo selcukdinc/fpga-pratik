@@ -14,6 +14,29 @@ export interface Yenilik {
 
 export const YENILIKLER: Yenilik[] = [
   {
+    pr: 34,
+    tarih: "2026-10-28",
+    baslik: "Tekrar ekranı yenilendi",
+    maddeler: [
+      "Günde kaç soru tekrar edeceğini seçebilirsin: 10, 20, 30, 50 ya da sınırsız (varsayılan 20). Seçimin hesabında, giriş yapmadıysan bu tarayıcıda saklanır; menüdeki sayı da buna göre değişir.",
+      "Günlük sınır dolduğunda bekleyen soru varsa **Biraz daha tekrar et** ile 10 soru daha açabilirsin.",
+      "Önümüzdeki 30 günün takvimi: hangi gün kaç soru geleceğini görüyor, bir güne basıp o günün sorularını ve kutularını listeliyorsun.",
+      "Her sorunun altında, doğru cevaplarsan bir sonraki tekrarın ne zaman olacağı yazıyor (ör. \"Cumartesi (3 gün sonra)\"). **Nasıl çalışır?** bölümü, aralıkların her sorunun kendi son cevabından sayıldığını anlatıyor.",
+      "Tekrarı haftaya göre süzebilir, yalnız yanlış yaptığın soruları çalışabilirsin. **Biliyorum, artık sorma** soruyu öğrenildi kutusuna taşır; en altta tekrar ilerlemesini sıfırlama seçeneği var.",
+    ],
+  },
+  {
+    pr: 33,
+    tarih: "2026-10-28",
+    baslik: "Derslerde ilerlemen kaydediliyor",
+    maddeler: [
+      "Her ders bölümünün sonunda **Bu bölümü bitirdim** düğmesi var. Bitirdiğin bölümler içindekiler listesinde işaretleniyor; yanlışlıkla bastıysan **Geri al** ile kaldırabilirsin.",
+      "Dersler sayfasında her haftanın kaç bölümünü bitirdiğin görünüyor ve en son okuduğun bölüm **Kaldığın yer** kutusunda duruyor; **Devam et** ile oraya dönüyorsun. İstediğin bölümü içindekilerden yeniden açabilirsin.",
+      "Giriş yapmadan da çalışır: ilerlemen bu tarayıcıda saklanır, hesabına giriş yapınca hesabına taşınır.",
+      "Soru havuzu artık açılınca çözmediğin soruları gösteriyor. Derste, tekrarda ya da havuzda çözdüğün sorular gizli; **Tümü**'ne basınca \"✓ Çözdün\" işaretiyle görünüyor. Derslerdeki sorularda da aynı işaret var.",
+    ],
+  },
+  {
     pr: 32,
     tarih: "2026-10-28",
     baslik: "Sorular kendi başına anlaşılır oldu",
