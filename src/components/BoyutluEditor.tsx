@@ -6,15 +6,18 @@ import { useRef, useState, type KeyboardEvent, type PointerEvent as RPointerEven
 
 const EN_AZ = 120;
 
-// Kodun tamamının kaydırmadan sığdığı yükseklik: editörün içeriği + kutunun kenarlığı
+// İçeriğin tamamının kaydırmadan sığdığı yükseklik: editörün (ya da kutunun
+// kendi) içeriği + kutunun kenarlığı
 function tamYukseklik(kutu: HTMLElement): number {
-  const kaydirici = kutu.querySelector<HTMLElement>(".cm-scroller");
-  if (!kaydirici) return Infinity;
   const kenar = kutu.offsetHeight - kutu.clientHeight;
+  const kaydirici = kutu.querySelector<HTMLElement>(".cm-scroller");
+  if (!kaydirici) return Math.max(EN_AZ, kutu.scrollHeight + kenar);
   return Math.max(EN_AZ, kaydirici.scrollHeight + (kaydirici.offsetHeight - kaydirici.clientHeight) + kenar);
 }
 
-export function BoyutluEditor({ sinif, children }: { sinif?: string; children: ReactNode }) {
+// etiket: tutamağın ekran okuyucudaki adı. Mesaj paneli gibi editör olmayan
+// kutular da aynı tutamakla boyutlandırılır.
+export function BoyutluEditor({ sinif, etiket = "Editör yüksekliği", children }: { sinif?: string; etiket?: string; children: ReactNode }) {
   const kutu = useRef<HTMLDivElement>(null);
   // null: CSS'teki varsayılan yükseklik
   const [yukseklik, setYukseklik] = useState<number | null>(null);
@@ -64,7 +67,7 @@ export function BoyutluEditor({ sinif, children }: { sinif?: string; children: R
           className="editor-tutamak"
           role="separator"
           aria-orientation="horizontal"
-          aria-label="Editör yüksekliği"
+          aria-label={etiket}
           tabIndex={0}
           title="Sürükleyerek boyutlandır"
           onPointerDown={surukle}

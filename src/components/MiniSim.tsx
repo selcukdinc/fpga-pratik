@@ -10,6 +10,7 @@ import { simulate } from "../sim/simulator";
 import type { SimMessage } from "../sim/messages";
 import type { Vcd } from "../sim/vcd";
 import type { MiniSim as Veri } from "../dersler/tipler";
+import { useMiniYan } from "../lib/miniDuzen";
 
 const DOSYA = "ders.vhd";
 
@@ -22,6 +23,7 @@ export function MiniSim({ sim }: { sim: Veri }) {
   const [gotoLine, setGotoLine] = useState<{ line: number; nonce: number }>();
   // Başarılı her çalıştırmada artar; dalga ekranındaki parlama bu anahtarla yeniden başlar
   const [basari, setBasari] = useState<{ n: number; ms: number } | null>(null);
+  const [yan, setYan] = useMiniYan();
 
   const isaretler = useMemo<EditorMark[]>(
     () =>
@@ -50,35 +52,46 @@ export function MiniSim({ sim }: { sim: Veri }) {
     setBasari(null);
   };
 
+  const sonuc = (mesajlar && mesajlar.length > 0) || (vcd && vcd.signals.length > 0);
+
   return (
-    <div className="mini-sim">
-      <BoyutluEditor sinif="mini-editor">
-        <VhdlEditor value={kod} onChange={setKod} marks={isaretler} gotoLine={gotoLine} />
-      </BoyutluEditor>
-      <div className="kod-dugmeler">
-        <button className="primary" onClick={calistir} disabled={calisiyor}>{calisiyor ? "Çalışıyor…" : "▶ Çalıştır"}</button>
-        <button onClick={sifirla} disabled={calisiyor || kod === sim.kod}>Örneğe dön</button>
-        {basari ? (
-          <span className="ok sim-basari" role="status" key={basari.n}>
-            ✓ Benzetim tamamlandı ({(basari.ms / 1000).toLocaleString("tr", { maximumFractionDigits: 1 })} sn)
+    <div className={`mini-sim${yan ? " yan" : ""}`}>
+      <div className="mini-kod">
+        <BoyutluEditor sinif="mini-editor">
+          <VhdlEditor value={kod} onChange={setKod} marks={isaretler} gotoLine={gotoLine} />
+        </BoyutluEditor>
+        <div className="kod-dugmeler">
+          <button className="primary" onClick={calistir} disabled={calisiyor}>{calisiyor ? "Çalışıyor…" : "▶ Çalıştır"}</button>
+          <button onClick={sifirla} disabled={calisiyor || kod === sim.kod}>Örneğe dön</button>
+          {basari ? (
+            <span className="ok sim-basari" role="status" key={basari.n}>
+              ✓ Benzetim tamamlandı ({(basari.ms / 1000).toLocaleString("tr", { maximumFractionDigits: 1 })} sn)
+            </span>
+          ) : (
+            <span className="hint">{sim.sure} benzetim · tarayıcında çalışır</span>
+          )}
+          <span className="mini-duzen" role="group" aria-label="Mesajlar ve dalga ekranının yeri">
+            <button className="cip" aria-pressed={!yan} onClick={() => setYan(false)} title="Mesajlar ve dalga kodun altında">Alt alta</button>
+            <button className="cip" aria-pressed={yan} onClick={() => setYan(true)} title="Mesajlar ve dalga kodun sağında">Yan yana</button>
           </span>
-        ) : (
-          <span className="hint">{sim.sure} benzetim · tarayıcında çalışır</span>
-        )}
+        </div>
+        {sim.gorev && <p className="mini-gorev"><strong>Dene:</strong> {sim.gorev}</p>}
+        {hata && <p className="bad" role="alert">{hata}</p>}
       </div>
-      {sim.gorev && <p className="mini-gorev"><strong>Dene:</strong> {sim.gorev}</p>}
-      {hata && <p className="bad" role="alert">{hata}</p>}
-      {mesajlar && mesajlar.length > 0 && (
-        <div className="kod-mesajlar">
-          <MessagesPanel messages={mesajlar} onSelect={(m) => m.line && setGotoLine({ line: m.line, nonce: Date.now() })} />
-        </div>
-      )}
-      {vcd && vcd.signals.length > 0 && (
-        <div className="kod-dalga">
-          <WaveformView vcd={vcd} />
-          {basari && <span className="parla-katman" key={basari.n} aria-hidden="true" />}
-        </div>
-      )}
+      <div className="mini-sonuc">
+        {mesajlar && mesajlar.length > 0 && (
+          <BoyutluEditor sinif="mini-mesajlar" etiket="Mesaj alanının yüksekliği">
+            <MessagesPanel messages={mesajlar} onSelect={(m) => m.line && setGotoLine({ line: m.line, nonce: Date.now() })} />
+          </BoyutluEditor>
+        )}
+        {vcd && vcd.signals.length > 0 && (
+          <div className="kod-dalga">
+            <WaveformView vcd={vcd} />
+            {basari && <span className="parla-katman" key={basari.n} aria-hidden="true" />}
+          </div>
+        )}
+        {!sonuc && yan && <p className="hint mini-bos">Çalıştır'a bastığında mesajlar ve dalga ekranı burada görünür.</p>}
+      </div>
     </div>
   );
 }

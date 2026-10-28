@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { parseMessages } from "./messages";
+import { cifteKodlamayiCoz, parseMessages } from "./messages";
 import { bitsToNumber, parseVcd } from "./vcd";
 
 // NVC'nin tarayıcıda ürettiği gerçek çıktı (renk kodlarıyla birlikte)
@@ -32,6 +32,27 @@ describe("parseMessages", () => {
       "** Note: 412ns+0: son deger 10\n   Process\u001b[0m :tb:_p1 at \u001b]8;;file:///w/tri.vhd#22\u0007tri.vhd:22\u001b]8;;\u0007",
     ]);
     expect(msgs[0]).toMatchObject({ severity: "note", text: "412ns+0: son deger 10", file: "tri.vhd", line: 22 });
+  });
+
+  it("kaynak alıntısındaki Türkçe karakterleri düzeltir", () => {
+    // NVC'nin yerel çıktısından: "-- açarsan r = 10 aralık dışı" iki kez UTF-8'e çevrilmiş
+    const bozuk = new TextDecoder("latin1").decode(new TextEncoder().encode("-- açarsan r = 10 aralık dışı"));
+    expect(bozuk).toContain("Ã§");
+    expect(cifteKodlamayiCoz(bozuk)).toBe("-- açarsan r = 10 aralık dışı");
+    // Zaten doğru olan metin ve Latin-1'e benzeyen tek karakterler değişmez
+    expect(cifteKodlamayiCoz("güçlü ölçü ÇĞİÖŞÜ")).toBe("güçlü ölçü ÇĞİÖŞÜ");
+    expect(cifteKodlamayiCoz("Â")).toBe("Â");
+  });
+
+  it("kaynak alıntısını dosyanın kendisinden okur", () => {
+    // Yerel NVC çıktısı: "ş"nin ikinci baytı (0x9F) hiç basılmamış
+    const cikti = ["** Fatal: 0ms+0: value 10 outside of RAKAM range 0 to 9 for variable R", "   > m.vhd:8", "   |", " 8 |     r := r + 1;  -- aÃ§arsan r = 10 aralÄ±k dÄ±ÅÄ±", "   |          ^^^^^"];
+    const kaynak = "\n".repeat(7) + "    r := r + 1;  -- açarsan r = 10 aralık dışı\n    wait;";
+    const [m] = parseMessages(cikti, { "m.vhd": kaynak });
+    expect(m).toMatchObject({ severity: "fatal", file: "m.vhd", line: 8 });
+    expect(m!.detail).toContain(" 8 |     r := r + 1;  -- açarsan r = 10 aralık dışı");
+    // Kaynak verilmezse kurtarılabilen harfler yine düzelir
+    expect(parseMessages(cikti)[0]!.detail[1]).toContain("açarsan r = 10 aralık");
   });
 });
 

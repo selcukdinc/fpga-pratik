@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { useHesapOlcegi, useYaziOlcek } from "../lib/olcek";
 import { OLCEK_SECENEKLERI, VARSAYILAN_OLCEK } from "../../shared/gorunum";
 
@@ -12,11 +12,18 @@ export function OlcekliSayfa({ gizli, children }: { gizli?: boolean; children: R
   useHesapOlcegi();
   const ref = useRef<HTMLDivElement>(null);
   const [genis, setGenis] = useState(false);
+  // Ölçekli pikselle sayfa genişliği: ders benzetimleri yan yana düzende bu
+  // genişliğe kadar yayılır (--sayfa-en)
+  const [en, setEn] = useState(0);
 
   useLayoutEffect(() => {
     const ust = ref.current?.parentElement;
     if (!ust) return;
-    const olc = () => setGenis(ust.clientWidth / (olcek / 100) >= GENIS_ESIK);
+    const olc = () => {
+      const e = ust.clientWidth / (olcek / 100);
+      setEn(Math.round(e));
+      setGenis(e >= GENIS_ESIK);
+    };
     olc();
     const ro = new ResizeObserver(olc);
     ro.observe(ust);
@@ -24,7 +31,7 @@ export function OlcekliSayfa({ gizli, children }: { gizli?: boolean; children: R
   }, [olcek]);
 
   return (
-    <div ref={ref} className="sayfa-olcek" data-genis={genis || undefined} hidden={gizli}>
+    <div ref={ref} className="sayfa-olcek" data-genis={genis || undefined} hidden={gizli} style={en ? ({ "--sayfa-en": `${en}px` } as CSSProperties) : undefined}>
       {children}
     </div>
   );

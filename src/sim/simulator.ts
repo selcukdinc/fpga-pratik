@@ -71,7 +71,7 @@ export async function checkSyntax(files: SimFile[], std: VhdlStd = "1993"): Prom
     { args: [...baseArgs(std), "-a", ...files.map((f) => f.name)], files: toFiles(files), collect: [] },
     DEFAULT_TIMEOUT_MS,
   );
-  const messages = parseMessages(res.lines);
+  const messages = parseMessages(res.lines, toFiles(files));
   return { ok: res.exitCode === 0 && !hasErrors(messages), messages, log: res.lines, ms: performance.now() - t0 };
 }
 
@@ -94,7 +94,7 @@ export async function simulate(files: SimFile[], opts: SimulateOptions): Promise
   const res = await run({ args, files: toFiles(files), collect: ["wave.vcd"] }, opts.timeoutMs ?? DEFAULT_TIMEOUT_MS);
   // Hiç sinyali olmayan bir testbench'te (yalnızca report kullanan) NVC dalga
   // dosyası yazamayıp bu hatayı verir; benzetimin kendisi başarılıdır.
-  const tum = parseMessages(res.lines);
+  const tum = parseMessages(res.lines, toFiles(files));
   const bosDalga = (m: SimMessage) => m.severity === "fatal" && m.text.includes("fstReaderOpen failed");
   const messages = tum.filter((m) => !bosDalga(m));
   const text = res.files["wave.vcd"];
