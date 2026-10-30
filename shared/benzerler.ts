@@ -17,6 +17,9 @@ export const BENZERLER: string[][] = [
   ["t5-if-sonuc", "t5-if-sonuc2"],
   ["t5-oncelik-kodlayici", "t5-oncelik-kodlayici2"],
   ["t5-ws-sonuc", "t5-ws-dekoder"],
+  ["h6-sayac-periyot", "t6-testere-periyot"],
+  ["h6-isaretli-kucuk", "t6-isaretli-sonuc"],
+  ["h6-odul-kod", "t6-odul-katilim"],
 ];
 
 const GRUP = new Map(BENZERLER.flatMap((g, i) => g.map((id) => [id, i] as const)));

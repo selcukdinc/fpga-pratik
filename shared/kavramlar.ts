@@ -84,6 +84,16 @@ export const KAVRAMLAR: Record<string, Kavram> = {
   "if-case": { ad: "if ve case", sorular: ["h5-if-oncelik", "h5-case-others", "h5-case-sinyal"] },
   donguler: { ad: "Döngüler", sorular: ["h5-for-sayi", "h5-arama-modulu", "h5-for-statik"] },
   "saatli-devre": { ad: "Saatli devreler", sorular: ["k-sayac", "k-kenar", "k-dizi101"] },
+  // 6. hafta: sorular kavramlarını kendi kavram alanlarında verir
+  "saat-periyot": { ad: "Saat periyodu ve frekansı", sorular: [] },
+  "kenar-tetikleme": { ad: "Yükselen ve düşen kenar", sorular: [] },
+  "sayac-yapisi": { ad: "Sayıcının yapısı ve yazımı", sorular: [] },
+  "mod-n-sayac": { ad: "Mod-N sayıcı ve reset", sorular: [] },
+  "saat-bolme": { ad: "Saat bölme ve saat etkinleştirme", sorular: [] },
+  "ucgen-dalga": { ad: "Üçgen dalga üreteci", sorular: [] },
+  "tek-cift": { ad: "Tek ve çift sayı", sorular: [] },
+  "isaretli-karsilastirma": { ad: "İşaretli karşılaştırma", sorular: [] },
+  "odul-kodu": { ad: "if ve case ile kod üretme", sorular: [] },
 };
 
 // Soru kimliğinden kavrama
