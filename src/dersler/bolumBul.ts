@@ -23,6 +23,10 @@ export const KAVRAM_BOLUMU: Record<number, Record<string, number>> = {
     "others-atama": 0, "with-select": 0, "when-else": 0, "process-hassasiyet": 1, "variable-kullanim": 1,
     "if-case": 2, donguler: 3, "saatli-devre": 4,
   },
+  6: {
+    "saat-periyot": 0, "kenar-tetikleme": 1, "sayac-yapisi": 2, "mod-n-sayac": 3, "saat-bolme": 3, "ucgen-dalga": 4,
+    "tek-cift": 5, "isaretli-karsilastirma": 5, "odul-kodu": 5,
+  },
 };
 
 export interface SoruBolumu {

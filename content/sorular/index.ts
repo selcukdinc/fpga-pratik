@@ -4,10 +4,12 @@ import { hafta12 } from "./hafta-1-2.ts";
 import { hafta3 } from "./hafta-3.ts";
 import { hafta4 } from "./hafta-4.ts";
 import { hafta5 } from "./hafta-5.ts";
+import { hafta6 } from "./hafta-6.ts";
 import { ekHafta12 } from "./ek-hafta-1-2.ts";
 import { ekHafta3 } from "./ek-hafta-3.ts";
 import { ekHafta4 } from "./ek-hafta-4.ts";
 import { ekHafta5 } from "./ek-hafta-5.ts";
+import { ekHafta6 } from "./ek-hafta-6.ts";
 
 // vhdl-temel ve veri-tipleri, 0002'deki örnek konuların kimlikleridir;
 // o konulardaki denemeler kaybolmasın diye aynı kimlikler kullanılır.
@@ -22,10 +24,13 @@ export const konular: Konu[] = [
   { id: "veri-tipleri", baslik: "Veri tipleri, dönüşümler ve diziler", hafta: 4, sira: 2 },
   { id: "esz-atamalar", baslik: "Eşzamanlı atamalar: when/else, with/select", hafta: 5, sira: 1 },
   { id: "sirali-kod", baslik: "Sıralı kod: process, if, case, loop", hafta: 5, sira: 2 },
+  { id: "saat-kenar", baslik: "Saat darbesi ve kenar tetikleme", hafta: 6, sira: 1 },
+  { id: "sayicilar", baslik: "Sayıcılar, saat bölme ve üçgen dalga", hafta: 6, sira: 2 },
+  { id: "uygulamalar", baslik: "Uygulamalar: tek/çift, işaretli karşılaştırma, ödül kodu", hafta: 6, sira: 3 },
 ];
 
 // ek-* dosyaları B6'da türetilen sorulardır; yedek olanlar havuzda görünmez, tekrarda gelir
 export const sorular: Soru[] = [
-  ...hafta12, ...hafta3, ...hafta4, ...hafta5, ...kodSorulari,
-  ...ekHafta12, ...ekHafta3, ...ekHafta4, ...ekHafta5,
+  ...hafta12, ...hafta3, ...hafta4, ...hafta5, ...hafta6, ...kodSorulari,
+  ...ekHafta12, ...ekHafta3, ...ekHafta4, ...ekHafta5, ...ekHafta6,
 ];

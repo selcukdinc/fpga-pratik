@@ -23,6 +23,11 @@ const maske = (n: number) => 2 ** n - 1;
 const bit = (v: number, i: number) => Math.floor(v / 2 ** i) % 2;
 const sec = (r: Rastgele, n: number) => Math.floor(r() * n);
 
+// Yalnızca başta ve ortada reset: sayıcıların bir turu tamamlanabilsin
+function ikiReset(adet: number, rst = "rst"): Vektor[] {
+  return Array.from({ length: adet }, (_, i) => ({ [rst]: i === 0 || i === adet >> 1 ? 1 : 0 }));
+}
+
 // Sıralı devrelerde ilk vektör reset, ortada bir reset ve arada bir rastgele reset
 function resetli(adet: number, r: Rastgele, digerleri: (r: Rastgele) => Degerler, rst = "rst"): Vektor[] {
   const orta = adet >> 1;
@@ -102,6 +107,42 @@ export const MODELLER: Record<string, Model> = {
       v[orta + 1].x = 1;
       return v;
     },
+  },
+  "k-tek-cift": {
+    tur: "komb",
+    f: ({ x }) => ({ tek: x & 1, cift: 1 - (x & 1) }),
+  },
+  "k-isaretli-min": {
+    tur: "komb",
+    f: ({ a, b }) => {
+      const isaretli = (v: number) => (v >= 8 ? v - 16 : v);
+      return { y: isaretli(a) < isaretli(b) ? a : b };
+    },
+    // İşaretleri farklı çiftler sık gelsin: işaretsiz karşılaştırma burada yanılır
+    uret: (r, adet) =>
+      Array.from({ length: adet }, (_, i) => {
+        const a = sec(r, 16);
+        const b = i % 3 === 0 ? (a ^ 8) & 15 : sec(r, 16);
+        return { a, b: i % 7 === 0 ? a : b };
+      }),
+  },
+  "k-mod12": {
+    tur: "sirali",
+    bas: () => 0,
+    adim: (q: number, { rst }) => (rst ? 0 : q === 11 ? 0 : q + 1),
+    cikis: (q: number) => ({ q }),
+    uret: (_r, adet) => ikiReset(adet),
+  },
+  "k-ucgen": {
+    tur: "sirali",
+    bas: () => ({ v: 0, yukari: true }),
+    adim: (s: { v: number; yukari: boolean }, { rst }) => {
+      if (rst) return { v: 0, yukari: true };
+      if (s.yukari) return { v: s.v + 1, yukari: s.v !== 8 };
+      return { v: s.v - 1, yukari: s.v === 1 };
+    },
+    cikis: (s: { v: number }) => ({ q: s.v }),
+    uret: (_r, adet) => ikiReset(adet),
   },
 };
 

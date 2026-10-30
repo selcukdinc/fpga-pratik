@@ -36,6 +36,10 @@ const birler = kod("ones8", [giris("x", 8), cikis("n", 4)]);
 const sayac = kod("cnt4", [giris("clk"), giris("rst"), giris("en"), cikis("q", 4)], "clk");
 const kenar = kod("rise_detect", [giris("clk"), giris("rst"), giris("d"), cikis("p")], "clk");
 const dizi = kod("det101", [giris("clk"), giris("rst"), giris("x"), cikis("z")], "clk");
+const mod12 = kod("cnt_mod12", [giris("clk"), giris("rst"), cikis("q", 4)], "clk");
+const tekCift = kod("odd_even", [giris("x", 4), cikis("tek"), cikis("cift")]);
+const isaretliMin = kod("signed_min", [giris("a", 4), giris("b", 4), cikis("y", 4)]);
+const ucgen = kod("tri_gen", [giris("clk"), giris("rst"), cikis("q", 4)], "clk");
 
 const KOD_NOTU =
   "\n\nŞablondaki entity'yi değiştirme; yalnızca mimariyi yaz. **Sına** dediğinde tasarımın tarayıcında, her seferinde rastgele seçilen girişlerle gizli bir testbench'e karşı çalıştırılır.";
@@ -200,6 +204,85 @@ begin
     end if;
   end process;
   z <= '1' when d = S101 else '0';
+end rtl;`),
+  },
+  {
+    id: "k-tek-cift", konu: "uygulamalar", hafta: 6, kaynak: "original", zorluk: 1, kavram: "tek-cift",
+    ref: "Hafta 6, Soru 1", tip: "code", kod: tekCift,
+    soru: "4 bitlik ~x~ girişinin **tek mi çift mi** olduğunu bulan devreyi yaz: sayı tekse ~tek = '1'~, ~cift = '0'~; çiftse tersi." + KOD_NOTU,
+    aciklama: "Yalnızca en düşük bitin ağırlığı (1) tektir; diğer ağırlıklar (8, 4, 2) çifttir. Bu yüzden ~tek <= x(0);~ ve ~cift <= not x(0);~ yeterlidir.",
+    cozum: cozum(tekCift, `
+architecture rtl of odd_even is
+begin
+  tek  <= x(0);
+  cift <= not x(0);
+end rtl;`),
+  },
+  {
+    id: "k-isaretli-min", konu: "uygulamalar", hafta: 6, kaynak: "derived", zorluk: 2, kavram: "isaretli-karsilastirma",
+    ref: "Hafta 6, Soru 2", tip: "code", kod: isaretliMin,
+    soru: "4 bitlik ~a~ ve ~b~ girişlerini **işaretli** (ikiye tümleyen) sayılar olarak karşılaştır ve küçük olanı ~y~'ye ver (ör. ~a = \"0010\"~ (2), ~b = \"1101\"~ (-3) ise ~y = \"1101\"~). Eşitlerse ikisinden biri." + KOD_NOTU,
+    aciklama: "Karşılaştırma ~signed(a) < signed(b)~ ile yapılır; ~std_logic_vector~ ya da ~unsigned~ ile karşılaştırılsaydı \"1101\" 13 sayılır ve sonuç yanlış çıkardı. ~y <= a when signed(a) < signed(b) else b;~",
+    cozum: cozum(isaretliMin, `
+architecture rtl of signed_min is
+begin
+  y <= a when signed(a) < signed(b) else b;
+end rtl;`),
+  },
+  {
+    id: "k-mod12", konu: "sayicilar", hafta: 6, kaynak: "original", zorluk: 2, kavram: "mod-n-sayac",
+    ref: "Hafta 6, Soru 4", tip: "code", kod: mod12,
+    soru: "**0-11 arası sayan** bir sayıcı yaz. ~rst = '1'~ olduğunda sayıcı sıfırlanmalı ve çıkış ~q~ sıfır kalmalı. Sayma yalnızca ~rst = '0'~ iken ve ~clk~'in yükselen kenarında olmalı; 11'den sonra 0'a dönülür." + KOD_NOTU,
+    aciklama: "Sayım iç bir ~unsigned(3 downto 0)~ sinyalde tutulur. Reset sayma koşulundan önce denetlenir; yükselen kenarda ~if sayi = 11 then sayi <= (others => '0'); else sayi <= sayi + 1; end if;~ çalışır. Karşılaştırma son değer 11 ile yapılır, 12 ile değil.",
+    cozum: cozum(mod12, `
+architecture rtl of cnt_mod12 is
+  signal sayi : unsigned(3 downto 0) := (others => '0');
+begin
+  process (clk, rst)
+  begin
+    if rst = '1' then
+      sayi <= (others => '0');
+    elsif rising_edge(clk) then
+      if sayi = 11 then
+        sayi <= (others => '0');
+      else
+        sayi <= sayi + 1;
+      end if;
+    end if;
+  end process;
+  q <= std_logic_vector(sayi);
+end rtl;`),
+  },
+  {
+    id: "k-ucgen", konu: "sayicilar", hafta: 6, kaynak: "derived", zorluk: 3, kavram: "ucgen-dalga",
+    ref: "Hafta 6, Üçgen sinyal", tip: "code", kod: ucgen,
+    soru: "Bir **üçgen dalga üreteci** yaz. ~q~ her yükselen kenarda bir adım atar: 0'dan 9'a çıkar, 9'dan 0'a iner ve yeniden çıkar (0, 1, ..., 8, 9, 8, ..., 1, 0, 1, ...). Bir periyot 18 saat sürer.\n\n~rst = '1'~ iken (eşzamanlı) ~q~ 0 olur ve sayıcı yeniden yukarı yönde başlar." + KOD_NOTU,
+    aciklama: "Yön bir sinyalde tutulur. Sinyal atamaları process sonunda uygulandığı için yön sınıra bir adım önce çevrilir: yukarı sayarken ~sayi = 8~'de, aşağı sayarken ~sayi = 1~'de. ~sayi = 9~ ve ~sayi = 0~ ile denetlenirse tepe 10'a taşar ve dipte 0 - 1 sarar.",
+    cozum: cozum(ucgen, `
+architecture rtl of tri_gen is
+  signal sayi   : unsigned(3 downto 0) := (others => '0');
+  signal yukari : std_logic := '1';
+begin
+  process (clk)
+  begin
+    if rising_edge(clk) then
+      if rst = '1' then
+        sayi <= (others => '0');
+        yukari <= '1';
+      elsif yukari = '1' then
+        if sayi = 8 then
+          yukari <= '0';
+        end if;
+        sayi <= sayi + 1;
+      else
+        if sayi = 1 then
+          yukari <= '1';
+        end if;
+        sayi <= sayi - 1;
+      end if;
+    end if;
+  end process;
+  q <= std_logic_vector(sayi);
 end rtl;`),
   },
 ];

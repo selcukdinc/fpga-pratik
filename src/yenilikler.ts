@@ -14,6 +14,16 @@ export interface Yenilik {
 
 export const YENILIKLER: Yenilik[] = [
   {
+    pr: 35,
+    tarih: "2026-10-30",
+    baslik: "6. hafta: saat sinyali ile çalışmak",
+    maddeler: [
+      "**Dersler** bölümüne 6. hafta eklendi: saat darbesinin periyodu ve frekansı, yükselen ve düşen kenar, sayıcının yapısı, mod-N sayıcı ve reset, saat bölme, üçgen dalga üreteci ve tek/çift, işaretli karşılaştırma, ödül kodu uygulamaları. Her bölümde tarayıcıda çalışan bir benzetim, çözümlü örnek ve sık yapılan hata var.",
+      "12 yeni şekil, ikisi etkileşimli: aynı girişleri yükselen ya da düşen kenarla örnekleyip farkı dalgada görüyor, üçgen dalganın tepe değerini ve saat periyodunu seçip periyodunun nasıl değiştiğini izliyorsun.",
+      "Soru havuzuna 6. haftadan 61 soru geldi: sunumdaki alıştırmalardan yazılmış sorular, onlardan türetilen sorular ve yalnızca tekrarda karşına çıkacak gizli sorular. 0-11 sayıcı, tek/çift, işaretli küçük ve üçgen dalga için dört yeni kod yazma sorusu da var.",
+    ],
+  },
+  {
     pr: 34,
     tarih: "2026-10-28",
     baslik: "Tekrar ekranı yenilendi",

@@ -1,4 +1,4 @@
-// /ders: 1-5. haftaların ders sayfaları. Anlatım, tarayıcıda çalışan küçük
+// /ders: 1-6. haftaların ders sayfaları. Anlatım, tarayıcıda çalışan küçük
 // benzetimler ve soru havuzundan seçilmiş konu sonu testi.
 
 import { useEffect, useRef, useState } from "react";
