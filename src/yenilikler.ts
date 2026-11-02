@@ -14,6 +14,14 @@ export interface Yenilik {
 
 export const YENILIKLER: Yenilik[] = [
   {
+    pr: 36,
+    tarih: "2026-11-02",
+    baslik: "İlerlemem'deki etkinlik haritası düzeldi",
+    maddeler: [
+      "**İlerlemem** sayfasındaki etkinlik ısı haritası yeniden tek satırda: haftalar soldan sağa dizilir, ay adları üstte, gün adları solda doğru yerinde durur. Tekrar takvimiyle aynı stil adını paylaştığı için iki parçaya bölünüyordu.",
+    ],
+  },
+  {
     pr: 35,
     tarih: "2026-10-30",
     baslik: "6. hafta: saat sinyali ile çalışmak",

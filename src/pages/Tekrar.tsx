@@ -67,7 +67,7 @@ function Takvim({ d }: { d: TekrarCevabi }) {
   return (
     <div className="tekrar-takvim">
       <h3>Önümüzdeki {TAKVIM_GUN} gün</h3>
-      <div className="takvim-izgara" role="group" aria-label="Tekrar takvimi">
+      <div className="tekrar-izgara" role="group" aria-label="Tekrar takvimi">
         {["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"].map((g) => <span key={g} className="takvim-baslik">{g}</span>)}
         {Array.from({ length: bosluk }, (_, i) => <span key={`b${i}`} />)}
         {d.takvim.map((n, i) => {
