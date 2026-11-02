@@ -10,7 +10,7 @@ export interface EpostaEnv {
 
 export const epostaAcik = (env: EpostaEnv) => !!env.RESEND_API_KEY || env.EPOSTA_KONSOL === "1";
 
-const GONDEREN = "FPGA Pratik <noreply@fpga.selcukdinc.dev>";
+const GONDEREN = "FPGA Pratik <fpgapratik@mail.selcukdinc.dev>";
 
 const AMAC = {
   kayit: { konu: "Kayıt kodun", cumle: "FPGA Pratik hesabını açmak için bu kodu gir" },
