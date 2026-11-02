@@ -1132,7 +1132,7 @@ body.boyutlaniyor-dikey { cursor: ns-resize; user-select: none; }
 .tekrar-etiket p { margin: 0 0 2px; }
 .tekrar-etiket .hint { font-size: 11.5px; }
 .tekrar-takvim h3 { font-size: 13px; margin: 10px 0 6px; }
-.takvim-izgara { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; max-width: 520px; }
+.tekrar-izgara { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; max-width: 520px; }
 .takvim-baslik { font-size: 11px; color: var(--muted); text-align: center; }
 .takvim-gun { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 40px; padding: 2px; font-size: 11px; border: 1px solid var(--border-soft); border-radius: 4px; background: none; color: var(--muted); }
 .takvim-gun:disabled { cursor: default; opacity: 0.7; }
